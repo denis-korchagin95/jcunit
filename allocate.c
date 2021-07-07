@@ -11,6 +11,8 @@ static unsigned int bytes_pool_pos = 0;
 allocator(token, struct token, 512)
 allocator(string, struct string, 512)
 allocator(tokenizer_context, struct tokenizer_context, 4)
+allocator(test, struct test, 16)
+allocator(test_case, struct test_case, 1024)
 
 
 void * alloc_bytes(unsigned int len)

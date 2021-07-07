@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 
 #include "headers/token.h"
@@ -99,7 +100,6 @@ struct token * get_one_directive(struct tokenizer_context * context, int ch)
     static char buffer[MAX_NAME_LEN] = {0};
 
     char * w = buffer;
-    *w++ = ch;
 
     ch = get_one_char(context);
 
@@ -117,6 +117,9 @@ struct token * get_one_directive(struct tokenizer_context * context, int ch)
 
 struct token * get_one_token(struct tokenizer_context * context)
 {
+    if (context->token_buffer_pos > 0)
+        return context->token_buffer[--context->token_buffer_pos];
+
     int ch = get_one_char(context);
 
     if (ch == EOF) {
@@ -156,4 +159,31 @@ struct token * get_one_token(struct tokenizer_context * context)
     character:
     character_token.content.ch = ch;
     return &character_token;
+}
+
+void unget_one_token(struct tokenizer_context * context, struct token * token)
+{
+    assert(token != NULL);
+    if (context->token_buffer_pos >= MAX_TOKEN_BUFFER_SIZE) {
+        fprintf(stderr, "The token buffer is overflow!\n");
+        exit(1);
+    }
+    if (!is_token_eof(token))
+        context->token_buffer[context->token_buffer_pos++] = token;
+}
+
+bool is_token_directive(struct token * token, const char * name)
+{
+    struct string * string = token->content.string;
+    unsigned int len = strlen(name);
+    return  token->kind == TOKEN_KIND_DIRECTIVE &&
+            len == string->len &&
+            strncmp(string->value, name, len) == 0;
+}
+
+bool is_token_punctuator(struct token * token, int ch)
+{
+    if (token->kind != TOKEN_KIND_PUNCTUATOR)
+        return false;
+    return token->content.ch == ch;
 }

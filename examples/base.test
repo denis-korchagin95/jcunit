@@ -1,8 +1,2 @@
-@test("Test")
-@givenFile
-int a;
-@expects
-<TOKEN_IDENTIFIER 'int'>
-<TOKEN_IDENTIFIER 'a'>
-<TOKEN_EOF>
+@test("Test Name")
 @endtest

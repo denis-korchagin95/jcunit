@@ -2,6 +2,7 @@
 #define JCUNIT_TOKEN_H 1
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #define TOKEN_KIND_EOF           (-1)
 #define TOKEN_KIND_DIRECTIVE     (1)
@@ -24,6 +25,9 @@
 #define is_start_name_char(ch) (is_char(ch) || (ch) == '_')
 #define is_name_char(ch) (is_char(ch) || (ch) == '_' || is_digit_char(ch))
 
+#define is_token_string(token) ((token)->kind == TOKEN_KIND_STRING)
+#define is_token_eof(token) ((token) == &eof_token)
+#define is_token_newline(token) ((token) == &newline_token)
 
 struct token
 {
@@ -55,5 +59,9 @@ int get_one_char(struct tokenizer_context * context);
 void unget_one_char(struct tokenizer_context * context, int ch);
 
 struct token * get_one_token(struct tokenizer_context * context);
+void unget_one_token(struct tokenizer_context * context, struct token * token);
+
+bool is_token_directive(struct token * token, const char * directive_name);
+bool is_token_punctuator(struct token * token, int ch);
 
 #endif /* JCUNIT_TOKEN_H */

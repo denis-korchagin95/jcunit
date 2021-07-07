@@ -3,6 +3,7 @@
 
 #include "token.h"
 #include "string.h"
+#include "ast.h"
 
 #define MAX_BYTES_POOL_SIZE (8192)
 
@@ -21,6 +22,8 @@
 declare_allocator(tokenizer_context, struct tokenizer_context);
 declare_allocator(token, struct token);
 declare_allocator(string, struct string);
+declare_allocator(test, struct test);
+declare_allocator(test_case, struct test_case);
 
 void * alloc_bytes(unsigned int len);
 
