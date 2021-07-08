@@ -186,6 +186,11 @@ struct token * peek_one_token(struct tokenizer_context * context)
     return token;
 }
 
+bool is_token_directive(struct token * token, const char * name)
+{
+    return token->kind == TOKEN_KIND_DIRECTIVE && string_equals_with_cstring(token->content.string, name);
+}
+
 bool is_token_punctuator(struct token * token, int ch)
 {
     if (token->kind != TOKEN_KIND_PUNCTUATOR)

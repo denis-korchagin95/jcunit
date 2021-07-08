@@ -18,6 +18,8 @@
 #define MAX_CHAR_BUFFER_SIZE (4)
 #define MAX_NAME_LEN (256)
 #define MAX_STRING_LEN (1024)
+#define MAX_REQUIREMENT_CONTENT_SIZE (8192)
+#define MAX_REQUIREMENT_COUNT (12)
 
 #define is_upper_char(ch) ((ch) >= 'A' && (ch) <= 'Z')
 #define is_lower_char(ch) ((ch) >= 'a' && (ch) <= 'z')
