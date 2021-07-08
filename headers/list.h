@@ -29,4 +29,6 @@ struct list
     }                                       \
     while(0)
 
+struct list * make_list(void);
+
 #endif /* JCUNIT_LIST_H */

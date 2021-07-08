@@ -17,13 +17,13 @@ vpath %.c $(HEADERS)
 
 all: build run
 
-OBJECTS=main.o tokenizer.o allocate.o string.o print.o
+OBJECTS=main.o tokenizer.o allocate.o string.o print.o list.o ast.o
 OBJECTS_TEST_TOKENIZER=test-tokenizer.o print.o tokenizer.o allocate.o string.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	@$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
 
-test-tokenizer: $(addprefix $(OBJ), $(OBJECTS))
+test-tokenizer: $(addprefix $(OBJ), $(OBJECTS_TEST_TOKENIZER))
 	@$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM_TEST_TOKENIZER)
 	$(BIN)$(PROGRAM_TEST_TOKENIZER) $(SAMPLE_TEST_TOKENIZER)
 

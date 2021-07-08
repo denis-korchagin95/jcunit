@@ -11,7 +11,8 @@
 #define TOKEN_KIND_NEWLINE       (4)
 #define TOKEN_KIND_CHARACTER     (5)
 
-#define TOKENIZER_MODE_DIRECTIVE_ONLY   (1)
+#define TOKENIZER_MODE_NONE                 (0)
+#define TOKENIZER_MODE_DIRECTIVE_AND_TEXT   (1)
 
 #define MAX_TOKEN_BUFFER_SIZE (4)
 #define MAX_CHAR_BUFFER_SIZE (4)
@@ -57,9 +58,11 @@ struct tokenizer_context * make_tokenizer_context(FILE * source);
 
 int get_one_char(struct tokenizer_context * context);
 void unget_one_char(struct tokenizer_context * context, int ch);
+int peek_one_char(struct tokenizer_context * context);
 
 struct token * get_one_token(struct tokenizer_context * context);
 void unget_one_token(struct tokenizer_context * context, struct token * token);
+struct token * peek_one_token(struct tokenizer_context * context);
 
 bool is_token_directive(struct token * token, const char * directive_name);
 bool is_token_punctuator(struct token * token, int ch);

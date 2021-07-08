@@ -16,3 +16,10 @@ struct string * make_string(const char * source, unsigned int len)
 
     return string;
 }
+
+
+bool string_equals_with_cstring(struct string * source, const char * dest)
+{
+    unsigned int len = strlen(dest);
+    return source->len == len && strncmp(source->value, dest, len) == 0;
+}

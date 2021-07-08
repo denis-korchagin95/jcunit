@@ -22,8 +22,9 @@
 declare_allocator(tokenizer_context, struct tokenizer_context);
 declare_allocator(token, struct token);
 declare_allocator(string, struct string);
-declare_allocator(test, struct test);
-declare_allocator(test_case, struct test_case);
+declare_allocator(ast_test_case, struct ast_test_case);
+declare_allocator(ast_requirement, struct ast_requirement);
+declare_allocator(list, struct list);
 
 void * alloc_bytes(unsigned int len);
 

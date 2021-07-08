@@ -12,7 +12,7 @@
 struct token newline_token = {0}, eof_token = {0}, character_token = {0};
 
 
-struct token * get_one_punctuator(struct tokenizer_context * context, int ch)
+struct token * make_punctuator_token(int ch)
 {
     struct token * token = alloc_token();
     token->kind = TOKEN_KIND_PUNCTUATOR;
@@ -35,7 +35,7 @@ struct token * get_one_string(struct tokenizer_context * context, int ch)
             fprintf(stderr, "Newline inside the string!\n");
             exit(1);
         }
-        *w++ = ch;
+        *w++ = (char)ch;
         ++len;
         ch = get_one_char(context);
     }
@@ -92,7 +92,14 @@ void unget_one_char(struct tokenizer_context * context, int ch)
         return;
     }
     if (ch != EOF)
-        context->char_buffer[context->char_buffer_pos++] = ch;
+        context->char_buffer[context->char_buffer_pos++] = (char)ch;
+}
+
+int peek_one_char(struct tokenizer_context * context)
+{
+    int ch = get_one_char(context);
+    unget_one_char(context, ch);
+    return ch;
 }
 
 struct token * get_one_directive(struct tokenizer_context * context, int ch)
@@ -104,7 +111,7 @@ struct token * get_one_directive(struct tokenizer_context * context, int ch)
     ch = get_one_char(context);
 
     while (is_name_char(ch)) {
-        *w++ = ch;
+        *w++ = (char)ch;
         ch = get_one_char(context);
     }
     unget_one_char(context, ch);
@@ -136,7 +143,7 @@ struct token * get_one_token(struct tokenizer_context * context)
         goto character;
     }
 
-    if (context->mode == TOKENIZER_MODE_DIRECTIVE_ONLY) {
+    if (context->mode == TOKENIZER_MODE_DIRECTIVE_AND_TEXT) {
         goto character;
     }
 
@@ -145,18 +152,18 @@ struct token * get_one_token(struct tokenizer_context * context)
     }
 
     if (ch == '(') {
-        return get_one_punctuator(context, ch);
+        return make_punctuator_token(ch);
     }
 
     if (ch == ')') {
-        return get_one_punctuator(context, ch);
+        return make_punctuator_token(ch);
     }
 
     if (ch == '"') {
         return get_one_string(context, ch);
     }
 
-    character:
+character:
     character_token.content.ch = ch;
     return &character_token;
 }
@@ -172,13 +179,11 @@ void unget_one_token(struct tokenizer_context * context, struct token * token)
         context->token_buffer[context->token_buffer_pos++] = token;
 }
 
-bool is_token_directive(struct token * token, const char * name)
+struct token * peek_one_token(struct tokenizer_context * context)
 {
-    struct string * string = token->content.string;
-    unsigned int len = strlen(name);
-    return  token->kind == TOKEN_KIND_DIRECTIVE &&
-            len == string->len &&
-            strncmp(string->value, name, len) == 0;
+    struct token * token = get_one_token(context);
+    unget_one_token(context, token);
+    return token;
 }
 
 bool is_token_punctuator(struct token * token, int ch)

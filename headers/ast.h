@@ -4,31 +4,23 @@
 #include "list.h"
 #include "string.h"
 
-#define REQUIREMENT_TYPE_ABSTRACT (1)
-
-struct test
-{
-    struct list cases;
-};
-
-struct test_case
+struct ast_test_case
 {
     struct list list_entry;
     struct list requirements;
     struct string * name;
 };
 
-struct abstract_requirement
+struct ast_requirement
 {
+    struct list list_entry;
     struct string * name;
+    struct string * argument;
     struct string * content;
 };
 
-struct requirement
-{
-    struct list list_entry;
-    unsigned int type;
-    void * instance;
-};
+
+struct ast_test_case * make_ast_test_case(void);
+struct ast_requirement * make_ast_requirement(void);
 
 #endif /* JCUNIT_AST_H */

@@ -3,7 +3,7 @@ test:
  test test-case
 
 test-case:
-  directive requirement-list direct-directive
+  start-directive requirement-list end-directive
 
 requirement-list:
   requirement
@@ -14,14 +14,14 @@ requirement:
 
 requirement-content: text
 
+start-directive: directive
+end-directive: directive
+
 directive:
-    direct_directive directive-param-opt
+    direct-directive
+    direct-directive lparen directive-argument-opt rparen newline
 
-direct-directive: '@' name
-
-directive-param: '(' string ')'
-
- '@' name '(' string ')'
+directive-argument: string
 
 name: [a-zA-Z_][a-zA-Z0-9_]*
 
