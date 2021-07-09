@@ -6,6 +6,9 @@
 <TOKEN_IDENTIFIER 'a'>
 <TOKEN_EOF>
 @endtest
+
+
+
 @test("Test")
 @given("file")
 @whenRun("./bin/test-tokenizer")

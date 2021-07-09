@@ -59,6 +59,15 @@ struct list * parse_test(struct tokenizer_context * context)
     struct token * token = peek_one_token(context);
 
     while (!is_token_eof(token)) {
+        if (is_token_newline(token)) { /* skip some newline between a test cases */
+            for(;;) {
+                token = get_one_token(context);
+                if (!is_token_newline(token)) {
+                    unget_one_token(context, token);
+                    break;
+                }
+            }
+        }
         ast_test_case = parse_test_case(context);
 
         list_append(cases, &ast_test_case->list_entry);
