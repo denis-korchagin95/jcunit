@@ -1,6 +1,16 @@
-@test("Test Name")
+@test("Test")
 @given("file")
 @whenRun("./bin/test-tokenizer")
 @expect("stdout")
-int a;
+<TOKEN_IDENTIFIER 'int'>
+<TOKEN_IDENTIFIER 'a'>
+<TOKEN_EOF>
+@endtest
+@test("Test")
+@given("file")
+@whenRun("./bin/test-tokenizer")
+@expect("stdout")
+<TOKEN_IDENTIFIER 'int'>
+<TOKEN_IDENTIFIER 'a'>
+<TOKEN_EOF>
 @endtest

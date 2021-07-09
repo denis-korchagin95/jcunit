@@ -41,6 +41,7 @@ int main(int argc, char * argv[])
     while (iterator != cases) {
         struct ast_test_case * test_case = list_get_owner(iterator, struct ast_test_case, list_entry);
         print_ast_test_case(test_case, stdout);
+        puts("");
         iterator = iterator->next;
     }
 
@@ -60,7 +61,7 @@ struct list * parse_test(struct tokenizer_context * context)
     while (!is_token_eof(token)) {
         ast_test_case = parse_test_case(context);
 
-        list_add(cases, &ast_test_case->list_entry);
+        list_append(cases, &ast_test_case->list_entry);
 
         token = peek_one_token(context);
     }
@@ -109,7 +110,7 @@ void parse_requirement_list(struct tokenizer_context * context, struct ast_test_
 
         requirement = make_ast_requirement();
         parse_requirement(context, requirement);
-        list_add(&(*ast_test_case)->requirements, &requirement->list_entry);
+        list_append(&(*ast_test_case)->requirements, &requirement->list_entry);
     }
 }
 

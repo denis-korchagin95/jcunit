@@ -19,16 +19,8 @@ struct list
     }                           \
     while(0)
 
-#define list_add(head, new)                 \
-    do                                      \
-    {                                       \
-        (head)->next->prev = new;           \
-        (new)->next = (head)->next;         \
-        (new)->prev = (head);               \
-        (head)->next = (new);               \
-    }                                       \
-    while(0)
-
 struct list * make_list(void);
+
+void list_append(struct list * head, struct list * new);
 
 #endif /* JCUNIT_LIST_H */
