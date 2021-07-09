@@ -96,7 +96,7 @@ struct ast_test_case * parse_test_case(struct tokenizer_context * context)
 void parse_requirement_list(struct tokenizer_context * context, struct ast_test_case ** ast_test_case)
 {
     struct token * token = get_one_token(context);
-    if (is_token_directive(token, "endtest")) {
+    if (is_token_directive_equals(token, "endtest")) {
         fprintf(stderr, "There is no any requirement provided for test case!\n");
         exit(1);
     }
@@ -108,7 +108,7 @@ void parse_requirement_list(struct tokenizer_context * context, struct ast_test_
 
     for(;;) {
         token = peek_one_token(context);
-        if (is_token_directive(token, "endtest")) {
+        if (is_token_directive_equals(token, "endtest")) {
             break;
         }
         if (loop_control > MAX_REQUIREMENT_COUNT) {
@@ -128,7 +128,7 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
     static char buffer[MAX_REQUIREMENT_CONTENT_SIZE] = {0};
     parse_directive(context, &requirement->name, &requirement->argument);
     struct token * token = peek_one_token(context);
-    if (token->kind == TOKEN_KIND_DIRECTIVE) {
+    if (is_token_directive(token)) {
         return; /* no content for requirement */
     }
     unsigned int oldmode = context->mode;
@@ -142,7 +142,7 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
             fprintf(stderr, "Unterminated test case!\n");
             exit(1);
         }
-        if (token->kind == TOKEN_KIND_DIRECTIVE) {
+        if (is_token_directive(token)) {
             unget_one_token(context, token);
             break;
         }
@@ -150,7 +150,7 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
         *w++ = (char)last_ch;
         ++len;
     }
-    if (token->kind != TOKEN_KIND_DIRECTIVE) {
+    if (!is_token_directive(token)) {
         fprintf(stderr, "The requirement's content of the test case too long!\n");
         exit(1);
     }
@@ -210,7 +210,7 @@ void parse_directive(struct tokenizer_context * context, struct string ** direct
 {
     struct token * token = get_one_token(context);
 
-    if (token->kind != TOKEN_KIND_DIRECTIVE) {
+    if (!is_token_directive(token)) {
         fprintf(stderr, "Expected directive!\n");
         exit(1);
     }

@@ -29,6 +29,7 @@
 #define is_name_char(ch) (is_char(ch) || (ch) == '_' || is_digit_char(ch))
 
 #define is_token_string(token) ((token)->kind == TOKEN_KIND_STRING)
+#define is_token_directive(token) ((token)->kind == TOKEN_KIND_DIRECTIVE)
 #define is_token_eof(token) ((token) == &eof_token)
 #define is_token_newline(token) ((token) == &newline_token)
 
@@ -66,7 +67,7 @@ struct token * get_one_token(struct tokenizer_context * context);
 void unget_one_token(struct tokenizer_context * context, struct token * token);
 struct token * peek_one_token(struct tokenizer_context * context);
 
-bool is_token_directive(struct token * token, const char * directive_name);
+bool is_token_directive_equals(struct token * token, const char * directive_name);
 bool is_token_punctuator(struct token * token, int ch);
 
 #endif /* JCUNIT_TOKEN_H */
