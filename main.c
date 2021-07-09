@@ -117,11 +117,15 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
 {
     static char buffer[MAX_REQUIREMENT_CONTENT_SIZE] = {0};
     parse_directive(context, &requirement->name, &requirement->argument);
+    struct token * token = peek_one_token(context);
+    if (token->kind == TOKEN_KIND_DIRECTIVE) {
+        return; /* no content for requirement */
+    }
     unsigned int oldmode = context->mode;
     context->mode = TOKENIZER_MODE_DIRECTIVE_AND_TEXT;
-    struct token * token;
-    char * w = buffer;
     unsigned int len = 0;
+    char * w = buffer;
+    int last_ch = token->content.ch;
     while (len < MAX_REQUIREMENT_CONTENT_SIZE) {
         token = get_one_token(context);
         if (is_token_eof(token)) {
@@ -129,16 +133,20 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
             exit(1);
         }
         if (token->kind == TOKEN_KIND_DIRECTIVE) {
+            unget_one_token(context, token);
             break;
         }
-        *w++ = (char)token->content.ch;
+        last_ch = token->content.ch;
+        *w++ = (char)last_ch;
         ++len;
     }
     if (token->kind != TOKEN_KIND_DIRECTIVE) {
-        fprintf(stderr, "The requirement of the test case too long!\n");
+        fprintf(stderr, "The requirement's content of the test case too long!\n");
         exit(1);
     }
-    unget_one_token(context, token);
+    if (last_ch == '\n') {
+        --len; /* we don't need to take a very last char of the requirement's content */
+    }
     context->mode = oldmode;
     requirement->content = make_string(buffer, len);
 }

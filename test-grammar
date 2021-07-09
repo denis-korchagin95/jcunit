@@ -10,7 +10,7 @@ requirement-list:
   requirement-list requirement
 
 requirement:
-  direct-directive requirement-content-opt
+  direct-directive requirement-content-opt newline
 
 requirement-content: text
 
