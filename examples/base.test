@@ -1,19 +1,10 @@
 @test("Test")
 @given("file")
+@test
+
 @whenRun("./bin/test-tokenizer")
 @expectOutput("stdout")
-<TOKEN_IDENTIFIER 'int'>
-<TOKEN_IDENTIFIER 'a'>
-<TOKEN_EOF>
-@endtest
-
-
-
-@test("Test")
-@given("file")
-@whenRun("./bin/test-tokenizer")
-@expectOutput("stdout")
-<TOKEN_IDENTIFIER 'int'>
-<TOKEN_IDENTIFIER 'a'>
+<TOKEN_DIRECTIVE 'test'>
+<TOKEN_NEWLINE '\n'>
 <TOKEN_EOF>
 @endtest

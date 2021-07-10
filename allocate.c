@@ -22,6 +22,7 @@ allocator(list, struct list, 512)
 allocator(test_case, struct test_case, 256)
 allocator(requirement, struct requirement, 512)
 allocator(test, struct test, 32)
+allocator(test_runner_context, struct test_runner_context, 4)
 
 void * alloc_bytes(unsigned int len)
 {

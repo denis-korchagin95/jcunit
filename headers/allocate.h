@@ -5,6 +5,7 @@
 #include "string.h"
 #include "ast.h"
 #include "assembler.h"
+#include "runner.h"
 
 #define MAX_BYTES_POOL_SIZE (8192)
 
@@ -29,6 +30,7 @@ declare_allocator(list, struct list);
 declare_allocator(test_case, struct test_case);
 declare_allocator(requirement, struct requirement);
 declare_allocator(test, struct test);
+declare_allocator(test_runner_context, struct test_runner_context);
 
 void * alloc_bytes(unsigned int len);
 

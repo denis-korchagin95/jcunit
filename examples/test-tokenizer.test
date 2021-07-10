@@ -1,8 +1,1 @@
-@test("Test")
-@given("file")
-@whenRun("./bin/test-tokenizer")
-@expect("stdout")
-<TOKEN_IDENTIFIER 'int'>
-<TOKEN_IDENTIFIER 'a'>
-<TOKEN_EOF>
-@endtest
+@test
