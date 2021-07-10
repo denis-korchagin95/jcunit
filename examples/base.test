@@ -1,6 +1,6 @@
 @test("Test")
 @given("file")
-@test
+@@test
 
 @whenRun("./bin/test-tokenizer")
 @expectOutput("stdout")

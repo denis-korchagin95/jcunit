@@ -138,6 +138,8 @@ struct token * get_one_token(struct tokenizer_context * context)
         if (is_start_name_char(next)) {
             unget_one_char(context, next);
             return get_one_directive(context, ch);
+        } else if (next == '@') {
+            goto character;
         }
         unget_one_char(context, next);
         goto character;
