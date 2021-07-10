@@ -8,6 +8,7 @@
 #include "headers/parse.h"
 #include "headers/assembler.h"
 #include "headers/runner.h"
+#include "headers/show_result.h"
 
 
 int main(int argc, char * argv[])
@@ -31,6 +32,8 @@ int main(int argc, char * argv[])
     struct test_runner_context * runner_context = make_test_runner_context();
 
     test_run(runner_context, test);
+
+    show_test_result(runner_context, stdout);
 
     fclose(source);
 

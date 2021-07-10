@@ -110,6 +110,12 @@ void test_case_run(struct test_runner_context * context, struct test_case * test
     test_case_result->test_case = test_case;
     test_case_result->status = pass ? TEST_CASE_RESULT_STATUS_PASS : TEST_CASE_RESULT_STATUS_FAIL;
 
+    if (pass) {
+        ++context->passed_count;
+    } else {
+        ++context->failed_count;
+    }
+
     list_append(&context->results, &test_case_result->list_entry);
 }
 
@@ -117,6 +123,8 @@ struct test_runner_context * make_test_runner_context(void)
 {
     struct test_runner_context * context = alloc_test_runner_context();
     list_init(&context->results);
+    context->passed_count = 0;
+    context->failed_count = 0;
     return context;
 }
 

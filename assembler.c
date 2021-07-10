@@ -52,6 +52,8 @@ struct test_case * assemble_ast_test_case(struct ast_test_case * ast_test_case)
     struct list * head = &ast_test_case->requirements;
     struct list * iterator = head->next;
 
+    test_case->name = ast_test_case->name;
+
     while (iterator != head) {
         struct ast_requirement * ast_requirement = list_get_owner(iterator, struct ast_requirement, list_entry);
         struct requirement * requirement = assemble_ast_requirement(ast_requirement);

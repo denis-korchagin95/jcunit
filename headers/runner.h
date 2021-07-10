@@ -10,6 +10,8 @@
 struct test_runner_context
 {
     struct list results;
+    unsigned int passed_count;
+    unsigned int failed_count;
 };
 
 struct test_case_result
