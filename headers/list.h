@@ -19,6 +19,15 @@ struct list
     }                           \
     while(0)
 
+#define list_foreach(iterator_name, head, body)                                     \
+    do                                                                              \
+    {                                                                               \
+        struct list * ___begin = (head);                                            \
+        struct list * iterator_name = ___begin->next;                               \
+        for (; iterator_name != ___begin; iterator_name = iterator_name->next) body \
+    }                                                                               \
+    while(0)
+
 #define list_is_empty(head) ((head)->next == (head))
 
 struct list * make_list(void);
