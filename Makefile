@@ -5,6 +5,7 @@ OBJ=./obj/
 DEPENDENCIES_FILE=dependencies.mk
 CFLAGS=-g -Wall -std=c89
 LFLAGS=
+INSTALL_PATH=/usr/local/bin/
 
 PROGRAM=jcunit
 PROGRAM_TEST_TOKENIZER=test-tokenizer
@@ -35,6 +36,12 @@ dependencies:
 
 run:
 	$(BIN)$(PROGRAM) $(SAMPLE_FILE)
+
+install:
+	cp $(BIN)$(PROGRAM) $(INSTALL_PATH)$(PROGRAM)
+
+uninstall:
+	rm -rfv $(INSTALL_PATH)$(PROGRAM)
 
 clean:
 	@rm -rfv $(BIN)$(PROGRAM)
