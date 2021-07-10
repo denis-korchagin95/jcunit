@@ -1,7 +1,7 @@
 @test("Test")
 @given("file")
 @whenRun("./bin/test-tokenizer")
-@expect("stdout")
+@expectOutput("stdout")
 <TOKEN_IDENTIFIER 'int'>
 <TOKEN_IDENTIFIER 'a'>
 <TOKEN_EOF>
@@ -12,7 +12,7 @@
 @test("Test")
 @given("file")
 @whenRun("./bin/test-tokenizer")
-@expect("stdout")
+@expectOutput("stdout")
 <TOKEN_IDENTIFIER 'int'>
 <TOKEN_IDENTIFIER 'a'>
 <TOKEN_EOF>

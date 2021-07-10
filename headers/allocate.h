@@ -4,6 +4,7 @@
 #include "token.h"
 #include "string.h"
 #include "ast.h"
+#include "assembler.h"
 
 #define MAX_BYTES_POOL_SIZE (8192)
 
@@ -25,6 +26,9 @@ declare_allocator(string, struct string);
 declare_allocator(ast_test_case, struct ast_test_case);
 declare_allocator(ast_requirement, struct ast_requirement);
 declare_allocator(list, struct list);
+declare_allocator(test_case, struct test_case);
+declare_allocator(requirement, struct requirement);
+declare_allocator(test, struct test);
 
 void * alloc_bytes(unsigned int len);
 

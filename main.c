@@ -3,12 +3,10 @@
 #include <errno.h>
 
 
-#include "headers/ast.h"
 #include "headers/token.h"
 #include "headers/list.h"
-#include "headers/print.h"
-
-struct list * parse_test(struct tokenizer_context * context);
+#include "headers/parse.h"
+#include "headers/assembler.h"
 
 int main(int argc, char * argv[])
 {
@@ -25,16 +23,8 @@ int main(int argc, char * argv[])
     init_tokenizer();
 
     struct tokenizer_context * context = make_tokenizer_context(source);
-
-    struct list * cases = parse_test(context);
-
-    struct list * iterator = cases->next;
-    while (iterator != cases) {
-        struct ast_test_case * test_case = list_get_owner(iterator, struct ast_test_case, list_entry);
-        print_ast_test_case(test_case, stdout);
-        puts("");
-        iterator = iterator->next;
-    }
+    struct list * ast_cases = parse_test(context);
+    struct test * test = assemble_test(ast_cases);
 
     fclose(source);
 

@@ -19,7 +19,9 @@ allocator(tokenizer_context, struct tokenizer_context, 4)
 allocator(ast_test_case, struct ast_test_case, 256)
 allocator(ast_requirement, struct ast_requirement, 512)
 allocator(list, struct list, 512)
-
+allocator(test_case, struct test_case, 256)
+allocator(requirement, struct requirement, 512)
+allocator(test, struct test, 32)
 
 void * alloc_bytes(unsigned int len)
 {
