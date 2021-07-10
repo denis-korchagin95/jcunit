@@ -7,8 +7,9 @@
 
 struct string * make_string(const char * source, unsigned int len)
 {
-    char * storage = alloc_bytes(len);
+    char * storage = alloc_bytes(len + 1);
     memcpy((void *)storage, source, len * sizeof(char));
+    storage[len] = '\0';
 
     struct string * string = alloc_string();
     string->len = len;
