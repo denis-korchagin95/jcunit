@@ -1,4 +1,4 @@
-@test("Test")
+@test("Test Case #1")
 @given("file")
 @@test
 
@@ -6,6 +6,17 @@
 @expectOutput("stdout")
 <TOKEN_DIRECTIVE 'test'>
 <TOKEN_NEWLINE '\n'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("Test Case #2")
+@given("file")
+@@test
+
+@whenRun("./bin/test-tokenizer")
+@expectOutput("stdout")
+<TOKEN_DIRECTIVE 'test'>
 <TOKEN_EOF>
 
 @endtest

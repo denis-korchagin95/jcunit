@@ -27,6 +27,9 @@ int main(int argc, char * argv[])
 
     struct tokenizer_context * context = make_tokenizer_context(source);
     struct list * ast_cases = parse_test(context);
+
+    fclose(source);
+
     struct test * test = assemble_test(ast_cases);
 
     struct test_runner_context * runner_context = make_test_runner_context();
@@ -34,8 +37,6 @@ int main(int argc, char * argv[])
     test_run(runner_context, test);
 
     show_test_result(runner_context, stdout);
-
-    fclose(source);
 
     return 0;
 }

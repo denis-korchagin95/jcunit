@@ -28,20 +28,13 @@ struct test * assemble_test(struct list * ast_test_cases)
     }
     struct test * test = make_test();
     struct test_case * test_case;
-
-    struct list * iterator = ast_test_cases->next;
-
-    while (iterator != ast_test_cases) {
-        test_case = assemble_ast_test_case(
-                list_get_owner(ast_test_cases->next, struct ast_test_case, list_entry)
-        );
-
+    struct ast_test_case * ast_test_case;
+    list_foreach(iterator, ast_test_cases, {
+        ast_test_case = list_get_owner(iterator, struct ast_test_case, list_entry);
+        test_case = assemble_ast_test_case(ast_test_case);
         list_append(&test->cases, &test_case->list_entry);
         ++test->case_count;
-
-        iterator = iterator->next;
-    }
-
+    });
     return test;
 }
 
