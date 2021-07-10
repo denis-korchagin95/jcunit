@@ -3,9 +3,9 @@
 
 #include "assembler.h"
 
-#define TEST_RESULT_STATUS_NONE (0)
-#define TEST_RESULT_STATUS_PASS (1)
-#define TEST_RESULT_STATUS_FAIL (2)
+#define TEST_CASE_RESULT_STATUS_NONE (0)
+#define TEST_CASE_RESULT_STATUS_PASS (1)
+#define TEST_CASE_RESULT_STATUS_FAIL (2)
 
 struct test_runner_context
 {
@@ -20,5 +20,7 @@ struct test_case_result
 };
 
 void test_run(struct test_runner_context * context, struct test * test);
+
+struct test_runner_context * make_test_runner_context(void);
 
 #endif /* JCUNIT_RUNNER_H */

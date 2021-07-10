@@ -145,14 +145,14 @@ struct requirement * assemble_when_run_requirement(struct ast_requirement * ast_
 
 struct requirement * assemble_expect_output_requirement(struct ast_requirement * ast_requirement)
 {
-    int resource_code = REQUIREMENT_EXPECT_OUTPUT_RESOURCE_NONE;
+    int resource_code = -1;
     if (string_equals_with_cstring(ast_requirement->argument, "stdout")) {
         resource_code = REQUIREMENT_EXPECT_OUTPUT_RESOURCE_STDOUT;
     }
     if (string_equals_with_cstring(ast_requirement->argument, "stderr")) {
         resource_code = REQUIREMENT_EXPECT_OUTPUT_RESOURCE_STDERR;
     }
-    if (resource_code == REQUIREMENT_EXPECT_OUTPUT_RESOURCE_NONE) {
+    if (resource_code == -1) {
         fprintf(
                 stderr,
                 "The unknown resource \"%.*s\" for 'expectOutput' requirement!\n",

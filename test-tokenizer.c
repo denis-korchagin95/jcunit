@@ -15,7 +15,7 @@ int main(int argc, char * argv[])
     }
     FILE * source = fopen(argv[1], "r");
     if (source == NULL) {
-        fprintf(stderr, "Can't read file: %s\n", strerror(errno));
+        fprintf(stderr, "Can't read file \"%s\": %s\n", argv[1], strerror(errno));
         return 1;
     }
 

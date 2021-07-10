@@ -7,6 +7,8 @@
 #include "headers/list.h"
 #include "headers/parse.h"
 #include "headers/assembler.h"
+#include "headers/runner.h"
+
 
 int main(int argc, char * argv[])
 {
@@ -25,6 +27,10 @@ int main(int argc, char * argv[])
     struct tokenizer_context * context = make_tokenizer_context(source);
     struct list * ast_cases = parse_test(context);
     struct test * test = assemble_test(ast_cases);
+
+    struct test_runner_context * runner_context = make_test_runner_context();
+
+    test_run(runner_context, test);
 
     fclose(source);
 
