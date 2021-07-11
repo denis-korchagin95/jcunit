@@ -10,7 +10,7 @@
 #include "headers/string.h"
 
 
-struct token newline_token = {0}, eof_token = {0}, character_token = {0};
+struct token newline_token = {0}, eof_token = {0};
 
 
 struct token * make_punctuator_token(int ch)
@@ -82,9 +82,6 @@ void init_tokenizer(void)
     token = &eof_token;
     token->kind = TOKEN_KIND_EOF;
     token->content.ch = EOF;
-
-    token = &character_token;
-    token->kind = TOKEN_KIND_CHARACTER;
 
     token = &newline_token;
     token->kind = TOKEN_KIND_NEWLINE;
@@ -179,9 +176,13 @@ struct token * get_one_token(struct tokenizer_context * context)
         return get_one_string(context, ch);
     }
 
+    struct token * token;
+
 character:
-    character_token.content.ch = ch;
-    return &character_token;
+    token = alloc_token();
+    token->kind = TOKEN_KIND_CHARACTER;
+    token->content.ch = ch;
+    return token;
 }
 
 void unget_one_token(struct tokenizer_context * context, struct token * token)

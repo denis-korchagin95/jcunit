@@ -54,7 +54,7 @@ struct tokenizer_context
     unsigned int mode;
 };
 
-extern struct token newline_token, eof_token, character_token;
+extern struct token newline_token, eof_token;
 
 void init_tokenizer(void);
 
