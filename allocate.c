@@ -59,6 +59,15 @@ void show_allocator_stats(FILE * output, unsigned int allocator)
     struct allocator_stat * stat;
     for(i = 0, len = sizeof(stats) / sizeof(struct allocator_stat); i < len; ++i) {
         stat = stats + i;
-        fprintf(output, "Allocator: %s, total: %u, allocated: %u\n", stat->name, *stat->total, *stat->allocated);
+        fprintf(
+            output,
+            "Allocator: %s, total: %u, allocated: %u\n",
+            stat->name,
+            *stat->total,
+            *stat->allocated
+        );
     }
+    unsigned int max_bytes_pool_size = MAX_BYTES_POOL_SIZE;
+    fprintf(output, "Allocator: bytes, total: %u, allocated: %u\n", max_bytes_pool_size, bytes_pool_pos);
+    fflush(output);
 }
