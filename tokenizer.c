@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <errno.h>
 
 
 #include "headers/token.h"
@@ -49,9 +50,15 @@ struct token * get_one_string(struct tokenizer_context * context, int ch)
     return token;
 }
 
-struct tokenizer_context * make_tokenizer_context(FILE * source)
+struct tokenizer_context * make_tokenizer_context(const char * filename)
 {
     struct tokenizer_context * context = alloc_tokenizer_context();
+    FILE * source = fopen(filename, "r");
+    if (source == NULL) {
+        fprintf(stderr, "Can't read file \"%s\": %s\n", filename, strerror(errno));
+        exit(1);
+    }
+    context->filename = filename;
     context->source = source;
     context->token_buffer[0] = NULL;
     context->token_buffer_pos = 0;
@@ -59,6 +66,13 @@ struct tokenizer_context * make_tokenizer_context(FILE * source)
     context->char_buffer_pos = 0;
     context->mode = 0;
     return context;
+}
+
+void destroy_tokenizer_context(struct tokenizer_context * context)
+{
+    if (context->source != NULL) {
+        fclose(context->source);
+    }
 }
 
 void init_tokenizer(void)

@@ -13,15 +13,10 @@ int main(int argc, char * argv[])
         fprintf(stderr, "No specified args!\n");
         return 1;
     }
-    FILE * source = fopen(argv[1], "r");
-    if (source == NULL) {
-        fprintf(stderr, "Can't read file \"%s\": %s\n", argv[1], strerror(errno));
-        return 1;
-    }
 
     init_tokenizer();
 
-    struct tokenizer_context * context = make_tokenizer_context(source);
+    struct tokenizer_context * context = make_tokenizer_context(argv[1]);
 
     struct token * token;
     for(;;) {
@@ -33,7 +28,7 @@ int main(int argc, char * argv[])
         }
     }
 
-    fclose(source);
+    destroy_tokenizer_context(context);
 
     return 0;
 }

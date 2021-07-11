@@ -45,6 +45,7 @@ struct token
 
 struct tokenizer_context
 {
+    const char * filename;
     FILE * source;
     struct token * token_buffer[MAX_TOKEN_BUFFER_SIZE];
     unsigned int token_buffer_pos;
@@ -57,7 +58,8 @@ extern struct token newline_token, eof_token, character_token;
 
 void init_tokenizer(void);
 
-struct tokenizer_context * make_tokenizer_context(FILE * source);
+struct tokenizer_context * make_tokenizer_context(const char * filename);
+void destroy_tokenizer_context(struct tokenizer_context * context);
 
 int get_one_char(struct tokenizer_context * context);
 void unget_one_char(struct tokenizer_context * context, int ch);

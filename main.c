@@ -44,18 +44,12 @@ int main(int argc, char * argv[])
         exit(1);
     }
 
-    FILE * source = fopen(filename, "r");
-    if (source == NULL) {
-        fprintf(stderr, "Can't read file: %s\n", strerror(errno));
-        return 1;
-    }
-
     init_tokenizer();
 
-    struct tokenizer_context * context = make_tokenizer_context(source);
+    struct tokenizer_context * context = make_tokenizer_context(filename);
     struct list * ast_cases = parse_test(context);
 
-    fclose(source);
+    destroy_tokenizer_context(context);
 
     struct test * test = assemble_test(ast_cases);
 
