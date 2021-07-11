@@ -111,8 +111,11 @@ void test_case_run(struct test_runner_context * context, struct test_case * test
     struct test_case_result * test_case_result = make_test_case_result();
     test_case_result->test_case = test_case;
     test_case_result->status = pass ? TEST_CASE_RESULT_STATUS_PASS : TEST_CASE_RESULT_STATUS_FAIL;
-    test_case_result->expected = then_requirement->content;
-    test_case_result->actual = make_string(output.buffer, output.len);
+
+    if (!pass) {
+        test_case_result->expected = then_requirement->content;
+        test_case_result->actual = make_string(output.buffer, output.len);
+    }
 
     if (pass) {
         ++context->passed_count;
