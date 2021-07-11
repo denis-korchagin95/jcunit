@@ -17,11 +17,6 @@ bool option_show_allocator_stats = false;
 
 int main(int argc, char * argv[])
 {
-    if (argc <= 1) {
-        fprintf(stderr, "No specified args!\n");
-        return 1;
-    }
-
     int i;
     char * arg;
     char * filename = NULL;
