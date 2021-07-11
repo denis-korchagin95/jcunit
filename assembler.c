@@ -5,6 +5,7 @@
 
 #include "headers/assembler.h"
 #include "headers/allocate.h"
+#include "headers/util.h"
 
 static const char * test_case_flag_stringify(unsigned int flag);
 static struct test * make_test(void);
@@ -20,18 +21,27 @@ static struct requirement * assemble_when_run_requirement(struct ast_requirement
 static struct requirement * assemble_expect_output_requirement(struct ast_requirement * ast_requirement);
 
 
-struct test * assemble_test(struct list * ast_test_cases)
+struct test * assemble_test(const char * filename, struct list * ast_test_cases)
 {
     if (list_is_empty(ast_test_cases)) {
         fprintf(stderr, "There no any test case to assemble the test!\n");
         exit(1);
     }
-    struct test * test = make_test();
+    const char * test_name = basename(filename);
+    if (test_name == NULL) {
+        test_name = "<unnamed>";
+    }
+
     struct test_case * test_case;
     struct ast_test_case * ast_test_case;
+
+    struct test * test = make_test();
+    test->name = make_string(test_name, strlen(test_name));
+
     list_foreach(iterator, ast_test_cases, {
         ast_test_case = list_get_owner(iterator, struct ast_test_case, list_entry);
         test_case = assemble_ast_test_case(ast_test_case);
+        test_case->test = test;
         list_append(&test->cases, &test_case->list_entry);
         ++test->case_count;
     });
@@ -171,6 +181,7 @@ struct test_case * make_test_case(void)
     test_case->name = NULL;
     list_init(&test_case->requirements);
     test_case->flags = 0;
+    test_case->test = NULL;
     return test_case;
 }
 
@@ -190,6 +201,7 @@ struct test * make_test(void)
     struct test * test = alloc_test();
     list_init(&test->cases);
     test->case_count = 0;
+    test->name = NULL;
     return test;
 }
 

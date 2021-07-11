@@ -13,8 +13,10 @@ static void test_case_run(struct test_runner_context * context, struct test_case
 static void fill_file_from_string(FILE * file, struct string * content);
 static struct test_case_result * make_test_case_result(void);
 
-void test_run(struct test_runner_context * context, struct test * test)
+void test_run(struct test_runner_context * context)
 {
+    struct test * test = context->test;
+
     if (list_is_empty(&test->cases)) {
         fprintf(stderr, "There is no any test cases to run the test!\n");
         exit(1);
@@ -119,12 +121,13 @@ void test_case_run(struct test_runner_context * context, struct test_case * test
     list_append(&context->results, &test_case_result->list_entry);
 }
 
-struct test_runner_context * make_test_runner_context(void)
+struct test_runner_context * make_test_runner_context(struct test * test)
 {
     struct test_runner_context * context = alloc_test_runner_context();
     list_init(&context->results);
     context->passed_count = 0;
     context->failed_count = 0;
+    context->test = test;
     return context;
 }
 

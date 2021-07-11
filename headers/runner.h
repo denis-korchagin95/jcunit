@@ -12,17 +12,18 @@ struct test_runner_context
     struct list results;
     unsigned int passed_count;
     unsigned int failed_count;
+    struct test * test;
 };
 
 struct test_case_result
 {
     struct list list_entry;
-    unsigned int status;
     struct test_case * test_case;
+    unsigned int status;
 };
 
-void test_run(struct test_runner_context * context, struct test * test);
+void test_run(struct test_runner_context * context);
 
-struct test_runner_context * make_test_runner_context(void);
+struct test_runner_context * make_test_runner_context(struct test * test);
 
 #endif /* JCUNIT_RUNNER_H */

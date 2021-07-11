@@ -23,12 +23,14 @@
 
 struct test {
     struct list cases;
+    struct string * name;
     unsigned int case_count;
 };
 
 struct test_case {
     struct list list_entry;
     struct string * name;
+    struct test * test;
     struct list requirements;
     unsigned int flags;
 };
@@ -44,6 +46,6 @@ struct requirement {
     } extra;
 };
 
-struct test * assemble_test(struct list * ast_test_cases);
+struct test * assemble_test(const char * filename, struct list * ast_test_cases);
 
 #endif /* JCUNIT_ASSEMBLER_H */

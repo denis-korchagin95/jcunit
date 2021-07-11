@@ -12,6 +12,7 @@ void show_test_result(struct test_runner_context * context, FILE * output)
 {
     struct test_case_result * test_case_result;
     const char * prefix;
+    fprintf(output, "Test: %s\n", context->test->name->value);
     list_foreach(iterator, &context->results, {
         test_case_result = list_get_owner(iterator, struct test_case_result, list_entry);
         prefix = test_case_result->status == TEST_CASE_RESULT_STATUS_PASS ? pass_prefix : fail_prefix;
