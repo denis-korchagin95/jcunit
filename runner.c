@@ -120,15 +120,10 @@ void test_case_run(struct test_runner_context * context, struct test_case * test
     }
     /* TODO: refactor it */
 
-    /* TODO: calculate the diff */
-    bool pass = true;
-
-    if (then_requirement->content->len != output.len) {
-        pass = false;
-    } else if (strncmp((const char *)then_requirement->content->value, (const char *)output.buffer, output.len) != 0) {
-        pass = false;
-    }
-    /* TODO: calculate the diff */
+    /* TODO: calculate the diff? */
+    bool pass = then_requirement->content->len == output.len &&
+                strncmp((const char *)then_requirement->content->value, (const char *)output.buffer, output.len) == 0;
+    /* TODO: calculate the diff? */
 
     struct test_case_result * test_case_result = make_test_case_result();
     test_case_result->status = pass ? TEST_CASE_RESULT_STATUS_PASS : TEST_CASE_RESULT_STATUS_FAIL;
