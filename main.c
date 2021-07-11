@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 
 
 #include "headers/token.h"
@@ -11,7 +12,9 @@
 #include "headers/show_result.h"
 #include "headers/allocate.h"
 
+
 bool option_show_allocator_stats = false;
+
 
 int main(int argc, char * argv[])
 {
@@ -19,20 +22,32 @@ int main(int argc, char * argv[])
         fprintf(stderr, "No specified args!\n");
         return 1;
     }
-    FILE * source = fopen(argv[1], "r");
-    if (source == NULL) {
-        fprintf(stderr, "Can't read file: %s\n", strerror(errno));
-        return 1;
-    }
 
     int i;
     char * arg;
-    for(i = 2; i < argc; ++i) {
+    char * filename = NULL;
+    for(i = 1; i < argc; ++i) {
         arg = argv[i];
         if (strncmp("--show-allocator-stats", arg, sizeof("--show-allocator-stats")) == 0) {
             option_show_allocator_stats = true;
             continue;
         }
+        if (strncmp("--", arg, 2) == 0) {
+            fprintf(stderr, "The unknown option: %s\n", arg);
+            exit(1);
+        }
+        filename = arg;
+    }
+
+    if (filename == NULL) {
+        fprintf(stderr, "The filename is missing!\n");
+        exit(1);
+    }
+
+    FILE * source = fopen(filename, "r");
+    if (source == NULL) {
+        fprintf(stderr, "Can't read file: %s\n", strerror(errno));
+        return 1;
     }
 
     init_tokenizer();
