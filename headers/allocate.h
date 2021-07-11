@@ -9,14 +9,17 @@
 
 #define MAX_BYTES_POOL_SIZE (8192)
 
-#define allocator(name, type, count)                \
-    static type name##_pool[(count)];               \
-    static unsigned int name##_pool_pos = 0;        \
-                                                    \
-    type * alloc_##name(void)                \
-    {                                               \
-        assert(name##_pool_pos < (count));          \
-        return &name##_pool[name##_pool_pos++];     \
+#define SHOW_STAT_ALL_ALLOCATORS (0)
+
+#define allocator(name, type, count)                        \
+    static unsigned int max_##name##_pool_size = (count);   \
+    static type name##_pool[(count)];                       \
+    static unsigned int name##_pool_pos = 0;                \
+                                                            \
+    type * alloc_##name(void)                               \
+    {                                                       \
+        assert(name##_pool_pos < (count));                  \
+        return &name##_pool[name##_pool_pos++];             \
     }
 
 #define declare_allocator(name, type) type * alloc_##name(void)
@@ -34,5 +37,7 @@ declare_allocator(test_runner_context, struct test_runner_context);
 declare_allocator(test_case_result, struct test_case_result);
 
 void * alloc_bytes(unsigned int len);
+
+void show_allocator_stats(FILE * output, unsigned int allocator);
 
 #endif /* JCUNIT_ALLOCATE_H */
