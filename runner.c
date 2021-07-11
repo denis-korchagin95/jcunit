@@ -111,6 +111,8 @@ void test_case_run(struct test_runner_context * context, struct test_case * test
     struct test_case_result * test_case_result = make_test_case_result();
     test_case_result->test_case = test_case;
     test_case_result->status = pass ? TEST_CASE_RESULT_STATUS_PASS : TEST_CASE_RESULT_STATUS_FAIL;
+    test_case_result->expected = then_requirement->content;
+    test_case_result->actual = make_string(output.buffer, output.len);
 
     if (pass) {
         ++context->passed_count;
@@ -142,5 +144,7 @@ struct test_case_result * make_test_case_result(void)
     memset((void *)&test_case_result->list_entry, 0, sizeof(struct list));
     test_case_result->status = TEST_CASE_RESULT_STATUS_NONE;
     test_case_result->test_case = NULL;
+    test_case_result->expected = NULL;
+    test_case_result->actual = NULL;
     return test_case_result;
 }

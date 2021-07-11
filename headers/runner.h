@@ -19,6 +19,8 @@ struct test_case_result
 {
     struct list list_entry;
     struct test_case * test_case;
+    struct string * expected;
+    struct string * actual;
     unsigned int status;
 };
 

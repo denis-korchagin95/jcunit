@@ -18,6 +18,11 @@ void show_test_result(struct test_runner_context * context, FILE * output)
         prefix = test_case_result->status == TEST_CASE_RESULT_STATUS_PASS ? pass_prefix : fail_prefix;
 
         fprintf(output, "\t%s %s\n", prefix, test_case_result->test_case->name->value);
+
+        if (test_case_result->status == TEST_CASE_RESULT_STATUS_FAIL) {
+            fprintf(output, "--- Expected\n%s$\n", test_case_result->expected->value);
+            fprintf(output, "+++ Actual\n%s$\n", test_case_result->actual->value);
+        }
     });
     fprintf(output, "\nPassed: %u, Failed: %u\n", context->passed_count, context->failed_count);
     fflush(output);
