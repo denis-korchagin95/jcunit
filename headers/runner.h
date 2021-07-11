@@ -18,10 +18,12 @@ struct test_runner_context
 struct test_case_result
 {
     struct list list_entry;
-    struct test_case * test_case;
+    struct string * test_case_name;
+    struct string * executable;
     struct string * expected;
     struct string * actual;
     unsigned int status;
+    unsigned int error_code;
 };
 
 void test_run(struct test_runner_context * context);

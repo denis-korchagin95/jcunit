@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 #include "headers/child_process.h"
 
@@ -13,7 +15,7 @@
 #define PIPE_INPUT_FD   (0)
 #define PIPE_OUTPUT_FD  (1)
 
-static int pipes[PIPE_COUNT][2];
+static int pipes[PIPE_COUNT][2] = {0};
 
 void child_process_run(const char * path, char * argv[], struct process_output * output, unsigned int mode)
 {
@@ -23,7 +25,7 @@ void child_process_run(const char * path, char * argv[], struct process_output *
     pid_t pid = fork();
 
     if(pid < 0) {
-        fprintf(stderr, "fork error!\n");
+        fprintf(stderr, "Cannot fork the child process: \"%s\"!\n", strerror(errno));
         exit(1);
     }
 
@@ -39,7 +41,7 @@ void child_process_run(const char * path, char * argv[], struct process_output *
     }
 
     if (pipe_index == -1) {
-        fprintf(stderr, "unknown mode %u\n", mode);
+        fprintf(stderr, "The unknown mode: %u\n", mode);
         exit(1);
     }
 
@@ -52,12 +54,7 @@ void child_process_run(const char * path, char * argv[], struct process_output *
         close(pipes[PIPE_STDERR][PIPE_OUTPUT_FD]);
         close(pipes[PIPE_STDERR][PIPE_INPUT_FD]);
 
-        int status = execv(path, argv);
-
-        if (status != 0) {
-            fprintf(stderr, "exec error: %d\n", status);
-            exit(1);
-        }
+        execv(path, argv);
 
         exit(0);
     }
@@ -69,14 +66,14 @@ void child_process_run(const char * path, char * argv[], struct process_output *
 
     ssize_t nbytes = read(pipes[pipe_index][PIPE_INPUT_FD], output->buffer, output->size);
 
+    close(pipes[PIPE_STDOUT][PIPE_INPUT_FD]);
+    close(pipes[PIPE_STDERR][PIPE_INPUT_FD]);
+
     if (nbytes < 0) {
-        fprintf(stderr, "IO error\n");
-        exit(1);
+        output->error_code = ERROR_CODE_READ_CHILD_DATA;
+        return;
     }
 
     output->len = (unsigned int)nbytes;
-
-    close(pipes[PIPE_STDOUT][PIPE_INPUT_FD]);
-    close(pipes[PIPE_STDERR][PIPE_INPUT_FD]);
 }
 

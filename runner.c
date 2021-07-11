@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 #include "headers/runner.h"
 #include "headers/finder.h"
@@ -67,8 +68,12 @@ void test_case_run(struct test_runner_context * context, struct test_case * test
 
     struct process_output output;
 
+    memset((void *)&output, 0, sizeof(struct process_output));
+
     output.buffer = buffer;
     output.size = 8192;
+    output.error_code = ERROR_CODE_NONE;
+    output.len = 0;
 
     char * args[3] = {0};
     args[0] = when_requirement->extra.path_to_executable->value;
@@ -95,7 +100,24 @@ void test_case_run(struct test_runner_context * context, struct test_case * test
         exit(1);
     }
 
-    child_process_run(args[0], args, &output, mode);
+    struct stat executable_stat;
+    memset((void *)&executable_stat, 0, sizeof(struct stat));
+
+    bool try_to_run = true;
+
+    if (stat(when_requirement->extra.path_to_executable->value, &executable_stat) != 0) {
+        output.error_code = ERROR_CODE_FILE_NOT_FOUND;
+        try_to_run = false;
+    }
+
+    if (try_to_run && !(executable_stat.st_mode & S_IEXEC)) {
+        output.error_code = ERROR_CODE_NOT_EXECUTABLE;
+        try_to_run = false;
+    }
+
+    if (try_to_run) {
+        child_process_run(args[0], args, &output, mode);
+    }
     /* TODO: refactor it */
 
     /* TODO: calculate the diff */
@@ -109,8 +131,10 @@ void test_case_run(struct test_runner_context * context, struct test_case * test
     /* TODO: calculate the diff */
 
     struct test_case_result * test_case_result = make_test_case_result();
-    test_case_result->test_case = test_case;
     test_case_result->status = pass ? TEST_CASE_RESULT_STATUS_PASS : TEST_CASE_RESULT_STATUS_FAIL;
+    test_case_result->error_code = output.error_code;
+    test_case_result->test_case_name = test_case->name;
+    test_case_result->executable = when_requirement->extra.path_to_executable;
 
     if (!pass) {
         test_case_result->expected = then_requirement->content;
@@ -146,8 +170,10 @@ struct test_case_result * make_test_case_result(void)
     struct test_case_result * test_case_result = alloc_test_case_result();
     memset((void *)&test_case_result->list_entry, 0, sizeof(struct list));
     test_case_result->status = TEST_CASE_RESULT_STATUS_NONE;
-    test_case_result->test_case = NULL;
+    test_case_result->test_case_name = NULL;
+    test_case_result->executable = NULL;
     test_case_result->expected = NULL;
     test_case_result->actual = NULL;
+    test_case_result->error_code = ERROR_CODE_NONE;
     return test_case_result;
 }
