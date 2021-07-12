@@ -3,12 +3,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/stat.h>
 
 #include "headers/runner.h"
 #include "headers/finder.h"
 #include "headers/allocate.h"
 #include "headers/child_process.h"
+#include "headers/fs.h"
 
 static void test_case_run(struct test_runner_context * context, struct test_case * test_case);
 static void fill_file_from_string(FILE * file, struct string * content);
@@ -100,17 +100,14 @@ void test_case_run(struct test_runner_context * context, struct test_case * test
         exit(1);
     }
 
-    struct stat executable_stat;
-    memset((void *)&executable_stat, 0, sizeof(struct stat));
-
     bool try_to_run = true;
 
-    if (stat(when_requirement->extra.path_to_executable->value, &executable_stat) != 0) {
+    if (!is_file_exists(when_requirement->extra.path_to_executable->value)) {
         output.error_code = ERROR_CODE_FILE_NOT_FOUND;
         try_to_run = false;
     }
 
-    if (try_to_run && !(executable_stat.st_mode & S_IEXEC)) {
+    if (try_to_run && !is_file_executable(when_requirement->extra.path_to_executable->value)) {
         output.error_code = ERROR_CODE_NOT_EXECUTABLE;
         try_to_run = false;
     }
