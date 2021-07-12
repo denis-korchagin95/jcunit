@@ -4,6 +4,7 @@
 
 #include "headers/parse.h"
 #include "headers/ast.h"
+#include "headers/allocate.h"
 
 
 static struct ast_test_case * parse_test_case(struct tokenizer_context * context);
@@ -12,6 +13,7 @@ static void parse_test_case_epilog(struct tokenizer_context * context);
 static void parse_requirement_list(struct tokenizer_context * context, struct ast_test_case ** ast_test_case);
 static void parse_requirement(struct tokenizer_context * context, struct ast_requirement * requirement);
 static void parse_directive(struct tokenizer_context * context, struct string ** directive, struct string ** argument);
+static void release_token(struct token * token);
 
 
 struct list * parse_test(struct tokenizer_context * context)
@@ -30,6 +32,7 @@ struct list * parse_test(struct tokenizer_context * context)
                     unget_one_token(context, token);
                     break;
                 }
+                release_token(token);
             }
         }
         ast_test_case = parse_test_case(context);
@@ -113,6 +116,7 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
         last_ch = token->content.ch;
         *w++ = (char)last_ch;
         ++len;
+        release_token(token);
     }
     if (!is_token_directive(token)) {
         fprintf(stderr, "The requirement's content of the test case too long!\n");
@@ -157,17 +161,20 @@ void parse_directive_argument(struct tokenizer_context * context, struct string 
         fprintf(stderr, "Expected '(' at begin of directive argument!\n");
         exit(1);
     }
+    release_token(token);
     token = get_one_token(context);
     if (!is_token_string(token)) {
         fprintf(stderr, "Expected string as directive argument!\n");
         exit(1);
     }
     (*argument) = token->content.string;
+    release_token(token);
     token = get_one_token(context);
     if (!is_token_punctuator(token, ')')) {
         fprintf(stderr, "Expected ')' at end of directive argument!\n");
         exit(1);
     }
+    release_token(token);
 }
 
 void parse_directive(struct tokenizer_context * context, struct string ** directive, struct string ** argument)
@@ -180,6 +187,8 @@ void parse_directive(struct tokenizer_context * context, struct string ** direct
     }
 
     (*directive) = token->content.string;
+
+    release_token(token);
 
     unsigned int oldmode = context->mode;
     context->mode = TOKENIZER_MODE_NONE;
@@ -197,5 +206,15 @@ void parse_directive(struct tokenizer_context * context, struct string ** direct
         exit(1);
     }
 
+    release_token(token);
+
     context->mode = oldmode;
+}
+
+void release_token(struct token * token)
+{
+    if (token == &newline_token || token == &eof_token) {
+        return;
+    }
+    free_token(token);
 }

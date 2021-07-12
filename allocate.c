@@ -12,8 +12,9 @@
 struct allocator_stat {
     const char * name;
     unsigned int * total;
-    unsigned int * allocated;
+    unsigned int * pool_usage;
     unsigned int * freed;
+    unsigned int * allocated;
 };
 
 static unsigned char bytes_pool[MAX_BYTES_POOL_SIZE] = {0};
@@ -32,31 +33,52 @@ allocator(test_runner_context, struct test_runner_context, 4)
 allocator(test_case_result, struct test_case_result, 256)
 
 static struct allocator_stat stats[] = {
-        { "token", &max_token_pool_size, &token_pool_pos, &token_freed },
-        { "string", &max_string_pool_size, &string_pool_pos, &string_freed },
+        { "token", &max_token_pool_size, &token_pool_pos, &token_freed, &token_allocated },
+        { "string", &max_string_pool_size, &string_pool_pos, &string_freed, &string_allocated },
         {
             "tokenizer_context",
             &max_tokenizer_context_pool_size,
             &tokenizer_context_pool_pos,
-            &tokenizer_context_freed
+            &tokenizer_context_freed,
+            &tokenizer_context_allocated
         },
-        { "ast_test_case", &max_ast_test_case_pool_size, &ast_test_case_pool_pos, &ast_test_case_freed },
-        { "ast_requirement", &max_ast_requirement_pool_size, &ast_requirement_pool_pos, &ast_requirement_freed },
-        { "list", &max_list_pool_size, &list_pool_pos, &list_freed },
-        { "test_case", &max_test_case_pool_size, &test_case_pool_pos, &test_case_freed },
-        { "requirement", &max_requirement_pool_size, &requirement_pool_pos, &requirement_freed },
-        { "test", &max_test_pool_size, &test_pool_pos, &test_freed },
+        {
+            "ast_test_case",
+            &max_ast_test_case_pool_size,
+            &ast_test_case_pool_pos,
+            &ast_test_case_freed,
+            &ast_test_case_allocated
+        },
+        {
+            "ast_requirement",
+            &max_ast_requirement_pool_size,
+            &ast_requirement_pool_pos,
+            &ast_requirement_freed,
+            &ast_requirement_allocated
+        },
+        { "list", &max_list_pool_size, &list_pool_pos, &list_freed, &list_allocated },
+        { "test_case", &max_test_case_pool_size, &test_case_pool_pos, &test_case_freed, &test_case_allocated },
+        {
+            "requirement",
+            &max_requirement_pool_size,
+            &requirement_pool_pos,
+            &requirement_freed,
+            &requirement_allocated
+        },
+        { "test", &max_test_pool_size, &test_pool_pos, &test_freed, &test_allocated },
         {
             "test_runner_context",
             &max_test_runner_context_pool_size,
             &test_runner_context_pool_pos,
-            &test_runner_context_freed
+            &test_runner_context_freed,
+            &test_runner_context_allocated
         },
         {
             "test_case_result",
             &max_test_case_result_pool_size,
             &test_case_result_pool_pos,
-            &test_case_result_freed
+            &test_case_result_freed,
+            &test_case_result_allocated
         },
 };
 
@@ -77,14 +99,15 @@ void show_allocator_stats(FILE * output, unsigned int allocator)
         stat = stats + i;
         fprintf(
             output,
-            "Allocator: %s, total: %u, allocated: %u, freed: %u\n",
+            "Allocator: %s, total: %u, pool_usage: %u, allocated: %u, freed: %u\n",
             stat->name,
             *stat->total,
+            *stat->pool_usage,
             *stat->allocated,
             *stat->freed
         );
     }
     unsigned int max_bytes_pool_size = MAX_BYTES_POOL_SIZE;
-    fprintf(output, "Allocator: bytes, total: %u, allocated: %u\n", max_bytes_pool_size, bytes_pool_pos);
+    fprintf(output, "Allocator: bytes, total: %u, pool_usage: %u\n", max_bytes_pool_size, bytes_pool_pos);
     fflush(output);
 }

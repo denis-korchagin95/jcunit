@@ -17,9 +17,11 @@
     static type name##_pool[(count)];                                                               \
     static unsigned int name##_pool_pos = 0;                                                        \
     static unsigned int name##_freed = 0;                                                           \
+    static unsigned int name##_allocated = 0;                                                       \
                                                                                                     \
     type * alloc_##name(void)                                                                       \
     {                                                                                               \
+        ++name##_allocated;                                                                         \
         if (name##_free_list != NULL) {                                                             \
             void ** ptr = (void**)name##_free_list;                                                 \
             void * next = *ptr;                                                                     \
