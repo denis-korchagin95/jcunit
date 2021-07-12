@@ -21,11 +21,11 @@
     type * alloc_##name(void)                                                                       \
     {                                                                                               \
         if (name##_free_list != NULL) {                                                             \
-            void ** list = (void**)name##_free_list;                                                \
-            void * next = *list;                                                                    \
-            *list = NULL;                                                                           \
+            void ** ptr = (void**)name##_free_list;                                                 \
+            void * next = *ptr;                                                                     \
+            void * object = (void*)name##_free_list;                                                \
             name##_free_list = next;                                                                \
-            return (void *)list;                                                                    \
+            return object;                                                                          \
         }                                                                                           \
         if (name##_pool_pos >= (count)) {                                                           \
             fprintf(stderr, "Allocator " #name ": out of memory!\n");                               \
@@ -33,12 +33,11 @@
         }                                                                                           \
         return &name##_pool[name##_pool_pos++];                                                     \
     }                                                                                               \
-                                                                                                    \
-    void free_##name(type * element)                                                                \
+    void free_##name(type * object)                                                                 \
     {                                                                                               \
         static unsigned int pointer_size = (unsigned int)sizeof(void *);                            \
-        static unsigned int element_size = (unsigned int)sizeof(type);                              \
-        if (element_size < pointer_size) {                                                          \
+        static unsigned int object_size = (unsigned int)sizeof(type);                               \
+        if (object_size < pointer_size) {                                                           \
             fprintf(                                                                                \
                 stderr,                                                                             \
                 "Cannot free element with size less than size of pointer! (pointer size: %u)\n",    \
@@ -46,13 +45,15 @@
             );                                                                                      \
             exit(1);                                                                                \
         }                                                                                           \
-        void ** list = (void **)element;                                                            \
-        *list = name##_free_list;                                                                   \
-        name##_free_list = (void *)element;                                                         \
+        void ** ptr = (void **)object;                                                              \
+        *ptr = name##_free_list;                                                                    \
+        name##_free_list = (void *)object;                                                          \
         ++name##_freed;                                                                             \
     }
 
-#define declare_allocator(name, type) type * alloc_##name(void)
+#define declare_allocator(name, type)   \
+    type * alloc_##name(void);          \
+    void free_##name(type * object);
 
 declare_allocator(tokenizer_context, struct tokenizer_context);
 declare_allocator(token, struct token);
