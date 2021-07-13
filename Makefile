@@ -37,7 +37,7 @@ dependencies:
 run:
 	$(BIN)$(PROGRAM) $(SAMPLE_FILE)
 
-install:
+install: build
 	cp $(BIN)$(PROGRAM) $(INSTALL_PATH)$(PROGRAM)
 
 uninstall:
