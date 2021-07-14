@@ -47,10 +47,6 @@ static struct requirement * assemble_expect_output_requirement(struct ast_requir
 
 struct test * assemble_test(const char * filename, struct list * ast_test_cases)
 {
-    if (list_is_empty(ast_test_cases)) {
-        fprintf(stderr, "There no any test case to assemble the test!\n");
-        exit(1);
-    }
     const char * test_name = basename(filename);
     if (test_name == NULL) {
         test_name = "<unnamed>";
@@ -69,6 +65,7 @@ struct test * assemble_test(const char * filename, struct list * ast_test_cases)
         list_append(&test->cases, &test_case->list_entry);
         ++test->case_count;
     });
+
     return test;
 }
 

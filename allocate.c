@@ -53,7 +53,7 @@ allocator(list, struct list, 512)
 allocator(test_case, struct test_case, 256)
 allocator(requirement, struct requirement, 512)
 allocator(test, struct test, 32)
-allocator(test_runner_context, struct test_runner_context, 4)
+allocator(test_result, struct test_result, 256)
 allocator(test_case_result, struct test_case_result, 256)
 
 static struct allocator_stat stats[] = {
@@ -91,11 +91,11 @@ static struct allocator_stat stats[] = {
         },
         { "test", &max_test_pool_size, &test_pool_pos, &test_freed, &test_allocated },
         {
-            "test_runner_context",
-            &max_test_runner_context_pool_size,
-            &test_runner_context_pool_pos,
-            &test_runner_context_freed,
-            &test_runner_context_allocated
+                "test_result",
+                &max_test_result_pool_size,
+                &test_result_pool_pos,
+                &test_result_freed,
+                &test_result_allocated
         },
         {
             "test_case_result",

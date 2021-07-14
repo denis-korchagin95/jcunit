@@ -70,17 +70,35 @@ int main(int argc, char * argv[])
 
     struct test * test = assemble_test(filename, ast_cases);
 
-    struct test_runner_context * runner_context = make_test_runner_context(test);
+    struct test_result * test_result = make_test_result(test);
+    struct test_case_result * test_case_result;
+    struct test_case * test_case;
+    bool has_cases = !list_is_empty(&test->cases);
 
-    test_run(runner_context);
+    fprintf(stdout, "Test: %s\n", test->name->value);
 
-    show_test_result(runner_context, stdout);
+    if (has_cases) {
+        list_foreach(iterator, &test->cases, {
+            test_case = list_get_owner(iterator, struct test_case, list_entry);
+            test_case_result = test_case_run(test_case);
+
+            test_result_add_test_case_result(test_result, test_case_result);
+
+            show_test_case_result(test_case_result, stdout);
+        });
+
+        fprintf(stdout, "\nPassed: %u, Failed: %u\n", test_result->passed_count, test_result->failed_count);
+    } else {
+        fprintf(stdout, "\tThere is no any test cases!\n");
+    }
 
     if (option_show_allocator_stats) {
         printf("\n\n\n");
 
         show_allocator_stats(stdout, SHOW_STAT_ALL_ALLOCATORS);
     }
+
+    fflush(stdout);
 
     return 0;
 }

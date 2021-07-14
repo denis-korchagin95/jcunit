@@ -53,7 +53,7 @@ void child_process_run(const char * path, char * argv[], struct process_output *
         exit(1);
     }
 
-    int pipe_index = -1;
+    int pipe_index;
 
     switch (mode) {
         case RUN_MODE_CAPTURE_STDOUT:
@@ -62,11 +62,9 @@ void child_process_run(const char * path, char * argv[], struct process_output *
         case RUN_MODE_CAPTURE_STDERR:
             pipe_index = PIPE_STDERR;
             break;
-    }
-
-    if (pipe_index == -1) {
-        fprintf(stderr, "The unknown mode: %u\n", mode);
-        exit(1);
+        default:
+            fprintf(stderr, "The unknown mode: %u\n", mode);
+            exit(1);
     }
 
     if (pid == 0) {

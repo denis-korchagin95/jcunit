@@ -90,7 +90,7 @@ declare_allocator(list, struct list);
 declare_allocator(test_case, struct test_case);
 declare_allocator(requirement, struct requirement);
 declare_allocator(test, struct test);
-declare_allocator(test_runner_context, struct test_runner_context);
+declare_allocator(test_result, struct test_result);
 declare_allocator(test_case_result, struct test_case_result);
 
 void * alloc_bytes(unsigned int len);

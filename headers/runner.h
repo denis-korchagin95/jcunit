@@ -31,12 +31,14 @@
 #define TEST_CASE_RESULT_STATUS_PASS (1)
 #define TEST_CASE_RESULT_STATUS_FAIL (2)
 
-struct test_runner_context
+#define MAX_TEST_CASE_GIVEN_FILENAME_LEN (50)
+
+struct test_result
 {
-    struct list results;
+    struct list test_case_results;
+    struct test * test;
     unsigned int passed_count;
     unsigned int failed_count;
-    struct test * test;
 };
 
 struct test_case_result
@@ -48,10 +50,12 @@ struct test_case_result
     struct string * actual;
     unsigned int status;
     unsigned int error_code;
+    char given_filename[MAX_TEST_CASE_GIVEN_FILENAME_LEN];
 };
 
-void test_run(struct test_runner_context * context);
+struct test_case_result * test_case_run(struct test_case * test_case);
 
-struct test_runner_context * make_test_runner_context(struct test * test);
+struct test_result * make_test_result(struct test * test);
+void test_result_add_test_case_result(struct test_result * test_result, struct test_case_result * test_case_result);
 
 #endif /* JCUNIT_RUNNER_H */

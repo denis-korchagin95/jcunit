@@ -24,7 +24,6 @@
  */
 #include <stdio.h>
 
-
 #include "headers/token.h"
 #include "headers/print.h"
 
