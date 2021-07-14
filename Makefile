@@ -3,9 +3,17 @@ SRC=./
 BIN=./bin/
 OBJ=./obj/
 DEPENDENCIES_FILE=dependencies.mk
-CFLAGS=-g -Wall -std=c89
+CFLAGS=-std=c89
 LFLAGS=
 INSTALL_PATH=/usr/local/bin/
+
+DEVELOPMENT ?= 0
+
+ifeq ($(DEVELOPMENT), 1)
+	CFLAGS+=-g -Wall -O0
+else
+	CFLAGS+=-O3
+endif
 
 PROGRAM=jcunit
 PROGRAM_TEST_TOKENIZER=test-tokenizer
@@ -24,10 +32,10 @@ OBJECTS=main.o tokenizer.o allocate.o string.o print.o\
 OBJECTS_TEST_TOKENIZER=test-tokenizer.o print.o tokenizer.o allocate.o string.o util.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
-	@$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
+	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
 
 test-tokenizer: $(addprefix $(OBJ), $(OBJECTS_TEST_TOKENIZER))
-	@$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM_TEST_TOKENIZER)
+	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM_TEST_TOKENIZER)
 	$(BIN)$(PROGRAM_TEST_TOKENIZER) $(SAMPLE_TEST_TOKENIZER)
 
 dependencies:
@@ -44,9 +52,9 @@ uninstall:
 	rm -rfv $(INSTALL_PATH)$(PROGRAM)
 
 clean:
-	@rm -rfv $(BIN)$(PROGRAM)
-	@rm -rfv $(OBJ)*
-	@rm -rfv $(BIN)$(PROGRAM_TEST_TOKENIZER)
+	rm -rfv $(BIN)$(PROGRAM)
+	rm -rfv $(OBJ)*
+	rm -rfv $(BIN)$(PROGRAM_TEST_TOKENIZER)
 
 $(OBJ)%.o: %.c
 	$(CC) $(CFLAGS) -c $(SRC)$*.c -o $@
