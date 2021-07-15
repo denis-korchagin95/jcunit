@@ -12,7 +12,7 @@ DEVELOPMENT ?= 0
 ifeq ($(DEVELOPMENT), 1)
 	CFLAGS+=-g -Wall -O0
 else
-	CFLAGS+=-O3
+	CFLAGS+=-O3 -DNDEBUG
 endif
 
 PROGRAM=jcunit
