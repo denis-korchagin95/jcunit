@@ -28,22 +28,25 @@
 #include "list.h"
 #include "ast.h"
 
-#define REQUIREMENT_ID_GIVEN_FILE     (1)
-#define REQUIREMENT_ID_WHEN_RUN       (2)
-#define REQUIREMENT_ID_EXPECT_OUTPUT  (3)
+#define TEST_CASE_FLAG_HAS_GIVEN    (1)
+#define TEST_CASE_FLAG_HAS_WHEN     (2)
+#define TEST_CASE_FLAG_HAS_THEN     (4)
+#define TEST_CASE_FLAG_INCOMPLETE   (8)
 
-#define REQUIREMENT_KIND_GIVEN  (1)
-#define REQUIREMENT_KIND_WHEN   (2)
-#define REQUIREMENT_KIND_THEN   (3)
+#define WHEN_RUN_REQUIREMENT_NAME       "whenRun"
+#define GIVEN_REQUIREMENT_NAME          "given"
+#define EXPECT_OUTPUT_REQUIREMENT_NAME  "expectOutput"
 
-#define TEST_CASE_FLAG_HAS_GIVEN (1)
-#define TEST_CASE_FLAG_HAS_WHEN  (2)
-#define TEST_CASE_FLAG_HAS_THEN  (4)
+#define TEST_CASE_KIND_PROGRAM_RUNNER (1)
 
 #define TEST_CASE_COMPLETE_MASK (TEST_CASE_FLAG_HAS_GIVEN | TEST_CASE_FLAG_HAS_WHEN | TEST_CASE_FLAG_HAS_THEN)
 
-#define REQUIREMENT_EXPECT_OUTPUT_RESOURCE_STDOUT (1)
-#define REQUIREMENT_EXPECT_OUTPUT_RESOURCE_STDERR (2)
+#define TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_NONE      (0)
+#define TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT    (1)
+#define TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR    (2)
+
+#define TEST_CASE_PROGRAM_RUNNER_STREAM_STDOUT_NAME "stdout"
+#define TEST_CASE_PROGRAM_RUNNER_STREAM_STDERR_NAME "stderr"
 
 struct test {
     struct list cases;
@@ -51,25 +54,24 @@ struct test {
     unsigned int case_count;
 };
 
-struct test_case {
+struct abstract_test_case {
     struct list list_entry;
     struct string * name;
     struct test * test;
-    struct list requirements;
+    unsigned int kind;
     unsigned int flags;
 };
 
-struct requirement {
-    struct list list_entry;
-    unsigned int id;
-    unsigned int kind;
-    struct string * content;
-    union {
-        struct string * path_to_executable;
-        int resource_code;
-    } extra;
+struct program_runner_test_case {
+    struct abstract_test_case base;
+    struct string * given_file_content;
+    struct string * program_path;
+    struct string * expected_output;
+    unsigned int stream_code;
 };
 
 struct test * assemble_test(const char * filename, struct list * ast_test_cases);
+
+typedef struct abstract_test_case * test_case_assembler_func(struct ast_test_case * ast_test_case);
 
 #endif /* JCUNIT_ASSEMBLER_H */

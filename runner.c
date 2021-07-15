@@ -27,10 +27,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 
 #include "headers/runner.h"
-#include "headers/finder.h"
 #include "headers/allocate.h"
 #include "headers/child_process.h"
 #include "headers/fs.h"
@@ -48,64 +48,25 @@ static void try_to_run_program(
     int run_mode,
     struct process_output * output
 );
-static int resolve_run_mode(struct requirement * then_requirement);
-bool is_test_case_passes(struct string * expected, struct process_output * output);
+static bool is_test_case_passes(struct string * expected, struct process_output * output);
+static int resolve_run_mode_by_stream_code(unsigned int stream_code);
 
+static test_case_runner_func * resolve_test_case_runner(struct abstract_test_case * test_case);
+
+static struct test_case_result * program_runner_test_case_runner(struct abstract_test_case * test_case);
 
 static char jcunit_given_file_template[] = "/tmp/jcunit_gf_XXXXXXXXXXXX";
 static char process_output_buffer[MAX_PROCESS_OUTPUT_BUFFER_LEN];
 
 
-struct test_case_result * test_case_run(struct test_case * test_case)
+struct test_case_result * test_case_run(struct abstract_test_case * test_case)
 {
-    struct requirement * given_requirement = find_requirement_by_kind(test_case, REQUIREMENT_KIND_GIVEN);
-    if (given_requirement == NULL) {
-        fprintf(stderr, "There is no any 'given' kind of the requirement!\n");
+    test_case_runner_func * runner = resolve_test_case_runner(test_case);
+    if (runner == NULL) {
+        fprintf(stderr, "There is no any runner to run the test case \"%s\"!", test_case->name->value);
         exit(1);
     }
-    if (given_requirement->id != REQUIREMENT_ID_GIVEN_FILE) {
-        fprintf(stderr, "The unknown %u 'given' kind of requirement!\n", given_requirement->id);
-        exit(1);
-    }
-    struct requirement * when_requirement = find_requirement_by_kind(test_case, REQUIREMENT_KIND_WHEN);
-    if (when_requirement->id != REQUIREMENT_ID_WHEN_RUN) {
-        fprintf(stderr, "The unknown %u 'when' kind of requirement!\n", when_requirement->id);
-        exit(1);
-    }
-    struct requirement * then_requirement = find_requirement_by_kind(test_case, REQUIREMENT_KIND_THEN);
-    if (then_requirement->id != REQUIREMENT_ID_EXPECT_OUTPUT) {
-        fprintf(stderr, "The unknown %u 'then' kind of requirement!\n", when_requirement->id);
-        exit(1);
-    }
-
-    struct process_output output;
-
-    struct string * executable = when_requirement->extra.path_to_executable;
-
-    struct test_case_result * test_case_result = make_test_case_result();
-    test_case_result->test_case_name = test_case->name;
-    test_case_result->executable = executable;
-
-    make_given_file(test_case_result, given_requirement->content);
-
-    try_to_run_program(
-        executable->value,
-        test_case_result->given_filename,
-        resolve_run_mode(then_requirement),
-        &output
-    );
-
-    bool pass = is_test_case_passes(then_requirement->content, &output);
-
-    if (!pass) {
-        test_case_result->expected = then_requirement->content;
-        test_case_result->actual = make_string(output.buffer, output.len);
-    }
-
-    test_case_result->status = pass ? TEST_CASE_RESULT_STATUS_PASS : TEST_CASE_RESULT_STATUS_FAIL;
-    test_case_result->error_code = output.error_code;
-
-    return test_case_result;
+    return runner(test_case);
 }
 
 void fill_file_from_string(FILE * file, struct string * content)
@@ -176,28 +137,17 @@ void try_to_run_program(
     }
 }
 
-static int resolve_run_mode(struct requirement * then_requirement)
+int resolve_run_mode_by_stream_code(unsigned int stream_code)
 {
     int mode = -1;
-
-    switch (then_requirement->extra.resource_code) {
-        case REQUIREMENT_EXPECT_OUTPUT_RESOURCE_STDOUT:
+    switch (stream_code) {
+        case TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT:
             mode = RUN_MODE_CAPTURE_STDOUT;
             break;
-        case REQUIREMENT_EXPECT_OUTPUT_RESOURCE_STDERR:
+        case TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR:
             mode = RUN_MODE_CAPTURE_STDERR;
             break;
     }
-
-    if (mode == -1) {
-        fprintf(
-            stderr,
-            "The unknown resource code %d of 'then' kind of requirement!\n",
-            then_requirement->extra.resource_code
-        );
-        exit(1);
-    }
-
     return mode;
 }
 
@@ -219,6 +169,9 @@ struct test_result * make_test_result(struct test * test)
 
 void test_result_add_test_case_result(struct test_result * test_result, struct test_case_result * test_case_result)
 {
+    assert(test_result != NULL);
+    assert(test_case_result != NULL);
+
     list_append(&test_result->test_case_results, &test_case_result->list_entry);
 
     switch (test_case_result->status) {
@@ -232,4 +185,57 @@ void test_result_add_test_case_result(struct test_result * test_result, struct t
             fprintf(stderr, "The unknown status %d of test case result!\n", test_case_result->status);
             exit(1);
     }
+}
+
+test_case_runner_func * resolve_test_case_runner(struct abstract_test_case * test_case)
+{
+    if (test_case->kind == TEST_CASE_KIND_PROGRAM_RUNNER) {
+        return program_runner_test_case_runner;
+    }
+    return NULL;
+}
+
+struct test_case_result * program_runner_test_case_runner(struct abstract_test_case * test_case)
+{
+    struct program_runner_test_case * this_test_case = (struct program_runner_test_case *)test_case;
+
+    struct process_output output;
+
+    struct string * executable = this_test_case->program_path;
+
+    struct test_case_result * test_case_result = make_test_case_result();
+    test_case_result->test_case_name = this_test_case->base.name;
+    test_case_result->executable = executable;
+
+    make_given_file(test_case_result, this_test_case->given_file_content);
+
+    int run_mode = resolve_run_mode_by_stream_code(this_test_case->stream_code);
+
+    if (run_mode == -1) {
+        fprintf(
+            stderr,
+            "The unknown stream code %d!\n",
+            this_test_case->stream_code
+        );
+        exit(1);
+    }
+
+    try_to_run_program(
+        executable->value,
+        test_case_result->given_filename,
+        run_mode,
+        &output
+    );
+
+    bool pass = is_test_case_passes(this_test_case->expected_output, &output);
+
+    if (!pass) {
+        test_case_result->expected = this_test_case->expected_output;
+        test_case_result->actual = make_string(output.buffer, output.len);
+    }
+
+    test_case_result->status = pass ? TEST_CASE_RESULT_STATUS_PASS : TEST_CASE_RESULT_STATUS_FAIL;
+    test_case_result->error_code = output.error_code;
+
+    return test_case_result;
 }

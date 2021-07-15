@@ -24,6 +24,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 
 #include "headers/show_result.h"
@@ -37,6 +38,8 @@ static const char * resolve_status_prefix(struct test_case_result * test_case_re
 
 void show_test_case_result(struct test_case_result * test_case_result, FILE * output)
 {
+    assert(test_case_result != NULL);
+
     const char * prefix = resolve_status_prefix(test_case_result);
 
     if (prefix == NULL) {

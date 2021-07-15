@@ -23,26 +23,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
-#include <memory.h>
 
 
 #include "headers/assembler.h"
-#include "headers/allocate.h"
 #include "headers/util.h"
+#include "headers/finder.h"
+#include "headers/allocate.h"
 
-static const char * test_case_flag_stringify(unsigned int flag);
+
 static struct test * make_test(void);
-static struct test_case * make_test_case(void);
-static struct requirement * make_requirement(void);
-static unsigned int get_test_case_flag_for_requirement(struct requirement * requirement);
+static struct program_runner_test_case * make_program_runner_test_case(void);
 
-
-static struct test_case * assemble_ast_test_case(struct ast_test_case * ast_test_case);
-static struct requirement * assemble_ast_requirement(struct ast_requirement * ast_requirement);
-static struct requirement * assemble_given_requirement(struct ast_requirement * ast_requirement);
-static struct requirement * assemble_when_run_requirement(struct ast_requirement * ast_requirement);
-static struct requirement * assemble_expect_output_requirement(struct ast_requirement * ast_requirement);
+static struct abstract_test_case * assemble_ast_test_case(struct ast_test_case * ast_test_case);
+static test_case_assembler_func * resolve_test_case_assembler(struct ast_test_case * ast_test_case);
+static int resolve_stream_code_by_name(struct string * name);
+static struct abstract_test_case * program_runner_test_case_assembler(struct ast_test_case * ast_test_case);
 
 
 struct test * assemble_test(const char * filename, struct list * ast_test_cases)
@@ -52,11 +49,11 @@ struct test * assemble_test(const char * filename, struct list * ast_test_cases)
         test_name = "<unnamed>";
     }
 
-    struct test_case * test_case;
-    struct ast_test_case * ast_test_case;
-
     struct test * test = make_test();
     test->name = make_string(test_name, strlen(test_name));
+
+    struct abstract_test_case * test_case;
+    struct ast_test_case * ast_test_case;
 
     list_foreach(iterator, ast_test_cases, {
         ast_test_case = list_get_owner(iterator, struct ast_test_case, list_entry);
@@ -69,152 +66,21 @@ struct test * assemble_test(const char * filename, struct list * ast_test_cases)
     return test;
 }
 
-struct test_case * assemble_ast_test_case(struct ast_test_case * ast_test_case)
+struct abstract_test_case * assemble_ast_test_case(struct ast_test_case * ast_test_case)
 {
-    struct test_case * test_case = make_test_case();
-
-    struct list * head = &ast_test_case->requirements;
-    struct list * iterator = head->next;
-
+    test_case_assembler_func * assembler = resolve_test_case_assembler(ast_test_case);
+    if (assembler == NULL) {
+        fprintf(stderr, "Cannot find any assembler to assemble the test case \"%s\"!", ast_test_case->name->value);
+        exit(1);
+    }
+    struct abstract_test_case * test_case = assembler(ast_test_case);
     test_case->name = ast_test_case->name;
 
-    while (iterator != head) {
-        struct ast_requirement * ast_requirement = list_get_owner(iterator, struct ast_requirement, list_entry);
-        struct requirement * requirement = assemble_ast_requirement(ast_requirement);
-        unsigned int flag = get_test_case_flag_for_requirement(requirement);
-        if (flag == 0) {
-            fprintf(
-                    stderr,
-                    "The unknown way of the usage of the requirement \"%.*s\"!\n",
-                    ast_requirement->name->len,
-                    ast_requirement->name->value
-            );
-            exit(1);
-        }
-        if ((test_case->flags & flag) == flag) {
-            fprintf(stderr, "The duplicate of the '%s' kind of requirements!\n", test_case_flag_stringify(flag));
-            exit(1);
-        }
-        test_case->flags |= flag;
-        list_append(&test_case->requirements, &requirement->list_entry);
-        iterator = iterator->next;
-    }
-
     if ((test_case->flags & TEST_CASE_COMPLETE_MASK) != TEST_CASE_COMPLETE_MASK) {
-        const char * missing_kind_of_requirement = "<unknown kind of requirement>";
-        if ((test_case->flags & TEST_CASE_FLAG_HAS_GIVEN) != TEST_CASE_FLAG_HAS_GIVEN) {
-            missing_kind_of_requirement = "given";
-        }
-        if ((test_case->flags & TEST_CASE_FLAG_HAS_WHEN) != TEST_CASE_FLAG_HAS_WHEN) {
-            missing_kind_of_requirement = "when";
-        }
-        if ((test_case->flags & TEST_CASE_FLAG_HAS_THEN) != TEST_CASE_FLAG_HAS_THEN) {
-            missing_kind_of_requirement = "then";
-        }
-        fprintf(
-                stderr,
-                "The test case incomplete: missing the '%s' kind of requirement!\n",
-                missing_kind_of_requirement
-        );
-        exit(1);
+        test_case->flags |= TEST_CASE_FLAG_INCOMPLETE;
     }
-
 
     return test_case;
-}
-
-struct requirement * assemble_ast_requirement(struct ast_requirement * ast_requirement)
-{
-    if (string_equals_with_cstring(ast_requirement->name, "given")) {
-        return assemble_given_requirement(ast_requirement);
-    }
-    if (string_equals_with_cstring(ast_requirement->name, "whenRun")) {
-        return assemble_when_run_requirement(ast_requirement);
-    }
-    if (string_equals_with_cstring(ast_requirement->name, "expectOutput")) {
-        return assemble_expect_output_requirement(ast_requirement);
-    }
-    fprintf(stderr, "The unknown \"%.*s\" requirement!\n", ast_requirement->name->len, ast_requirement->name->value);
-    exit(1);
-}
-
-struct requirement * assemble_given_requirement(struct ast_requirement * ast_requirement)
-{
-    if (!string_equals_with_cstring(ast_requirement->argument, "file")) {
-        fprintf(
-                stderr,
-                "The unknown \"%.*s\" given type!\n",
-                ast_requirement->argument->len,
-                ast_requirement->argument->value
-        );
-        exit(1);
-    }
-    struct requirement * requirement = make_requirement();
-    requirement->kind = REQUIREMENT_KIND_GIVEN;
-    requirement->id = REQUIREMENT_ID_GIVEN_FILE;
-    requirement->content = ast_requirement->content;
-    return requirement;
-}
-
-struct requirement * assemble_when_run_requirement(struct ast_requirement * ast_requirement)
-{
-    if (ast_requirement->content != NULL) {
-        fprintf(stderr, "The 'whenRun' requirement must not contain any content!\n");
-        exit(1);
-    }
-    struct requirement * requirement = make_requirement();
-    requirement->kind = REQUIREMENT_KIND_WHEN;
-    requirement->id = REQUIREMENT_ID_WHEN_RUN;
-    requirement->extra.path_to_executable = ast_requirement->argument;
-    return requirement;
-}
-
-struct requirement * assemble_expect_output_requirement(struct ast_requirement * ast_requirement)
-{
-    int resource_code = -1;
-    if (string_equals_with_cstring(ast_requirement->argument, "stdout")) {
-        resource_code = REQUIREMENT_EXPECT_OUTPUT_RESOURCE_STDOUT;
-    }
-    if (string_equals_with_cstring(ast_requirement->argument, "stderr")) {
-        resource_code = REQUIREMENT_EXPECT_OUTPUT_RESOURCE_STDERR;
-    }
-    if (resource_code == -1) {
-        fprintf(
-                stderr,
-                "The unknown resource \"%.*s\" for 'expectOutput' requirement!\n",
-                ast_requirement->argument->len,
-                ast_requirement->argument->value
-        );
-        exit(1);
-    }
-    struct requirement * requirement = make_requirement();
-    requirement->id = REQUIREMENT_ID_EXPECT_OUTPUT;
-    requirement->kind = REQUIREMENT_KIND_THEN;
-    requirement->extra.resource_code = resource_code;
-    requirement->content = ast_requirement->content;
-    return requirement;
-}
-
-struct test_case * make_test_case(void)
-{
-    struct test_case * test_case = alloc_test_case();
-    memset((void *)&test_case->list_entry, 0, sizeof(struct list));
-    test_case->name = NULL;
-    list_init(&test_case->requirements);
-    test_case->flags = 0;
-    test_case->test = NULL;
-    return test_case;
-}
-
-struct requirement * make_requirement(void)
-{
-    struct requirement * requirement = alloc_requirement();
-    memset((void *)&requirement->list_entry, 0, sizeof(struct list));
-    requirement->content = NULL;
-    requirement->kind = 0;
-    memset((void *)&requirement->extra, 0, sizeof(requirement->extra));
-    requirement->id = 0;
-    return requirement;
 }
 
 struct test * make_test(void)
@@ -226,32 +92,81 @@ struct test * make_test(void)
     return test;
 }
 
-unsigned int get_test_case_flag_for_requirement(struct requirement * requirement)
+test_case_assembler_func * resolve_test_case_assembler(struct ast_test_case * ast_test_case)
 {
-    switch (requirement->kind) {
-        case REQUIREMENT_KIND_GIVEN: return TEST_CASE_FLAG_HAS_GIVEN;
-        case REQUIREMENT_KIND_THEN: return TEST_CASE_FLAG_HAS_THEN;
-        case REQUIREMENT_KIND_WHEN: return TEST_CASE_FLAG_HAS_WHEN;
+    struct ast_requirement * requirement = find_ast_requirement_by_name(ast_test_case, WHEN_RUN_REQUIREMENT_NAME);
+    if (requirement != NULL) {
+        return program_runner_test_case_assembler;
     }
-    return 0;
+    return NULL;
 }
 
-const char * test_case_flag_stringify(unsigned int flag)
+struct abstract_test_case * program_runner_test_case_assembler(struct ast_test_case * ast_test_case)
 {
-    static char buffer[100] = {0};
-    switch (flag) {
-        case TEST_CASE_FLAG_HAS_GIVEN:
-            sprintf(buffer, "given");
-            break;
-        case TEST_CASE_FLAG_HAS_WHEN:
-            sprintf(buffer, "when");
-            break;
-        case TEST_CASE_FLAG_HAS_THEN:
-            sprintf(buffer, "then");
-            break;
-        default:
-            fprintf(stderr, "The unknown test case flag \"%u\"\n!", flag);
+    struct ast_requirement * ast_requirement;
+    struct program_runner_test_case * test_case = make_program_runner_test_case();
+    ast_requirement = find_ast_requirement_by_name(ast_test_case, GIVEN_REQUIREMENT_NAME);
+    if (ast_requirement != NULL) {
+        if (!string_equals_with_cstring(ast_requirement->argument, "file")) {
+            fprintf(
+                stderr,
+                "The unknown \"%s\" given type!\n",
+                ast_requirement->argument->value
+            );
             exit(1);
+        }
+        test_case->given_file_content = ast_requirement->content;
+        test_case->base.flags |= TEST_CASE_FLAG_HAS_GIVEN;
     }
-    return buffer;
+    ast_requirement = find_ast_requirement_by_name(ast_test_case, WHEN_RUN_REQUIREMENT_NAME);
+    if (ast_requirement != NULL) {
+        if (ast_requirement->content != NULL) {
+            fprintf(stderr, "The 'whenRun' requirement must not contain any content!\n");
+            exit(1);
+        }
+        test_case->program_path = ast_requirement->argument;
+        test_case->base.flags |= TEST_CASE_FLAG_HAS_WHEN;
+    }
+    ast_requirement = find_ast_requirement_by_name(ast_test_case, EXPECT_OUTPUT_REQUIREMENT_NAME);
+    if (ast_requirement != NULL) {
+        int stream_code = resolve_stream_code_by_name(ast_requirement->argument);
+        if (stream_code == TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_NONE) {
+            fprintf(
+                stderr,
+                "The unknown stream name \"%s\" for 'expectOutput' requirement!\n",
+                ast_requirement->argument->value
+            );
+            exit(1);
+        }
+        test_case->stream_code = stream_code;
+        test_case->expected_output = ast_requirement->content;
+        test_case->base.flags |= TEST_CASE_FLAG_HAS_THEN;
+    }
+    return (struct abstract_test_case *)test_case;
+}
+
+struct program_runner_test_case * make_program_runner_test_case(void)
+{
+    struct program_runner_test_case * test_case = alloc_program_runner_test_case();
+    memset(&test_case->base.list_entry, 0, sizeof(struct list));
+    test_case->base.name = NULL;
+    test_case->base.test = NULL;
+    test_case->base.kind = TEST_CASE_KIND_PROGRAM_RUNNER;
+    test_case->base.flags = 0;
+    test_case->given_file_content = NULL;
+    test_case->program_path = NULL;
+    test_case->expected_output = NULL;
+    test_case->stream_code = TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_NONE;
+    return test_case;
+}
+
+int resolve_stream_code_by_name(struct string * name)
+{
+    int stream_code = TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_NONE;
+    if (string_equals_with_cstring(name, TEST_CASE_PROGRAM_RUNNER_STREAM_STDOUT_NAME)) {
+        stream_code = TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT;
+    } else if (string_equals_with_cstring(name, TEST_CASE_PROGRAM_RUNNER_STREAM_STDERR_NAME)) {
+        stream_code = TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR;
+    }
+    return stream_code;
 }

@@ -27,6 +27,9 @@
 
 #include "assembler.h"
 
-struct requirement * find_requirement_by_kind(struct test_case * test_case, unsigned int kind);
+struct ast_requirement * find_ast_requirement_by_name(
+    struct ast_test_case * ast_test_case,
+    const char * requirement_name
+);
 
 #endif /* JCUNIT_FINDER_H */

@@ -165,6 +165,10 @@ void parse_test_case_prolog(struct tokenizer_context * context, struct ast_test_
         fprintf(stderr, "For test directive is require to specify a test case name!\n");
         exit(1);
     }
+    if (argument->len == 0) {
+        fprintf(stderr, "The test case must have a non-empty name!\n");
+        exit(1);
+    }
     (*ast_test_case)->name = argument;
 }
 

@@ -53,9 +53,11 @@ struct test_case_result
     char given_filename[MAX_TEST_CASE_GIVEN_FILENAME_LEN];
 };
 
-struct test_case_result * test_case_run(struct test_case * test_case);
+struct test_case_result * test_case_run(struct abstract_test_case * test_case);
 
 struct test_result * make_test_result(struct test * test);
 void test_result_add_test_case_result(struct test_result * test_result, struct test_case_result * test_case_result);
+
+typedef struct test_case_result * test_case_runner_func(struct abstract_test_case * test_case);
 
 #endif /* JCUNIT_RUNNER_H */

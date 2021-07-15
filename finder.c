@@ -23,17 +23,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stddef.h>
+#include <string.h>
 
 
 #include "headers/finder.h"
 
 
-struct requirement * find_requirement_by_kind(struct test_case * test_case, unsigned int kind)
-{
-    struct requirement * requirement;
-    list_foreach(iterator, &test_case->requirements, {
-        requirement = list_get_owner(iterator, struct requirement, list_entry);
-        if (requirement->kind == kind) {
+struct ast_requirement * find_ast_requirement_by_name(
+    struct ast_test_case * ast_test_case,
+    const char * requirement_name
+) {
+    size_t len = strlen(requirement_name);
+    struct ast_requirement * requirement;
+    list_foreach(iterator, &ast_test_case->requirements, {
+        requirement = list_get_owner(iterator, struct ast_requirement, list_entry);
+        if (requirement->name->len == len && strncmp(requirement->name->value, requirement_name, len) == 0) {
             return requirement;
         }
     });

@@ -72,14 +72,14 @@ int main(int argc, char * argv[])
 
     struct test_result * test_result = make_test_result(test);
     struct test_case_result * test_case_result;
-    struct test_case * test_case;
+    struct abstract_test_case * test_case;
     bool has_cases = !list_is_empty(&test->cases);
 
     fprintf(stdout, "Test: %s\n", test->name->value);
 
     if (has_cases) {
         list_foreach(iterator, &test->cases, {
-            test_case = list_get_owner(iterator, struct test_case, list_entry);
+            test_case = list_get_owner(iterator, struct abstract_test_case, list_entry);
             test_case_result = test_case_run(test_case);
 
             test_result_add_test_case_result(test_result, test_case_result);

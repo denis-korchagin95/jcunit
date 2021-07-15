@@ -50,11 +50,10 @@ allocator(tokenizer_context, struct tokenizer_context, 4)
 allocator(ast_test_case, struct ast_test_case, 256)
 allocator(ast_requirement, struct ast_requirement, 512)
 allocator(list, struct list, 512)
-allocator(test_case, struct test_case, 256)
-allocator(requirement, struct requirement, 512)
 allocator(test, struct test, 32)
 allocator(test_result, struct test_result, 256)
 allocator(test_case_result, struct test_case_result, 256)
+allocator(program_runner_test_case, struct program_runner_test_case, 256)
 
 static struct allocator_stat stats[] = {
         { "token", &max_token_pool_size, &token_pool_pos, &token_freed, &token_allocated },
@@ -81,21 +80,13 @@ static struct allocator_stat stats[] = {
             &ast_requirement_allocated
         },
         { "list", &max_list_pool_size, &list_pool_pos, &list_freed, &list_allocated },
-        { "test_case", &max_test_case_pool_size, &test_case_pool_pos, &test_case_freed, &test_case_allocated },
-        {
-            "requirement",
-            &max_requirement_pool_size,
-            &requirement_pool_pos,
-            &requirement_freed,
-            &requirement_allocated
-        },
         { "test", &max_test_pool_size, &test_pool_pos, &test_freed, &test_allocated },
         {
-                "test_result",
-                &max_test_result_pool_size,
-                &test_result_pool_pos,
-                &test_result_freed,
-                &test_result_allocated
+            "test_result",
+            &max_test_result_pool_size,
+            &test_result_pool_pos,
+            &test_result_freed,
+            &test_result_allocated
         },
         {
             "test_case_result",
@@ -104,6 +95,13 @@ static struct allocator_stat stats[] = {
             &test_case_result_freed,
             &test_case_result_allocated
         },
+        {
+            "program_runner_test_case",
+            &max_program_runner_test_case_pool_size,
+            &program_runner_test_case_pool_pos,
+            &program_runner_test_case_freed,
+            &program_runner_test_case_allocated
+        }
 };
 
 
