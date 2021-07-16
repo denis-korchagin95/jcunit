@@ -98,7 +98,13 @@ int main(int argc, char * argv[])
             show_test_case_result(test_case_result, stdout);
         });
 
-        fprintf(stdout, "\nPassed: %u, Failed: %u\n", test_result->passed_count, test_result->failed_count);
+        fprintf(
+            stdout,
+            "\nPassed: %u, Failed: %u, Incomplete: %u\n",
+            test_result->passed_count,
+            test_result->failed_count,
+            test_result->incomplete_count
+        );
     } else {
         fprintf(stdout, "\tThere is no any test cases!\n");
     }
