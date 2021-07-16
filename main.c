@@ -35,10 +35,26 @@
 #include "headers/show_result.h"
 #include "headers/allocate.h"
 #include "headers/version.h"
+#include "headers/list-iterator.h"
 
 
 bool option_show_allocator_stats = false;
 bool option_show_version = false;
+
+void * test_case_runner_visiter(void * object, void * context)
+{
+    struct abstract_test_case * test_case;
+    struct abstract_test_case_result * test_case_result;
+    struct test_result * test_result;
+
+    test_result = (struct test_result *)context;
+    test_case = list_get_owner((struct list *)object, struct abstract_test_case, list_entry);
+    test_case_result = test_case_run(test_case);
+
+    test_result_add_test_case_result(test_result, test_case_result);
+
+    return test_case_result;
+}
 
 int main(int argc, char * argv[])
 {
@@ -81,36 +97,14 @@ int main(int argc, char * argv[])
     struct test * test = assemble_test(filename, ast_cases);
 
     struct test_result * test_result = make_test_result(test);
-    struct abstract_test_case_result * test_case_result;
-    struct abstract_test_case * test_case;
-    bool has_cases = !list_is_empty(&test->cases);
 
-    fprintf(stdout, "Test: %s\n", test->name->value);
+    struct list_iterator iterator;
+    list_iterator_init(&iterator, test->cases.next, &test->cases);
 
-    if (has_cases) {
-        list_foreach(iterator, &test->cases, {
-            test_case = list_get_owner(iterator, struct abstract_test_case, list_entry);
-
-            test_case_result = test_case_run(test_case);
-
-            test_result_add_test_case_result(test_result, test_case_result);
-
-            show_test_case_result(test_case_result, stdout);
-        });
-
-        fprintf(
-            stdout,
-            "\nPassed: %u, Failed: %u, Incomplete: %u\n",
-            test_result->passed_count,
-            test_result->failed_count,
-            test_result->incomplete_count
-        );
-    } else {
-        fprintf(stdout, "\tThere is no any test cases!\n");
-    }
+    show_each_test_case_result(stdout, &iterator, test_case_runner_visiter, (void *)test_result);
 
     if (option_show_allocator_stats) {
-        printf("\n\n\n");
+        fprintf(stdout, "\n\n\n");
 
         show_allocator_stats(stdout, SHOW_STAT_ALL_ALLOCATORS);
     }

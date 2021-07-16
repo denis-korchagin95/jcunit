@@ -120,3 +120,33 @@ void print_program_runner_error(struct program_runner_test_case_result * test_ca
             break;
     }
 }
+
+void show_each_test_case_result(
+    FILE * output,
+    struct list_iterator * iterator,
+    list_iterator_visiter_func * visiter_func,
+    void * context
+)
+{
+    if (list_iterator_finished(iterator)) {
+        fprintf(output, "\tThere is no any test cases!\n");
+        return;
+    }
+    struct test_result * test_result = (struct test_result *)context;
+    fprintf(output, "Test: %s\n", test_result->test->name->value);
+    struct abstract_test_case_result * test_case_result;
+    for(;;) {
+        test_case_result = list_iterator_visit(iterator, visiter_func, context);
+        if (test_case_result == NULL) {
+            break;
+        }
+        show_test_case_result(test_case_result, stdout);
+    }
+    fprintf(
+        output,
+        "\nPassed: %u, Failed: %u, Incomplete: %u\n",
+        test_result->passed_count,
+        test_result->failed_count,
+        test_result->incomplete_count
+    );
+}

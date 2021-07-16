@@ -26,7 +26,15 @@
 #define JCUNIT_SHOW_RESULT_H 1
 
 #include "runner.h"
+#include "list-iterator.h"
 
 void show_test_case_result(struct abstract_test_case_result * test_case_result, FILE * output);
+
+void show_each_test_case_result(
+    FILE * output,
+    struct list_iterator * iterator,
+    list_iterator_visiter_func * visiter_func,
+    void * context
+);
 
 #endif /* JCUNIT_SHOW_RESULT_H */
