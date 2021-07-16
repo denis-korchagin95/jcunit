@@ -150,3 +150,19 @@ void show_each_test_case_result(
         test_result->incomplete_count
     );
 }
+
+void * test_case_runner_visiter(void * object, void * context)
+{
+    struct abstract_test_case * test_case;
+    struct abstract_test_case_result * test_case_result;
+    struct test_result * test_result;
+
+    test_result = (struct test_result *)context;
+    test_case = list_get_owner((struct list *)object, struct abstract_test_case, list_entry);
+    test_case_result = test_case_run(test_case);
+
+    test_result_add_test_case_result(test_result, test_case_result);
+
+    return test_case_result;
+}
+

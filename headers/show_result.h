@@ -37,4 +37,6 @@ void show_each_test_case_result(
     void * context
 );
 
+void * test_case_runner_visiter(void * object, void * context);
+
 #endif /* JCUNIT_SHOW_RESULT_H */
