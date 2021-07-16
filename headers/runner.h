@@ -31,7 +31,7 @@
 #define TEST_CASE_RESULT_STATUS_PASS (1)
 #define TEST_CASE_RESULT_STATUS_FAIL (2)
 
-#define MAX_TEST_CASE_GIVEN_FILENAME_LEN (50)
+#define TEST_CASE_RESULT_KIND_PROGRAM_RUNNER (1)
 
 struct test_result
 {
@@ -41,23 +41,30 @@ struct test_result
     unsigned int failed_count;
 };
 
-struct test_case_result
-{
+struct abstract_test_case_result {
     struct list list_entry;
-    struct string * test_case_name;
-    struct string * executable;
+    struct string * name;
     struct string * expected;
     struct string * actual;
     unsigned int status;
-    unsigned int error_code;
-    char given_filename[MAX_TEST_CASE_GIVEN_FILENAME_LEN];
+    unsigned int kind;
 };
 
-struct test_case_result * test_case_run(struct abstract_test_case * test_case);
+struct program_runner_test_case_result {
+    struct abstract_test_case_result base;  /* this must be a first member */
+    struct string * given_filename;
+    struct string * executable;
+    unsigned int error_code;
+};
+
+struct abstract_test_case_result * test_case_run(struct abstract_test_case * test_case);
 
 struct test_result * make_test_result(struct test * test);
-void test_result_add_test_case_result(struct test_result * test_result, struct test_case_result * test_case_result);
+void test_result_add_test_case_result(
+    struct test_result * test_result,
+    struct abstract_test_case_result * test_case_result
+);
 
-typedef struct test_case_result * test_case_runner_func(struct abstract_test_case * test_case);
+typedef struct abstract_test_case_result * test_case_runner_func(struct abstract_test_case * test_case);
 
 #endif /* JCUNIT_RUNNER_H */

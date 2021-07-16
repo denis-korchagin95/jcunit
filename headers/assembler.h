@@ -63,7 +63,7 @@ struct abstract_test_case {
 };
 
 struct program_runner_test_case {
-    struct abstract_test_case base;
+    struct abstract_test_case base;         /* this must be a first member */
     struct string * given_file_content;
     struct string * program_path;
     struct string * expected_output;

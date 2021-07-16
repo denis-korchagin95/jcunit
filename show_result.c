@@ -34,9 +34,12 @@
 static const char * pass_prefix = "\033[42mPASS\033[0m";
 static const char * fail_prefix = "\033[41mFAIL\033[0m";
 
-static const char * resolve_status_prefix(struct test_case_result * test_case_result);
+static const char * resolve_status_prefix(struct abstract_test_case_result * test_case_result);
+static bool has_test_case_result_error(struct abstract_test_case_result * test_case_result);
+static void print_error(struct abstract_test_case_result * test_case_result, FILE * output);
+static void print_program_runner_error(struct program_runner_test_case_result * test_case_result, FILE * output);
 
-void show_test_case_result(struct test_case_result * test_case_result, FILE * output)
+void show_test_case_result(struct abstract_test_case_result * test_case_result, FILE * output)
 {
     assert(test_case_result != NULL);
 
@@ -47,44 +50,67 @@ void show_test_case_result(struct test_case_result * test_case_result, FILE * ou
         exit(1);
     }
 
-    fprintf(output, "\t%s %s\n", prefix, test_case_result->test_case_name->value);
+    fprintf(output, "\t%s %s\n", prefix, test_case_result->name->value);
 
-    if (test_case_result->error_code != ERROR_CODE_NONE) {
-        switch (test_case_result->error_code) {
-            case ERROR_CODE_FILE_NOT_FOUND:
-                fprintf(
-                        stdout,
-                        "\033[0;31mThe file \"%s\" was not found!\033[0m\n",
-                        test_case_result->executable->value
-                );
-                break;
-            case ERROR_CODE_NOT_EXECUTABLE:
-                fprintf(
-                        stdout,
-                        "\033[0;31mThe file \"%s\" is not executable!\033[0m\n",
-                        test_case_result->executable->value
-                );
-                break;
-            case ERROR_CODE_READ_CHILD_DATA:
-                fprintf(stdout, "\033[0;31mCan't read the program data!\033[0m\n");
-                break;
-        }
+    bool has_error = has_test_case_result_error(test_case_result);
+
+    if (has_error) {
+        print_error(test_case_result, output);
     }
 
-    if (
-            test_case_result->error_code == ERROR_CODE_NONE &&
-            test_case_result->status == TEST_CASE_RESULT_STATUS_FAIL
-            ) {
+    if (!has_error &&test_case_result->status == TEST_CASE_RESULT_STATUS_FAIL) {
         fprintf(output, "--- Expected\n%s$\n", test_case_result->expected->value);
         fprintf(output, "+++ Actual\n%s$\n", test_case_result->actual->value);
     }
 }
 
-static const char * resolve_status_prefix(struct test_case_result * test_case_result)
+static const char * resolve_status_prefix(struct abstract_test_case_result * test_case_result)
 {
     switch (test_case_result->status) {
         case TEST_CASE_RESULT_STATUS_PASS: return pass_prefix;
         case TEST_CASE_RESULT_STATUS_FAIL: return fail_prefix;
     }
     return NULL;
+}
+
+bool has_test_case_result_error(struct abstract_test_case_result * test_case_result)
+{
+    if (test_case_result->kind == TEST_CASE_RESULT_KIND_PROGRAM_RUNNER) {
+        return ((struct program_runner_test_case_result *)test_case_result)->error_code != ERROR_CODE_NONE;
+    }
+    return false;
+}
+
+void print_error(struct abstract_test_case_result * test_case_result, FILE * output)
+{
+    switch (test_case_result->kind) {
+        case TEST_CASE_RESULT_KIND_PROGRAM_RUNNER:
+            print_program_runner_error((struct program_runner_test_case_result *)test_case_result, output);
+            break;
+    }
+}
+
+void print_program_runner_error(struct program_runner_test_case_result * test_case_result, FILE * output)
+{
+    switch (test_case_result->error_code) {
+        case ERROR_CODE_NONE:
+            break;
+        case ERROR_CODE_FILE_NOT_FOUND:
+            fprintf(
+                    output,
+                    "\033[0;31mThe file \"%s\" was not found!\033[0m\n",
+                    test_case_result->executable->value
+            );
+            break;
+        case ERROR_CODE_NOT_EXECUTABLE:
+            fprintf(
+                    output,
+                    "\033[0;31mThe file \"%s\" is not executable!\033[0m\n",
+                    test_case_result->executable->value
+            );
+            break;
+        case ERROR_CODE_READ_CHILD_DATA:
+            fprintf(output, "\033[0;31mCan't read the program data!\033[0m\n");
+            break;
+    }
 }

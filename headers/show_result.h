@@ -27,6 +27,6 @@
 
 #include "runner.h"
 
-void show_test_case_result(struct test_case_result * test_case_result, FILE * output);
+void show_test_case_result(struct abstract_test_case_result * test_case_result, FILE * output);
 
 #endif /* JCUNIT_SHOW_RESULT_H */

@@ -71,7 +71,7 @@ int main(int argc, char * argv[])
     struct test * test = assemble_test(filename, ast_cases);
 
     struct test_result * test_result = make_test_result(test);
-    struct test_case_result * test_case_result;
+    struct abstract_test_case_result * test_case_result;
     struct abstract_test_case * test_case;
     bool has_cases = !list_is_empty(&test->cases);
 
