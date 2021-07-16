@@ -34,10 +34,11 @@
 #include "headers/runner.h"
 #include "headers/show_result.h"
 #include "headers/allocate.h"
+#include "headers/version.h"
 
 
 bool option_show_allocator_stats = false;
-
+bool option_show_version = false;
 
 int main(int argc, char * argv[])
 {
@@ -46,8 +47,12 @@ int main(int argc, char * argv[])
     char * filename = NULL;
     for(i = 1; i < argc; ++i) {
         arg = argv[i];
-        if (strncmp("--show-allocator-stats", arg, sizeof("--show-allocator-stats")) == 0) {
+        if (strncmp(arg, "--show-allocator-stats", sizeof("--show-allocator-stats")) == 0) {
             option_show_allocator_stats = true;
+            continue;
+        }
+        if (strncmp(arg, "--version", sizeof("--version")) == 0) {
+            option_show_version = true;
             continue;
         }
         if (strncmp("--", arg, 2) == 0) {
@@ -55,6 +60,11 @@ int main(int argc, char * argv[])
             exit(1);
         }
         filename = arg;
+    }
+
+    if (option_show_version) {
+        fprintf(stdout, "jcunit version %s\n", JCUNIT_VERSION);
+        exit(0);
     }
 
     if (filename == NULL) {
