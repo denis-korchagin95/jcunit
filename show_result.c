@@ -31,8 +31,9 @@
 #include "headers/child_process.h"
 
 
-static const char * pass_prefix = "\033[42mPASS\033[0m";
-static const char * fail_prefix = "\033[41mFAIL\033[0m";
+static const char * pass_prefix = "\033[42mPASS\033[0m      ";
+static const char * fail_prefix = "\033[41mFAIL\033[0m      ";
+static const char * incomplete_prefix = "\033[43mINCOMPLETE\033[0m";
 
 static const char * resolve_status_prefix(struct abstract_test_case_result * test_case_result);
 static bool has_test_case_result_error(struct abstract_test_case_result * test_case_result);
@@ -52,6 +53,10 @@ void show_test_case_result(struct abstract_test_case_result * test_case_result, 
 
     fprintf(output, "\t%s %s\n", prefix, test_case_result->name->value);
 
+    if (test_case_result->kind == TEST_CASE_RESULT_STATUS_INCOMPLETE) {
+        return;
+    }
+
     bool has_error = has_test_case_result_error(test_case_result);
 
     if (has_error) {
@@ -69,6 +74,7 @@ static const char * resolve_status_prefix(struct abstract_test_case_result * tes
     switch (test_case_result->status) {
         case TEST_CASE_RESULT_STATUS_PASS: return pass_prefix;
         case TEST_CASE_RESULT_STATUS_FAIL: return fail_prefix;
+        case TEST_CASE_RESULT_STATUS_INCOMPLETE: return incomplete_prefix;
     }
     return NULL;
 }

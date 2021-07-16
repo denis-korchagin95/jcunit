@@ -80,6 +80,7 @@ int main(int argc, char * argv[])
     if (has_cases) {
         list_foreach(iterator, &test->cases, {
             test_case = list_get_owner(iterator, struct abstract_test_case, list_entry);
+
             test_case_result = test_case_run(test_case);
 
             test_result_add_test_case_result(test_result, test_case_result);

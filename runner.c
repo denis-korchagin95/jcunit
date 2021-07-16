@@ -51,6 +51,7 @@ static void try_to_run_program(
 );
 static bool is_test_case_passes(struct string * expected, struct process_output * output);
 static int resolve_run_mode_by_stream_code(unsigned int stream_code);
+static struct abstract_test_case_result * run_incomplete_test_case(struct abstract_test_case * test_case);
 
 static test_case_runner_func * resolve_test_case_runner(struct abstract_test_case * test_case);
 
@@ -63,6 +64,9 @@ static char given_filename[MAX_TEST_CASE_GIVEN_FILENAME_LEN];
 
 struct abstract_test_case_result * test_case_run(struct abstract_test_case * test_case)
 {
+    if (test_case->flags & TEST_CASE_FLAG_INCOMPLETE) {
+        return run_incomplete_test_case(test_case);
+    }
     test_case_runner_func * runner = resolve_test_case_runner(test_case);
     if (runner == NULL) {
         fprintf(stderr, "There is no any runner to run the test case \"%s\"!", test_case->name->value);
@@ -169,6 +173,7 @@ struct test_result * make_test_result(struct test * test)
     test_result->test = test;
     test_result->failed_count = 0;
     test_result->passed_count = 0;
+    test_result->incomplete_count = 0;
     return test_result;
 }
 
@@ -188,6 +193,9 @@ void test_result_add_test_case_result(
             break;
         case TEST_CASE_RESULT_STATUS_FAIL:
             ++test_result->failed_count;
+            break;
+        case TEST_CASE_RESULT_STATUS_INCOMPLETE:
+            ++test_result->incomplete_count;
             break;
         default:
             fprintf(stderr, "The unknown status %d of test case result!\n", test_case_result->status);
@@ -247,4 +255,16 @@ struct abstract_test_case_result * program_runner_test_case_runner(struct abstra
     test_case_result->error_code = output.error_code;
 
     return (struct abstract_test_case_result *)test_case_result;
+}
+
+struct abstract_test_case_result * run_incomplete_test_case(struct abstract_test_case * test_case)
+{
+    struct abstract_test_case_result * result = alloc_abstract_test_case_result();
+    memset((void *)&result->list_entry, 0, sizeof(struct list));
+    result->status = TEST_CASE_RESULT_STATUS_INCOMPLETE;
+    result->actual = NULL;
+    result->expected = NULL;
+    result->name = test_case->name;
+    result->kind = TEST_CASE_RESULT_KIND_NONE;
+    return result;
 }

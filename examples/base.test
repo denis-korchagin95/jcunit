@@ -20,3 +20,10 @@
 <TOKEN_EOF>
 
 @endtest
+
+@test("Test Case #3")
+@given("file")
+@@test
+
+@whenRun("./bin/test-tokenizer")
+@endtest
