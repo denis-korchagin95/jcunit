@@ -82,13 +82,9 @@ struct tokenizer_context * make_tokenizer_context(const char * filename)
         fprintf(stderr, "Can't read file \"%s\": %s\n", filename, strerror(errno));
         exit(1);
     }
+    memset((void *)context, 0, sizeof(struct tokenizer_context));
     context->filename = filename;
     context->source = source;
-    context->token_buffer[0] = NULL;
-    context->token_buffer_pos = 0;
-    context->char_buffer[0] = '\0';
-    context->char_buffer_pos = 0;
-    context->mode = 0;
     return context;
 }
 

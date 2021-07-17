@@ -152,15 +152,8 @@ struct abstract_test_case * program_runner_test_case_assembler(struct ast_test_c
 struct program_runner_test_case * make_program_runner_test_case(void)
 {
     struct program_runner_test_case * test_case = alloc_program_runner_test_case();
-    memset(&test_case->base.list_entry, 0, sizeof(struct list));
-    test_case->base.name = NULL;
-    test_case->base.test = NULL;
+    memset((void *)test_case, 0, sizeof(struct program_runner_test_case));
     test_case->base.kind = TEST_CASE_KIND_PROGRAM_RUNNER;
-    test_case->base.flags = 0;
-    test_case->given_file_content = NULL;
-    test_case->program_path = NULL;
-    test_case->expected_output = NULL;
-    test_case->stream_code = TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_NONE;
     return test_case;
 }
 

@@ -22,8 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <memory.h>
-
 #include "headers/list.h"
 #include "headers/allocate.h"
 
@@ -45,7 +43,6 @@ struct list * make_list(void)
 struct slist * make_slist(void)
 {
     struct slist * list = alloc_slist();
-    memset((void *)list, 0, sizeof(struct slist));
     list->next = list;
     return list;
 }
