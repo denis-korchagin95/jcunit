@@ -79,6 +79,7 @@ int main(int argc, char * argv[])
     struct tokenizer_context * context = make_tokenizer_context(filename);
     struct slist * ast_cases = parse_test(context);
     destroy_tokenizer_context(context);
+    context = NULL;
 
     struct test * test = assemble_test(filename, ast_cases);
 

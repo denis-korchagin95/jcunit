@@ -90,9 +90,12 @@ struct tokenizer_context * make_tokenizer_context(const char * filename)
 
 void destroy_tokenizer_context(struct tokenizer_context * context)
 {
+    assert(context != NULL);
+
     if (context->source != NULL) {
         fclose(context->source);
     }
+    free_tokenizer_context(context);
 }
 
 void init_tokenizer(void)

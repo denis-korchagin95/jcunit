@@ -54,7 +54,8 @@ void * slist_iterator_visit(struct slist_iterator * iterator, list_iterator_visi
     if (iterator->next == iterator->end) {
         return NULL;
     }
+    struct slist * next = iterator->next->next;
     void * result = visiter_func((void *)iterator->next, context);
-    iterator->next = iterator->next->next;
+    iterator->next = next;
     return result;
 }
