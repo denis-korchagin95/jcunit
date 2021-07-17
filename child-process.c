@@ -29,7 +29,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "headers/child_process.h"
+#include "headers/child-process.h"
 
 #define PIPE_COUNT (2)
 

@@ -32,7 +32,7 @@
 
 #include "headers/runner.h"
 #include "headers/allocate.h"
-#include "headers/child_process.h"
+#include "headers/child-process.h"
 #include "headers/fs.h"
 
 

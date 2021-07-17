@@ -32,7 +32,7 @@
 #include "headers/parse.h"
 #include "headers/assembler.h"
 #include "headers/runner.h"
-#include "headers/show_result.h"
+#include "headers/show-result.h"
 #include "headers/allocate.h"
 #include "headers/version.h"
 #include "headers/list-iterator.h"

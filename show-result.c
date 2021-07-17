@@ -27,8 +27,8 @@
 #include <assert.h>
 
 
-#include "headers/show_result.h"
-#include "headers/child_process.h"
+#include "headers/show-result.h"
+#include "headers/child-process.h"
 
 
 static const char * pass_prefix = "\033[42mPASS\033[0m      ";
