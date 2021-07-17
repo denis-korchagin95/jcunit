@@ -35,18 +35,25 @@ Write a test in the following format:
 <TOKEN_EOF>
 
 @endtest
+
+@test("Test Case #3")
+@given("file")
+@@test
+
+@whenRun("./bin/test-tokenizer")
+@endtest
 ```
 
 You can get the full test's language grammar by link [JCUnit Test's Language Grammar](./test-grammar) and some examples in directory `./examples/`
 
-After that run the JCUnit with that test file `jcunit ./test.test`
+After that, run the JCUnit with that test file `jcunit ./test.test`
 
 It will show you the results of test execution:
 
 ```text
 Test: test.test
-	PASS Test Case #1
-	FAIL Test Case #2
+	PASS       Test Case #1
+	FAIL       Test Case #2
 --- Expected
 <TOKEN_DIRECTIVE 'test'>
 <TOKEN_EOF>
@@ -56,6 +63,9 @@ $
 <TOKEN_NEWLINE '\n'>
 <TOKEN_EOF>
 $
+	INCOMPLETE Test Case #3
+
+Passed: 1, Failed: 1, Incomplete: 1
 ```
 
 ## About
