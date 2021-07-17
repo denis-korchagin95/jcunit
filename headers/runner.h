@@ -37,7 +37,8 @@
 
 struct test_result
 {
-    struct list test_case_results;
+    struct slist test_case_results;
+    struct slist ** slist_end;
     struct test * test;
     unsigned int passed_count;
     unsigned int failed_count;
@@ -45,7 +46,7 @@ struct test_result
 };
 
 struct abstract_test_case_result {
-    struct list list_entry;
+    struct slist slist_entry;
     struct string * name;
     struct string * expected;
     struct string * actual;

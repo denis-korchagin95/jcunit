@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 
 #include "headers/assembler.h"
@@ -33,7 +34,7 @@
 #include "headers/allocate.h"
 
 
-static struct test * make_test(void);
+static struct test * make_test(struct string * name);
 static struct program_runner_test_case * make_program_runner_test_case(void);
 
 static struct abstract_test_case * assemble_ast_test_case(struct ast_test_case * ast_test_case);
@@ -42,24 +43,23 @@ static int resolve_stream_code_by_name(struct string * name);
 static struct abstract_test_case * program_runner_test_case_assembler(struct ast_test_case * ast_test_case);
 
 
-struct test * assemble_test(const char * filename, struct list * ast_test_cases)
+struct test * assemble_test(const char * filename, struct slist * ast_test_cases)
 {
     const char * test_name = basename(filename);
     if (test_name == NULL) {
         test_name = "<unnamed>";
     }
 
-    struct test * test = make_test();
-    test->name = make_string(test_name, strlen(test_name));
-
     struct abstract_test_case * test_case;
     struct ast_test_case * ast_test_case;
 
-    list_foreach(iterator, ast_test_cases, {
+    struct test * test = make_test(make_string(test_name, strlen(test_name)));
+
+    slist_foreach(iterator, ast_test_cases, {
         ast_test_case = list_get_owner(iterator, struct ast_test_case, list_entry);
         test_case = assemble_ast_test_case(ast_test_case);
         test_case->test = test;
-        list_append(&test->cases, &test_case->list_entry);
+        slist_append(test->cases_end, &test_case->list_entry);
         ++test->case_count;
     });
 
@@ -68,6 +68,8 @@ struct test * assemble_test(const char * filename, struct list * ast_test_cases)
 
 struct abstract_test_case * assemble_ast_test_case(struct ast_test_case * ast_test_case)
 {
+    assert(ast_test_case != NULL);
+
     test_case_assembler_func * assembler = resolve_test_case_assembler(ast_test_case);
     if (assembler == NULL) {
         fprintf(stderr, "Cannot find any assembler to assemble the test case \"%s\"!", ast_test_case->name->value);
@@ -83,17 +85,19 @@ struct abstract_test_case * assemble_ast_test_case(struct ast_test_case * ast_te
     return test_case;
 }
 
-struct test * make_test(void)
+struct test * make_test(struct string * name)
 {
     struct test * test = alloc_test();
-    list_init(&test->cases);
-    test->case_count = 0;
-    test->name = NULL;
+    memset((void *)test, 0, sizeof(struct test));
+    slist_init(&test->cases, test->cases_end);
+    test->name = name;
     return test;
 }
 
 test_case_assembler_func * resolve_test_case_assembler(struct ast_test_case * ast_test_case)
 {
+    assert(ast_test_case != NULL);
+
     struct ast_requirement * requirement = find_ast_requirement_by_name(ast_test_case, WHEN_RUN_REQUIREMENT_NAME);
     if (requirement != NULL) {
         return program_runner_test_case_assembler;

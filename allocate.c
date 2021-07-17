@@ -50,6 +50,7 @@ allocator(tokenizer_context, struct tokenizer_context, 4)
 allocator(ast_test_case, struct ast_test_case, 256)
 allocator(ast_requirement, struct ast_requirement, 512)
 allocator(list, struct list, 512)
+allocator(slist, struct slist, 512)
 allocator(test, struct test, 32)
 allocator(test_result, struct test_result, 256)
 allocator(abstract_test_case_result, struct abstract_test_case_result, 256)
@@ -81,6 +82,7 @@ static struct allocator_stat stats[] = {
             &ast_requirement_allocated
         },
         { "list", &max_list_pool_size, &list_pool_pos, &list_freed, &list_allocated },
+        { "slist", &max_slist_pool_size, &slist_pool_pos, &slist_freed, &slist_allocated },
         { "test", &max_test_pool_size, &test_pool_pos, &test_freed, &test_allocated },
         {
             "test_result",

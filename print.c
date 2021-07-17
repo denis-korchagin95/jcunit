@@ -58,12 +58,10 @@ void print_token(struct token * token, FILE * output)
 void print_ast_test_case(struct ast_test_case * test_case, FILE * output)
 {
     fprintf(output, "test: %.*s\n", test_case->name->len, test_case->name->value);
-    struct list * iterator = test_case->requirements.next;
-    while (iterator != &test_case->requirements) {
+    slist_foreach(iterator, &test_case->requirements, {
         struct ast_requirement * requirement = list_get_owner(iterator, struct ast_requirement, list_entry);
         print_ast_requirement(requirement, output);
-        iterator = iterator->next;
-    }
+    });
 }
 
 void print_ast_requirement(struct ast_requirement * requirement, FILE * output)

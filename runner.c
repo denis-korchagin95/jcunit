@@ -34,6 +34,7 @@
 #include "headers/allocate.h"
 #include "headers/child-process.h"
 #include "headers/fs.h"
+#include "headers/list.h"
 
 
 #define MAX_PROCESS_OUTPUT_BUFFER_LEN (8192)
@@ -83,14 +84,9 @@ void fill_file_from_string(FILE * file, struct string * content)
 struct program_runner_test_case_result * make_program_runner_test_case_result(struct string * name)
 {
     struct program_runner_test_case_result * test_case_result = alloc_program_runner_test_case_result();
-    memset((void *)&test_case_result->base.list_entry, 0, sizeof(struct list));
+    memset((void *)test_case_result, 0, sizeof(struct program_runner_test_case_result));
     test_case_result->base.name = name;
-    test_case_result->base.status = TEST_CASE_RESULT_STATUS_NONE;
-    test_case_result->base.expected = NULL;
-    test_case_result->base.actual = NULL;
     test_case_result->base.kind = TEST_CASE_RESULT_KIND_PROGRAM_RUNNER;
-    test_case_result->executable = NULL;
-    test_case_result->error_code = ERROR_CODE_NONE;
     return test_case_result;
 }
 
@@ -169,11 +165,9 @@ bool is_test_case_passes(struct string * expected, struct process_output * outpu
 struct test_result * make_test_result(struct test * test)
 {
     struct test_result * test_result = alloc_test_result();
-    list_init(&test_result->test_case_results);
+    memset((void *)test_result, 0, sizeof(struct test_result));
+    slist_init(&test_result->test_case_results, test_result->slist_end);
     test_result->test = test;
-    test_result->failed_count = 0;
-    test_result->passed_count = 0;
-    test_result->incomplete_count = 0;
     return test_result;
 }
 
@@ -185,7 +179,7 @@ void test_result_add_test_case_result(
     assert(test_result != NULL);
     assert(test_case_result != NULL);
 
-    list_append(&test_result->test_case_results, &test_case_result->list_entry);
+    slist_append(test_result->slist_end, &test_case_result->slist_entry);
 
     switch (test_case_result->status) {
         case TEST_CASE_RESULT_STATUS_PASS:
@@ -260,11 +254,8 @@ struct abstract_test_case_result * program_runner_test_case_runner(struct abstra
 struct abstract_test_case_result * run_incomplete_test_case(struct abstract_test_case * test_case)
 {
     struct abstract_test_case_result * result = alloc_abstract_test_case_result();
-    memset((void *)&result->list_entry, 0, sizeof(struct list));
+    memset((void *)result, 0, sizeof(struct abstract_test_case_result));
     result->status = TEST_CASE_RESULT_STATUS_INCOMPLETE;
-    result->actual = NULL;
-    result->expected = NULL;
     result->name = test_case->name;
-    result->kind = TEST_CASE_RESULT_KIND_NONE;
     return result;
 }

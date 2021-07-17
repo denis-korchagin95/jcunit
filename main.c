@@ -77,15 +77,15 @@ int main(int argc, char * argv[])
     init_tokenizer();
 
     struct tokenizer_context * context = make_tokenizer_context(filename);
-    struct list * ast_cases = parse_test(context);
+    struct slist * ast_cases = parse_test(context);
     destroy_tokenizer_context(context);
 
     struct test * test = assemble_test(filename, ast_cases);
 
     struct test_result * test_result = make_test_result(test);
 
-    struct list_iterator iterator;
-    list_iterator_init(&iterator, test->cases.next, &test->cases);
+    struct slist_iterator iterator;
+    slist_iterator_init(&iterator, test->cases.next, &test->cases);
 
     show_each_test_case_result(stdout, &iterator, test_case_runner_visiter, (void *)test_result);
 

@@ -31,6 +31,11 @@ struct list
     struct list * prev;
 };
 
+struct slist
+{
+    struct slist * next;
+};
+
 #define offset_of(type, member) ((size_t)&((type *)0)->member)
 
 #define list_get_owner(entry_ptr, type, member) ((type *)((entry_ptr) - offset_of(type, member)))
@@ -43,6 +48,14 @@ struct list
     }                           \
     while(0)
 
+#define slist_init(ptr, end)                \
+    do                                      \
+    {                                       \
+        (ptr)->next = (ptr);                \
+        (end) = &(ptr)->next;               \
+    }                                       \
+    while(0)
+
 #define list_foreach(iterator_name, head, body)                                     \
     do                                                                              \
     {                                                                               \
@@ -52,9 +65,28 @@ struct list
     }                                                                               \
     while(0)
 
+#define slist_foreach(iterator_name, head, body)                                        \
+    do                                                                                  \
+    {                                                                                   \
+        struct slist * ___begin = (head);                                               \
+        struct slist * iterator_name = ___begin->next;                                  \
+        for (; iterator_name != ___begin; iterator_name = iterator_name->next) body     \
+    }                                                                                   \
+    while(0)
+
 #define list_is_empty(head) ((head)->next == (head))
 
+#define slist_append(end, new)      \
+    do                              \
+    {                               \
+        (new)->next = *(end);       \
+        *(end) = (new);             \
+        (end) = &(new)->next;       \
+    }                               \
+    while(0)
+
 struct list * make_list(void);
+struct slist * make_slist(void);
 
 void list_append(struct list * head, struct list * new);
 

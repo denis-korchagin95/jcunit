@@ -28,6 +28,6 @@
 #include "token.h"
 #include "list.h"
 
-struct list * parse_test(struct tokenizer_context * context);
+struct slist * parse_test(struct tokenizer_context * context);
 
 #endif /* JCUNIT_PARSE_H */

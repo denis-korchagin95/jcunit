@@ -49,13 +49,14 @@
 #define TEST_CASE_PROGRAM_RUNNER_STREAM_STDERR_NAME "stderr"
 
 struct test {
-    struct list cases;
+    struct slist cases;
+    struct slist ** cases_end;
     struct string * name;
     unsigned int case_count;
 };
 
 struct abstract_test_case {
-    struct list list_entry;
+    struct slist list_entry;
     struct string * name;
     struct test * test;
     unsigned int kind;
@@ -70,7 +71,7 @@ struct program_runner_test_case {
     unsigned int stream_code;
 };
 
-struct test * assemble_test(const char * filename, struct list * ast_test_cases);
+struct test * assemble_test(const char * filename, struct slist * ast_test_cases);
 
 typedef struct abstract_test_case * test_case_assembler_func(struct ast_test_case * ast_test_case);
 

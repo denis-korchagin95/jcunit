@@ -32,7 +32,7 @@ void show_test_case_result(struct abstract_test_case_result * test_case_result, 
 
 void show_each_test_case_result(
     FILE * output,
-    struct list_iterator * iterator,
+    struct slist_iterator * iterator,
     list_iterator_visiter_func * visiter_func,
     void * context
 );

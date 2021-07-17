@@ -30,14 +30,15 @@
 
 struct ast_test_case
 {
-    struct list list_entry;
-    struct list requirements;
+    struct slist list_entry;
+    struct slist requirements;
+    struct slist ** requirements_end;
     struct string * name;
 };
 
 struct ast_requirement
 {
-    struct list list_entry;
+    struct slist list_entry;
     struct string * name;
     struct string * argument;
     struct string * content;

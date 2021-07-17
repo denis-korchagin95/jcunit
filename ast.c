@@ -32,18 +32,14 @@
 struct ast_test_case * make_ast_test_case(void)
 {
     struct ast_test_case * ast_test_case = alloc_ast_test_case();
-    list_init(&ast_test_case->requirements);
-    memset((void *)&ast_test_case->list_entry, 0, sizeof(struct list));
-    ast_test_case->name = NULL;
+    memset((void *)ast_test_case, 0, sizeof(struct ast_test_case));
+    slist_init(&ast_test_case->requirements, ast_test_case->requirements_end);
     return ast_test_case;
 }
 
 struct ast_requirement * make_ast_requirement(void)
 {
     struct ast_requirement * requirement = alloc_ast_requirement();
-    memset((void *)&requirement->list_entry, 0, sizeof(struct list));
-    requirement->name = NULL;
-    requirement->argument = NULL;
-    requirement->content = NULL;
+    memset((void *)requirement, 0, sizeof(struct ast_requirement));
     return requirement;
 }

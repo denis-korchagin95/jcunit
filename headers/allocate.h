@@ -87,6 +87,7 @@ declare_allocator(string, struct string);
 declare_allocator(ast_test_case, struct ast_test_case);
 declare_allocator(ast_requirement, struct ast_requirement);
 declare_allocator(list, struct list);
+declare_allocator(slist, struct slist);
 declare_allocator(test, struct test);
 declare_allocator(test_result, struct test_result);
 declare_allocator(abstract_test_case_result, struct abstract_test_case_result);

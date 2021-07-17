@@ -40,11 +40,12 @@ static void parse_directive(struct tokenizer_context * context, struct string **
 static void release_token(struct token * token);
 
 
-struct list * parse_test(struct tokenizer_context * context)
+struct slist * parse_test(struct tokenizer_context * context)
 {
     struct ast_test_case * ast_test_case;
 
-    struct list * cases = make_list();
+    struct slist * cases = make_slist();
+    struct slist ** cases_end = &cases->next;
 
     struct token * token = peek_one_token(context);
 
@@ -61,7 +62,7 @@ struct list * parse_test(struct tokenizer_context * context)
         }
         ast_test_case = parse_test_case(context);
 
-        list_append(cases, &ast_test_case->list_entry);
+        slist_append(cases_end, &ast_test_case->list_entry);
 
         token = peek_one_token(context);
     }
@@ -110,7 +111,7 @@ void parse_requirement_list(struct tokenizer_context * context, struct ast_test_
 
         requirement = make_ast_requirement();
         parse_requirement(context, requirement);
-        list_append(&(*ast_test_case)->requirements, &requirement->list_entry);
+        slist_append((*ast_test_case)->requirements_end, &requirement->list_entry);
     }
 }
 
