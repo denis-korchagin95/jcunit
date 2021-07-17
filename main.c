@@ -28,14 +28,13 @@
 
 
 #include "headers/token.h"
-#include "headers/list.h"
-#include "headers/parse.h"
 #include "headers/assembler.h"
 #include "headers/runner.h"
 #include "headers/show-result.h"
 #include "headers/allocate.h"
 #include "headers/version.h"
 #include "headers/list-iterator.h"
+#include "headers/compiler.h"
 
 
 bool option_show_allocator_stats = false;
@@ -76,12 +75,7 @@ int main(int argc, char * argv[])
 
     init_tokenizer();
 
-    struct tokenizer_context * context = make_tokenizer_context(filename);
-    struct slist * ast_cases = parse_test(context);
-    destroy_tokenizer_context(context);
-    context = NULL;
-
-    struct test * test = assemble_test(filename, ast_cases);
+    struct test * test = compile_test(filename);
 
     struct test_result * test_result = make_test_result(test);
 

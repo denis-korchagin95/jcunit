@@ -42,6 +42,7 @@ OBJECTS+=util.o
 OBJECTS+=fs.o
 OBJECTS+=version.o
 OBJECTS+=list-iterator.o
+OBJECTS+=compiler.o
 
 ifeq ($(DEVELOPMENT), 1)
 	OBJECTS+=print.o

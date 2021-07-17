@@ -74,6 +74,17 @@ struct slist
     }                                                                                   \
     while(0)
 
+#define slist_foreach_safe(iterator_name, head, body)                                                           \
+    do                                                                                                          \
+    {                                                                                                           \
+        struct slist * ___begin = (head);                                                                       \
+        struct slist * iterator_name = ___begin->next;                                                          \
+        struct slist * ___next = iterator_name->next;                                                           \
+        for (; iterator_name != ___begin; iterator_name = ___next, ___next = iterator_name->next)               \
+            body                                                                                                \
+    }                                                                                                           \
+    while(0)
+
 #define list_is_empty(head) ((head)->next == (head))
 
 #define slist_append(end, new)      \
