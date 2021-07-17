@@ -26,9 +26,27 @@ vpath %.c $(HEADERS)
 
 all: build run
 
-OBJECTS=main.o tokenizer.o allocate.o string.o print.o\
-		list.o ast.o parse.o assembler.o runner.o finder.o child-process.o\
-		show-result.o util.o fs.o version.o list-iterator.o
+OBJECTS+=main.o
+OBJECTS+=tokenizer.o
+OBJECTS+=allocate.o
+OBJECTS+=string.o
+OBJECTS+=list.o
+OBJECTS+=ast.o
+OBJECTS+=parse.o
+OBJECTS+=assembler.o
+OBJECTS+=runner.o
+OBJECTS+=finder.o
+OBJECTS+=child-process.o
+OBJECTS+=show-result.o
+OBJECTS+=util.o
+OBJECTS+=fs.o
+OBJECTS+=version.o
+OBJECTS+=list-iterator.o
+
+ifeq ($(DEVELOPMENT), 1)
+	OBJECTS+=print.o
+endif
+
 OBJECTS_TEST_TOKENIZER=test-tokenizer.o print.o tokenizer.o allocate.o string.o util.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
