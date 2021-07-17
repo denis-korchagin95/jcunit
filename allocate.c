@@ -131,12 +131,14 @@ void show_allocator_stats(FILE * output, unsigned int allocator)
         stat = stats + i;
         fprintf(
             output,
-            "Allocator: %s, total: %u, pool_usage: %u, allocated: %u, freed: %u\n",
+            "Allocator: %s, total: %u, pool_usage: %u, allocated: %u, freed: %u%s%s\n",
             stat->name,
             *stat->total,
             *stat->pool_usage,
             *stat->allocated,
-            *stat->freed
+            *stat->freed,
+            *stat->allocated != *stat->freed ? " [LEAK]" : "",
+            *stat->allocated == *stat->freed && *stat->freed == 0 ? " [UNUSED]" : ""
         );
     }
     unsigned int max_bytes_pool_size = MAX_BYTES_POOL_SIZE;
