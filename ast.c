@@ -29,12 +29,12 @@
 #include "headers/allocate.h"
 
 
-struct ast_test_case * make_ast_test_case(void)
+struct ast_test * make_ast_test(void)
 {
-    struct ast_test_case * ast_test_case = alloc_ast_test_case();
-    memset((void *)ast_test_case, 0, sizeof(struct ast_test_case));
-    slist_init(&ast_test_case->requirements, ast_test_case->requirements_end);
-    return ast_test_case;
+    struct ast_test * ast_test = alloc_ast_test();
+    memset((void *)ast_test, 0, sizeof(struct ast_test));
+    slist_init(&ast_test->requirements);
+    return ast_test;
 }
 
 struct ast_requirement * make_ast_requirement(void)

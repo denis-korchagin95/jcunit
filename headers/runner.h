@@ -27,26 +27,25 @@
 
 #include "assembler.h"
 
-#define TEST_CASE_RESULT_STATUS_NONE        (0)
-#define TEST_CASE_RESULT_STATUS_PASS        (1)
-#define TEST_CASE_RESULT_STATUS_FAIL        (2)
-#define TEST_CASE_RESULT_STATUS_INCOMPLETE  (3)
+#define TEST_RESULT_STATUS_NONE        (0)
+#define TEST_RESULT_STATUS_PASS        (1)
+#define TEST_RESULT_STATUS_FAIL        (2)
+#define TEST_RESULT_STATUS_INCOMPLETE  (3)
 
-#define TEST_CASE_RESULT_KIND_NONE              (0)
-#define TEST_CASE_RESULT_KIND_PROGRAM_RUNNER    (1)
+#define TEST_RESULT_KIND_NONE              (0)
+#define TEST_RESULT_KIND_PROGRAM_RUNNER    (1)
 
-struct test_result
+struct test_suite_result
 {
-    struct slist test_case_results;
-    struct slist ** slist_end;
-    struct test * test;
+    struct slist test_results;
+    struct test_suite * test_suite;
     unsigned int passed_count;
     unsigned int failed_count;
     unsigned int incomplete_count;
 };
 
-struct abstract_test_case_result {
-    struct slist slist_entry;
+struct abstract_test_result {
+    struct slist list_entry;
     struct string * name;
     struct string * expected;
     struct string * actual;
@@ -54,21 +53,22 @@ struct abstract_test_case_result {
     unsigned int kind;
 };
 
-struct program_runner_test_case_result {
-    struct abstract_test_case_result base;  /* this must be a first member */
+struct program_runner_test_result {
+    struct abstract_test_result base;  /* this must be a first member */
     struct string * given_filename;
     struct string * executable;
     unsigned int error_code;
 };
 
-struct abstract_test_case_result * test_case_run(struct abstract_test_case * test_case);
+struct abstract_test_result * test_run(struct abstract_test * test);
 
-struct test_result * make_test_result(struct test * test);
-void test_result_add_test_case_result(
-    struct test_result * test_result,
-    struct abstract_test_case_result * test_case_result
+struct test_suite_result * make_test_suite_result(struct test_suite * test_suite);
+
+void add_test_result_to_test_suite_result(
+    struct test_suite_result * test_suite_result,
+    struct abstract_test_result * test_result
 );
 
-typedef struct abstract_test_case_result * test_case_runner_func(struct abstract_test_case * test_case);
+typedef struct abstract_test_result * test_runner_func(struct abstract_test * test);
 
 #endif /* JCUNIT_RUNNER_H */

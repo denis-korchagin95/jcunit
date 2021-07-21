@@ -4,39 +4,39 @@
 #include "headers/allocate.h"
 
 
-static void release_ast_cases(struct slist * ast_cases);
+static void release_ast_tests(struct slist * ast_tests);
 static void release_ast_requirements(struct slist * ast_requirements);
-static void release_ast_case(struct ast_test_case * ast_test_case);
+static void release_ast_test(struct ast_test * ast_test);
 static void release_ast_requirement(struct ast_requirement * requirement);
 
 
-struct test * compile_test(const char * filename)
+struct test_suite * compile_test_suite(const char * filename)
 {
     struct tokenizer_context * context = make_tokenizer_context(filename);
 
-    struct slist * ast_cases = parse_test(context);
+    struct slist * ast_tests = parse_test_suite(context);
 
     destroy_tokenizer_context(context);
 
-    struct test * test = assemble_test(filename, ast_cases);
+    struct test_suite * test_suite = assemble_test_suite(filename, ast_tests);
 
-    release_ast_cases(ast_cases);
-    free_slist(ast_cases);
+    release_ast_tests(ast_tests);
+    free_slist(ast_tests);
 
-    return test;
+    return test_suite;
 }
 
-static void release_ast_cases(struct slist * ast_cases)
+static void release_ast_tests(struct slist * ast_tests)
 {
-    slist_foreach_safe(iterator, ast_cases, {
-        release_ast_case(list_get_owner(iterator, struct ast_test_case, list_entry));
+    slist_foreach_safe(iterator, ast_tests, {
+        release_ast_test(list_get_owner(iterator, struct ast_test, list_entry));
     });
 }
 
-static void release_ast_case(struct ast_test_case * ast_test_case)
+static void release_ast_test(struct ast_test * ast_test)
 {
-    release_ast_requirements(&ast_test_case->requirements);
-    free_ast_test_case(ast_test_case);
+    release_ast_requirements(&ast_test->requirements);
+    free_ast_test(ast_test);
 }
 
 void release_ast_requirements(struct slist * ast_requirements)

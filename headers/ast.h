@@ -28,11 +28,10 @@
 #include "list.h"
 #include "string.h"
 
-struct ast_test_case
+struct ast_test
 {
     struct slist list_entry;
     struct slist requirements;
-    struct slist ** requirements_end;
     struct string * name;
 };
 
@@ -45,7 +44,7 @@ struct ast_requirement
 };
 
 
-struct ast_test_case * make_ast_test_case(void);
+struct ast_test * make_ast_test(void);
 struct ast_requirement * make_ast_requirement(void);
 
 #endif /* JCUNIT_AST_H */

@@ -13,7 +13,7 @@ If you want only to build it without installation on your computer just run "mak
 Write a test in the following format:
 
 ```text
-@test("Test Case #1")
+@test("Test #1")
 @given("file")
 @@test
 
@@ -25,7 +25,7 @@ Write a test in the following format:
 
 @endtest
 
-@test("Test Case #2")
+@test("Test #2")
 @given("file")
 @@test
 
@@ -36,7 +36,7 @@ Write a test in the following format:
 
 @endtest
 
-@test("Test Case #3")
+@test("Test #3")
 @given("file")
 @@test
 
@@ -52,8 +52,8 @@ It will show you the results of test execution:
 
 ```text
 Test: test.test
-	PASS       Test Case #1
-	FAIL       Test Case #2
+	PASS       Test #1
+	FAIL       Test #2
 --- Expected
 <TOKEN_DIRECTIVE 'test'>
 <TOKEN_EOF>
@@ -63,7 +63,7 @@ $
 <TOKEN_NEWLINE '\n'>
 <TOKEN_EOF>
 $
-	INCOMPLETE Test Case #3
+	INCOMPLETE Test #3
 
 Passed: 1, Failed: 1, Incomplete: 1
 ```

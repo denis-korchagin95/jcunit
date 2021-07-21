@@ -47,15 +47,15 @@ static unsigned int bytes_pool_pos = 0;
 allocator(token, struct token, 512)
 allocator(string, struct string, 512)
 allocator(tokenizer_context, struct tokenizer_context, 4)
-allocator(ast_test_case, struct ast_test_case, 256)
+allocator(ast_test, struct ast_test, 256)
 allocator(ast_requirement, struct ast_requirement, 512)
 allocator(list, struct list, 512)
 allocator(slist, struct slist, 512)
-allocator(test, struct test, 32)
-allocator(test_result, struct test_result, 256)
-allocator(abstract_test_case_result, struct abstract_test_case_result, 256)
-allocator(program_runner_test_case_result, struct program_runner_test_case_result, 256)
-allocator(program_runner_test_case, struct program_runner_test_case, 256)
+allocator(test_suite, struct test_suite, 32)
+allocator(test_suite_result, struct test_suite_result, 256)
+allocator(abstract_test_result, struct abstract_test_result, 256)
+allocator(program_runner_test_result, struct program_runner_test_result, 256)
+allocator(program_runner_test, struct program_runner_test, 256)
 
 static struct allocator_stat stats[] = {
         { "token", &max_token_pool_size, &token_pool_pos, &token_freed, &token_allocated },
@@ -68,11 +68,11 @@ static struct allocator_stat stats[] = {
             &tokenizer_context_allocated
         },
         {
-            "ast_test_case",
-            &max_ast_test_case_pool_size,
-            &ast_test_case_pool_pos,
-            &ast_test_case_freed,
-            &ast_test_case_allocated
+            "ast_test",
+            &max_ast_test_pool_size,
+            &ast_test_pool_pos,
+            &ast_test_freed,
+            &ast_test_allocated
         },
         {
             "ast_requirement",
@@ -83,34 +83,34 @@ static struct allocator_stat stats[] = {
         },
         { "list", &max_list_pool_size, &list_pool_pos, &list_freed, &list_allocated },
         { "slist", &max_slist_pool_size, &slist_pool_pos, &slist_freed, &slist_allocated },
-        { "test", &max_test_pool_size, &test_pool_pos, &test_freed, &test_allocated },
+        { "test_suite", &max_test_suite_pool_size, &test_suite_pool_pos, &test_suite_freed, &test_suite_allocated },
         {
-            "test_result",
-            &max_test_result_pool_size,
-            &test_result_pool_pos,
-            &test_result_freed,
-            &test_result_allocated
+            "test_suite_result",
+            &max_test_suite_result_pool_size,
+            &test_suite_result_pool_pos,
+            &test_suite_result_freed,
+            &test_suite_result_allocated
         },
         {
-            "program_runner_test_case_result",
-            &max_program_runner_test_case_result_pool_size,
-            &program_runner_test_case_result_pool_pos,
-            &program_runner_test_case_result_freed,
-            &program_runner_test_case_result_allocated
+            "program_runner_test_result",
+            &max_program_runner_test_result_pool_size,
+            &program_runner_test_result_pool_pos,
+            &program_runner_test_result_freed,
+            &program_runner_test_result_allocated
         },
         {
-            "program_runner_test_case",
-            &max_program_runner_test_case_pool_size,
-            &program_runner_test_case_pool_pos,
-            &program_runner_test_case_freed,
-            &program_runner_test_case_allocated
+            "program_runner_test",
+            &max_program_runner_test_pool_size,
+            &program_runner_test_pool_pos,
+            &program_runner_test_freed,
+            &program_runner_test_allocated
         },
         {
-            "abstract_test_case_result",
-            &max_abstract_test_case_result_pool_size,
-            &abstract_test_case_result_pool_pos,
-            &abstract_test_case_result_freed,
-            &abstract_test_case_result_allocated
+            "abstract_test_result",
+            &max_abstract_test_result_pool_size,
+            &abstract_test_result_pool_pos,
+            &abstract_test_result_freed,
+            &abstract_test_result_allocated
         }
 };
 

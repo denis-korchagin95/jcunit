@@ -31,26 +31,26 @@
 #include "headers/allocate.h"
 
 
-static struct ast_test_case * parse_test_case(struct tokenizer_context * context);
-static void parse_test_case_prolog(struct tokenizer_context * context, struct ast_test_case ** ast_test_case);
-static void parse_test_case_epilog(struct tokenizer_context * context);
-static void parse_requirement_list(struct tokenizer_context * context, struct ast_test_case ** ast_test_case);
+static struct ast_test * parse_test(struct tokenizer_context * context);
+static void parse_test_prolog(struct tokenizer_context * context, struct ast_test ** ast_test);
+static void parse_test_epilog(struct tokenizer_context * context);
+static void parse_requirement_list(struct tokenizer_context * context, struct ast_test ** ast_test);
 static void parse_requirement(struct tokenizer_context * context, struct ast_requirement * requirement);
 static void parse_directive(struct tokenizer_context * context, struct string ** directive, struct string ** argument);
 static void release_token(struct token * token);
 
 
-struct slist * parse_test(struct tokenizer_context * context)
+struct slist * parse_test_suite(struct tokenizer_context * context)
 {
-    struct ast_test_case * ast_test_case;
+    struct ast_test * ast_test;
 
-    struct slist * cases = make_slist();
-    struct slist ** cases_end = &cases->next;
+    struct slist * tests = make_slist();
+    struct slist ** tests_end = &tests->next;
 
     struct token * token = peek_one_token(context);
 
     while (!is_token_eof(token)) {
-        if (is_token_newline(token)) { /* skip some newline between a test cases */
+        if (is_token_newline(token)) { /* skip some newline between a tests */
             for(;;) {
                 token = get_one_token(context);
                 if (!is_token_newline(token)) {
@@ -60,36 +60,36 @@ struct slist * parse_test(struct tokenizer_context * context)
                 release_token(token);
             }
         }
-        ast_test_case = parse_test_case(context);
+        ast_test = parse_test(context);
 
-        slist_append(cases_end, &ast_test_case->list_entry);
+        slist_append(tests_end, &ast_test->list_entry);
 
         token = peek_one_token(context);
     }
 
-    return cases;
+    return tests;
 }
 
-struct ast_test_case * parse_test_case(struct tokenizer_context * context)
+struct ast_test * parse_test(struct tokenizer_context * context)
 {
-    struct ast_test_case * ast_test_case = make_ast_test_case();
-    parse_test_case_prolog(context, &ast_test_case);
-    if (ast_test_case->name == NULL) {
-        fprintf(stderr, "Expected name for test case!\n");
+    struct ast_test * ast_test = make_ast_test();
+    parse_test_prolog(context, &ast_test);
+    if (ast_test->name == NULL) {
+        fprintf(stderr, "Expected name for test!\n");
         exit(1);
     }
     context->mode = TOKENIZER_MODE_DIRECTIVE_AND_TEXT;
-    parse_requirement_list(context, &ast_test_case);
+    parse_requirement_list(context, &ast_test);
     context->mode = TOKENIZER_MODE_NONE;
-    parse_test_case_epilog(context);
-    return ast_test_case;
+    parse_test_epilog(context);
+    return ast_test;
 }
 
-void parse_requirement_list(struct tokenizer_context * context, struct ast_test_case ** ast_test_case)
+void parse_requirement_list(struct tokenizer_context * context, struct ast_test ** ast_test)
 {
     struct token * token = get_one_token(context);
     if (is_token_directive_equals(token, "endtest")) {
-        fprintf(stderr, "There is no any requirement provided for test case!\n");
+        fprintf(stderr, "There is no any requirement provided for test!\n");
         exit(1);
     }
     unget_one_token(context, token);
@@ -98,20 +98,22 @@ void parse_requirement_list(struct tokenizer_context * context, struct ast_test_
 
     struct ast_requirement * requirement = NULL;
 
+    struct slist ** requirements_end = slist_get_end(&(*ast_test)->requirements);
+
     for(;;) {
         token = peek_one_token(context);
         if (is_token_directive_equals(token, "endtest")) {
             break;
         }
         if (loop_control > MAX_REQUIREMENT_COUNT) {
-            fprintf(stderr, "Exceed max requirement for test case!\n");
+            fprintf(stderr, "Exceed max requirement for test!\n");
             break;
         }
         ++loop_control;
 
         requirement = make_ast_requirement();
         parse_requirement(context, requirement);
-        slist_append((*ast_test_case)->requirements_end, &requirement->list_entry);
+        slist_append(requirements_end, &requirement->list_entry);
     }
 }
 
@@ -131,7 +133,7 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
     while (len < MAX_REQUIREMENT_CONTENT_SIZE) {
         token = get_one_token(context);
         if (is_token_eof(token)) {
-            fprintf(stderr, "Unterminated test case!\n");
+            fprintf(stderr, "Unterminated test!\n");
             exit(1);
         }
         if (is_token_directive(token)) {
@@ -144,7 +146,7 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
         release_token(token);
     }
     if (!is_token_directive(token)) {
-        fprintf(stderr, "The requirement's content of the test case too long!\n");
+        fprintf(stderr, "The requirement's content of the test too long!\n");
         exit(1);
     }
     if (last_ch == '\n') {
@@ -154,7 +156,7 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
     requirement->content = make_string(buffer, len);
 }
 
-void parse_test_case_prolog(struct tokenizer_context * context, struct ast_test_case ** ast_test_case)
+void parse_test_prolog(struct tokenizer_context * context, struct ast_test ** ast_test)
 {
     struct string * directive = NULL, * argument = NULL;
     parse_directive(context, &directive, &argument);
@@ -163,17 +165,17 @@ void parse_test_case_prolog(struct tokenizer_context * context, struct ast_test_
         exit(1);
     }
     if (argument == NULL) {
-        fprintf(stderr, "For test directive is require to specify a test case name!\n");
+        fprintf(stderr, "For test directive is require to specify a test name!\n");
         exit(1);
     }
     if (argument->len == 0) {
-        fprintf(stderr, "The test case must have a non-empty name!\n");
+        fprintf(stderr, "The test must have a non-empty name!\n");
         exit(1);
     }
-    (*ast_test_case)->name = argument;
+    (*ast_test)->name = argument;
 }
 
-void parse_test_case_epilog(struct tokenizer_context * context)
+void parse_test_epilog(struct tokenizer_context * context)
 {
     struct string * directive = NULL, * argument = NULL;
     parse_directive(context, &directive, &argument);

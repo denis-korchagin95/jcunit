@@ -75,14 +75,14 @@ int main(int argc, char * argv[])
 
     init_tokenizer();
 
-    struct test * test = compile_test(filename);
+    struct test_suite * test_suite = compile_test_suite(filename);
 
-    struct test_result * test_result = make_test_result(test);
+    struct test_suite_result * test_suite_result = make_test_suite_result(test_suite);
 
-    struct slist_iterator iterator;
-    slist_iterator_init(&iterator, test->cases.next, &test->cases);
+    struct list_iterator iterator;
+    list_iterator_init(&iterator, test_suite->tests.next, &test_suite->tests);
 
-    show_each_test_case_result(stdout, &iterator, test_case_runner_visiter, (void *)test_result);
+    show_each_test_result(stdout, &iterator, test_runner_visiter, (void *)test_suite_result);
 
     if (option_show_allocator_stats) {
         fprintf(stdout, "\n\n\n");

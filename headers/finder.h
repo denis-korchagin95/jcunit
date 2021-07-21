@@ -28,7 +28,7 @@
 #include "assembler.h"
 
 struct ast_requirement * find_ast_requirement_by_name(
-    struct ast_test_case * ast_test_case,
+    struct ast_test * ast_test,
     const char * requirement_name
 );
 

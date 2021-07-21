@@ -3,6 +3,6 @@
 
 #include "assembler.h"
 
-struct test * compile_test(const char * filename);
+struct test_suite * compile_test_suite(const char * filename);
 
 #endif /* JCUNIT_COMPILER_H */

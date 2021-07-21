@@ -51,3 +51,12 @@ void list_append(struct list * head, struct list * new)
 {
     do_list_add(new, head->prev, head);
 }
+
+struct slist ** slist_get_end(struct slist * head)
+{
+    struct slist ** next = &head->next;
+    while (*next != head) {
+        next = &(*next)->next;
+    }
+    return next;
+}

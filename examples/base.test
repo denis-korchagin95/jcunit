@@ -1,4 +1,4 @@
-@test("Test Case #1")
+@test("Test #1")
 @given("file")
 @@test
 
@@ -10,7 +10,7 @@
 
 @endtest
 
-@test("Test Case #2")
+@test("Test #2")
 @given("file")
 @@test
 
@@ -21,7 +21,7 @@
 
 @endtest
 
-@test("Test Case #3")
+@test("Test #3")
 @given("file")
 @@test
 

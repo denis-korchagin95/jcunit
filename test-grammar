@@ -1,8 +1,8 @@
-test:
- test-case
- test test-case
+test-suite:
+ test
+ test-suite test
 
-test-case:
+test:
   start-directive requirement-list end-directive
 
 requirement-list:

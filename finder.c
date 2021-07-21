@@ -31,14 +31,13 @@
 
 
 struct ast_requirement * find_ast_requirement_by_name(
-    struct ast_test_case * ast_test_case,
+    struct ast_test * ast_test,
     const char * requirement_name
 ) {
-    assert(ast_test_case != NULL);
-
+    assert(ast_test != NULL);
     size_t len = strlen(requirement_name);
     struct ast_requirement * requirement;
-    slist_foreach(iterator, &ast_test_case->requirements, {
+    slist_foreach(iterator, &ast_test->requirements, {
         requirement = list_get_owner(iterator, struct ast_requirement, list_entry);
         if (requirement->name->len == len && strncmp(requirement->name->value, requirement_name, len) == 0) {
             return requirement;

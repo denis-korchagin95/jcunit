@@ -38,42 +38,42 @@
 
 
 #define MAX_PROCESS_OUTPUT_BUFFER_LEN (8192)
-#define MAX_TEST_CASE_GIVEN_FILENAME_LEN (50)
+#define MAX_TEST_GIVEN_FILENAME_LEN (50)
 
 
 static void fill_file_from_string(FILE * file, struct string * content);
-static struct program_runner_test_case_result * make_program_runner_test_case_result(struct string * name);
-static void make_given_file(struct program_runner_test_case_result * result, struct string * content);
+static struct program_runner_test_result * make_program_runner_test_result(struct string * name);
+static void make_given_file(struct program_runner_test_result * result, struct string * content);
 static void try_to_run_program(
     const char * program,
     const char * given_filename,
     int run_mode,
     struct process_output * output
 );
-static bool is_test_case_passes(struct string * expected, struct process_output * output);
+static bool is_test_passes(struct string * expected, struct process_output * output);
 static int resolve_run_mode_by_stream_code(unsigned int stream_code);
-static struct abstract_test_case_result * run_incomplete_test_case(struct abstract_test_case * test_case);
+static struct abstract_test_result * run_incomplete_test(struct abstract_test * test);
 
-static test_case_runner_func * resolve_test_case_runner(struct abstract_test_case * test_case);
+static test_runner_func * resolve_test_runner(struct abstract_test * test);
 
-static struct abstract_test_case_result * program_runner_test_case_runner(struct abstract_test_case * test_case);
+static struct abstract_test_result * program_runner_test_runner(struct abstract_test * test);
 
 static char jcunit_given_file_template[] = "/tmp/jcunit_gf_XXXXXXXXXXXX";
 static char process_output_buffer[MAX_PROCESS_OUTPUT_BUFFER_LEN];
-static char given_filename[MAX_TEST_CASE_GIVEN_FILENAME_LEN];
+static char given_filename[MAX_TEST_GIVEN_FILENAME_LEN];
 
 
-struct abstract_test_case_result * test_case_run(struct abstract_test_case * test_case)
+struct abstract_test_result * test_run(struct abstract_test * test)
 {
-    if (test_case->flags & TEST_CASE_FLAG_INCOMPLETE) {
-        return run_incomplete_test_case(test_case);
+    if (test->flags & TEST_FLAG_INCOMPLETE) {
+        return run_incomplete_test(test);
     }
-    test_case_runner_func * runner = resolve_test_case_runner(test_case);
+    test_runner_func * runner = resolve_test_runner(test);
     if (runner == NULL) {
-        fprintf(stderr, "There is no any runner to run the test case \"%s\"!", test_case->name->value);
+        fprintf(stderr, "There is no any runner to run the test \"%s\"!", test->name->value);
         exit(1);
     }
-    return runner(test_case);
+    return runner(test);
 }
 
 void fill_file_from_string(FILE * file, struct string * content)
@@ -81,18 +81,18 @@ void fill_file_from_string(FILE * file, struct string * content)
     fwrite((const void *)content->value, sizeof(char), content->len, file);
 }
 
-struct program_runner_test_case_result * make_program_runner_test_case_result(struct string * name)
+struct program_runner_test_result * make_program_runner_test_result(struct string * name)
 {
-    struct program_runner_test_case_result * test_case_result = alloc_program_runner_test_case_result();
-    memset((void *)test_case_result, 0, sizeof(struct program_runner_test_case_result));
-    test_case_result->base.name = name;
-    test_case_result->base.kind = TEST_CASE_RESULT_KIND_PROGRAM_RUNNER;
-    return test_case_result;
+    struct program_runner_test_result * test_result = alloc_program_runner_test_result();
+    memset((void *)test_result, 0, sizeof(struct program_runner_test_result));
+    test_result->base.name = name;
+    test_result->base.kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
+    return test_result;
 }
 
-void make_given_file(struct program_runner_test_case_result * result, struct string * content)
+void make_given_file(struct program_runner_test_result * result, struct string * content)
 {
-    strncpy(given_filename, (const char *)jcunit_given_file_template, MAX_TEST_CASE_GIVEN_FILENAME_LEN);
+    strncpy(given_filename, (const char *)jcunit_given_file_template, MAX_TEST_GIVEN_FILENAME_LEN);
     (void)mktemp(given_filename);
     FILE * file = fopen(given_filename, "w");
     if (file == NULL) {
@@ -146,116 +146,118 @@ int resolve_run_mode_by_stream_code(unsigned int stream_code)
 {
     int mode = -1;
     switch (stream_code) {
-        case TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT:
+        case TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT:
             mode = RUN_MODE_CAPTURE_STDOUT;
             break;
-        case TEST_CASE_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR:
+        case TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR:
             mode = RUN_MODE_CAPTURE_STDERR;
             break;
     }
     return mode;
 }
 
-bool is_test_case_passes(struct string * expected, struct process_output * output)
+bool is_test_passes(struct string * expected, struct process_output * output)
 {
     return  expected->len == output->len &&
             strncmp((const char *)expected->value, (const char *)output->buffer, output->len) == 0;
 }
 
-struct test_result * make_test_result(struct test * test)
+struct test_suite_result * make_test_suite_result(struct test_suite * test_suite)
 {
-    struct test_result * test_result = alloc_test_result();
-    memset((void *)test_result, 0, sizeof(struct test_result));
-    slist_init(&test_result->test_case_results, test_result->slist_end);
-    test_result->test = test;
-    return test_result;
+    struct test_suite_result * test_suite_result = alloc_test_suite_result();
+    memset((void *)test_suite_result, 0, sizeof(struct test_suite_result));
+    slist_init(&test_suite_result->test_results);
+    test_suite_result->test_suite = test_suite;
+    return test_suite_result;
 }
 
-void test_result_add_test_case_result(
-    struct test_result * test_result,
-    struct abstract_test_case_result * test_case_result
+void add_test_result_to_test_suite_result(
+    struct test_suite_result * test_suite_result,
+    struct abstract_test_result * test_result
 )
 {
+    assert(test_suite_result != NULL);
     assert(test_result != NULL);
-    assert(test_case_result != NULL);
 
-    slist_append(test_result->slist_end, &test_case_result->slist_entry);
+    struct slist ** tests_end = slist_get_end(&test_suite_result->test_results);
 
-    switch (test_case_result->status) {
-        case TEST_CASE_RESULT_STATUS_PASS:
-            ++test_result->passed_count;
+    slist_append(tests_end, &test_result->list_entry);
+
+    switch (test_result->status) {
+        case TEST_RESULT_STATUS_PASS:
+            ++test_suite_result->passed_count;
             break;
-        case TEST_CASE_RESULT_STATUS_FAIL:
-            ++test_result->failed_count;
+        case TEST_RESULT_STATUS_FAIL:
+            ++test_suite_result->failed_count;
             break;
-        case TEST_CASE_RESULT_STATUS_INCOMPLETE:
-            ++test_result->incomplete_count;
+        case TEST_RESULT_STATUS_INCOMPLETE:
+            ++test_suite_result->incomplete_count;
             break;
         default:
-            fprintf(stderr, "The unknown status %d of test case result!\n", test_case_result->status);
+            fprintf(stderr, "The unknown status %d of test result!\n", test_result->status);
             exit(1);
     }
 }
 
-test_case_runner_func * resolve_test_case_runner(struct abstract_test_case * test_case)
+test_runner_func * resolve_test_runner(struct abstract_test * test)
 {
-    if (test_case->kind == TEST_CASE_KIND_PROGRAM_RUNNER) {
-        return program_runner_test_case_runner;
+    if (test->kind == TEST_KIND_PROGRAM_RUNNER) {
+        return program_runner_test_runner;
     }
     return NULL;
 }
 
-struct abstract_test_case_result * program_runner_test_case_runner(struct abstract_test_case * test_case)
+struct abstract_test_result * program_runner_test_runner(struct abstract_test * test)
 {
-    struct program_runner_test_case * this_test_case = (struct program_runner_test_case *)test_case;
+    struct program_runner_test * this_test = (struct program_runner_test *)test;
 
     struct process_output output;
 
-    struct string * executable = this_test_case->program_path;
+    struct string * executable = this_test->program_path;
 
-    struct program_runner_test_case_result * test_case_result = make_program_runner_test_case_result(
-            this_test_case->base.name
+    struct program_runner_test_result * test_result = make_program_runner_test_result(
+            this_test->base.name
     );
-    test_case_result->executable = executable;
+    test_result->executable = executable;
 
-    make_given_file(test_case_result, this_test_case->given_file_content);
+    make_given_file(test_result, this_test->given_file_content);
 
-    int run_mode = resolve_run_mode_by_stream_code(this_test_case->stream_code);
+    int run_mode = resolve_run_mode_by_stream_code(this_test->stream_code);
 
     if (run_mode == -1) {
         fprintf(
             stderr,
             "The unknown stream code %d!\n",
-            this_test_case->stream_code
+            this_test->stream_code
         );
         exit(1);
     }
 
     try_to_run_program(
         executable->value,
-        test_case_result->given_filename->value,
+        test_result->given_filename->value,
         run_mode,
         &output
     );
 
-    bool pass = is_test_case_passes(this_test_case->expected_output, &output);
+    bool pass = is_test_passes(this_test->expected_output, &output);
 
     if (!pass) {
-        test_case_result->base.expected = this_test_case->expected_output;
-        test_case_result->base.actual = make_string(output.buffer, output.len);
+        test_result->base.expected = this_test->expected_output;
+        test_result->base.actual = make_string(output.buffer, output.len);
     }
 
-    test_case_result->base.status = pass ? TEST_CASE_RESULT_STATUS_PASS : TEST_CASE_RESULT_STATUS_FAIL;
-    test_case_result->error_code = output.error_code;
+    test_result->base.status = pass ? TEST_RESULT_STATUS_PASS : TEST_RESULT_STATUS_FAIL;
+    test_result->error_code = output.error_code;
 
-    return (struct abstract_test_case_result *)test_case_result;
+    return (struct abstract_test_result *)test_result;
 }
 
-struct abstract_test_case_result * run_incomplete_test_case(struct abstract_test_case * test_case)
+struct abstract_test_result * run_incomplete_test(struct abstract_test * test)
 {
-    struct abstract_test_case_result * result = alloc_abstract_test_case_result();
-    memset((void *)result, 0, sizeof(struct abstract_test_case_result));
-    result->status = TEST_CASE_RESULT_STATUS_INCOMPLETE;
-    result->name = test_case->name;
-    return result;
+    struct abstract_test_result * test_result = alloc_abstract_test_result();
+    memset((void *)test_result, 0, sizeof(struct abstract_test_result));
+    test_result->status = TEST_RESULT_STATUS_INCOMPLETE;
+    test_result->name = test->name;
+    return test_result;
 }

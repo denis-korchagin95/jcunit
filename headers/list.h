@@ -48,12 +48,11 @@ struct slist
     }                           \
     while(0)
 
-#define slist_init(ptr, end)                \
-    do                                      \
-    {                                       \
-        (ptr)->next = (ptr);                \
-        (end) = &(ptr)->next;               \
-    }                                       \
+#define slist_init(ptr)         \
+    do                          \
+    {                           \
+        (ptr)->next = (ptr);    \
+    }                           \
     while(0)
 
 #define list_foreach(iterator_name, head, body)                                     \
@@ -100,5 +99,6 @@ struct list * make_list(void);
 struct slist * make_slist(void);
 
 void list_append(struct list * head, struct list * new);
+struct slist ** slist_get_end(struct slist * head);
 
 #endif /* JCUNIT_LIST_H */

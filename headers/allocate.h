@@ -84,15 +84,15 @@
 declare_allocator(tokenizer_context, struct tokenizer_context);
 declare_allocator(token, struct token);
 declare_allocator(string, struct string);
-declare_allocator(ast_test_case, struct ast_test_case);
+declare_allocator(ast_test, struct ast_test);
 declare_allocator(ast_requirement, struct ast_requirement);
 declare_allocator(list, struct list);
 declare_allocator(slist, struct slist);
-declare_allocator(test, struct test);
-declare_allocator(test_result, struct test_result);
-declare_allocator(abstract_test_case_result, struct abstract_test_case_result);
-declare_allocator(program_runner_test_case_result, struct program_runner_test_case_result);
-declare_allocator(program_runner_test_case, struct program_runner_test_case);
+declare_allocator(test_suite, struct test_suite);
+declare_allocator(test_suite_result, struct test_suite_result);
+declare_allocator(abstract_test_result, struct abstract_test_result);
+declare_allocator(program_runner_test_result, struct program_runner_test_result);
+declare_allocator(program_runner_test, struct program_runner_test);
 
 void * alloc_bytes(unsigned int len);
 
