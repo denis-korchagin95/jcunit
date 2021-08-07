@@ -40,12 +40,62 @@
 bool option_show_allocator_stats = false;
 bool option_show_version = false;
 
+struct source_suite_list {
+    struct source_suite_list * next;
+    const char * filename;
+    struct test_suite * parsed_suite;
+};
+
+static void parse_args(int argc, char * argv[], struct source_suite_list ** suites);
+
+allocator(source_suite_list, struct source_suite_list, 20)
 
 int main(int argc, char * argv[])
 {
+    struct source_suite_list * suites = NULL;
+
+    parse_args(argc, argv, &suites);
+
+    if (option_show_version) {
+        fprintf(stdout, "jcunit version %s\n", JCUNIT_VERSION);
+        exit(0);
+    }
+
+    if (suites == NULL) {
+        fprintf(stderr, "There is no file provided!\n");
+        exit(1);
+    }
+
+    init_tokenizer();
+
+    struct source_suite_list * source_suite_iterator = suites;
+    struct test_suite_result * test_suite_result;
+    struct list_iterator iterator;
+    while (source_suite_iterator != NULL) {
+        source_suite_iterator->parsed_suite = compile_test_suite(source_suite_iterator->filename);
+        test_suite_result = make_test_suite_result(source_suite_iterator->parsed_suite);
+        list_iterator_init(&iterator, source_suite_iterator->parsed_suite->tests.next, &source_suite_iterator->parsed_suite->tests);
+        show_each_test_result(stdout, &iterator, test_runner_visiter, (void *)test_suite_result);
+        source_suite_iterator = source_suite_iterator->next;
+    }
+
+    if (option_show_allocator_stats) {
+        fprintf(stdout, "\n\n\n");
+
+        show_allocator_stats(stdout, SHOW_STAT_ALL_ALLOCATORS);
+    }
+
+    fflush(stdout);
+
+    return 0;
+}
+
+
+void parse_args(int argc, char * argv[], struct source_suite_list ** suites)
+{
     int i;
     char * arg;
-    char * filename = NULL;
+    struct source_suite_list * item;
     for(i = 1; i < argc; ++i) {
         arg = argv[i];
         if (strncmp(arg, "--show-allocator-stats", sizeof("--show-allocator-stats")) == 0) {
@@ -60,37 +110,14 @@ int main(int argc, char * argv[])
             fprintf(stderr, "The unknown option: %s\n", arg);
             exit(1);
         }
-        filename = arg;
+
+        item = alloc_source_suite_list();
+        item->next = NULL;
+        item->filename = arg;
+        item->parsed_suite = NULL;
+
+        *suites = item;
+        suites = &item->next;
     }
-
-    if (option_show_version) {
-        fprintf(stdout, "jcunit version %s\n", JCUNIT_VERSION);
-        exit(0);
-    }
-
-    if (filename == NULL) {
-        fprintf(stderr, "The filename is missing!\n");
-        exit(1);
-    }
-
-    init_tokenizer();
-
-    struct test_suite * test_suite = compile_test_suite(filename);
-
-    struct test_suite_result * test_suite_result = make_test_suite_result(test_suite);
-
-    struct list_iterator iterator;
-    list_iterator_init(&iterator, test_suite->tests.next, &test_suite->tests);
-
-    show_each_test_result(stdout, &iterator, test_runner_visiter, (void *)test_suite_result);
-
-    if (option_show_allocator_stats) {
-        fprintf(stdout, "\n\n\n");
-
-        show_allocator_stats(stdout, SHOW_STAT_ALL_ALLOCATORS);
-    }
-
-    fflush(stdout);
-
-    return 0;
 }
+

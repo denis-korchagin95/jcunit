@@ -133,7 +133,7 @@ void show_each_test_result(
         return;
     }
     struct test_suite_result * test_suite_result = (struct test_suite_result *)context;
-    fprintf(output, "Test: %s\n", test_suite_result->test_suite->name->value);
+    fprintf(output, "Test Suite: %s\n", test_suite_result->test_suite->name->value);
     struct abstract_test_result * test_result;
     for(;;) {
         test_result = list_iterator_visit(iterator, visiter_func, context);
@@ -144,7 +144,7 @@ void show_each_test_result(
     }
     fprintf(
         output,
-        "\nPassed: %u, Failed: %u, Incomplete: %u\n",
+        "\nPassed: %u, Failed: %u, Incomplete: %u\n\n\n",
         test_suite_result->passed_count,
         test_suite_result->failed_count,
         test_suite_result->incomplete_count
