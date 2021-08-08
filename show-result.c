@@ -165,4 +165,3 @@ void * test_runner_visiter(void * object, void * context)
 
     return test_result;
 }
-

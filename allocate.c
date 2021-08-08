@@ -56,6 +56,7 @@ allocator(test_suite_result, struct test_suite_result, 256)
 allocator(abstract_test_result, struct abstract_test_result, 256)
 allocator(program_runner_test_result, struct program_runner_test_result, 256)
 allocator(program_runner_test, struct program_runner_test, 256)
+allocator(source, struct source, 256)
 
 static struct allocator_stat stats[] = {
         { "token", &max_token_pool_size, &token_pool_pos, &token_freed, &token_allocated },
@@ -111,6 +112,13 @@ static struct allocator_stat stats[] = {
             &abstract_test_result_pool_pos,
             &abstract_test_result_freed,
             &abstract_test_result_allocated
+        },
+        {
+            "source",
+            &max_source_pool_size,
+            &source_pool_pos,
+            &source_freed,
+            &source_allocated
         }
 };
 

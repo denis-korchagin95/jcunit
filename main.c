@@ -28,56 +28,50 @@
 
 
 #include "headers/token.h"
-#include "headers/assembler.h"
 #include "headers/runner.h"
 #include "headers/show-result.h"
 #include "headers/allocate.h"
 #include "headers/version.h"
 #include "headers/list-iterator.h"
 #include "headers/compiler.h"
+#include "headers/source.h"
 
 
 bool option_show_allocator_stats = false;
 bool option_show_version = false;
 
-struct source_suite_list {
-    struct source_suite_list * next;
-    const char * filename;
-    struct test_suite * parsed_suite;
-};
 
-static void parse_args(int argc, char * argv[], struct source_suite_list ** suites);
-
-allocator(source_suite_list, struct source_suite_list, 20)
+static void parse_args(int argc, char * argv[], struct slist * sources);
 
 int main(int argc, char * argv[])
 {
-    struct source_suite_list * suites = NULL;
+    struct slist sources;
+    slist_init(&sources);
 
-    parse_args(argc, argv, &suites);
+    parse_args(argc, argv, &sources);
 
     if (option_show_version) {
         fprintf(stdout, "jcunit version %s\n", JCUNIT_VERSION);
         exit(0);
     }
 
-    if (suites == NULL) {
-        fprintf(stderr, "There is no file provided!\n");
+    if (list_is_empty(&sources)) {
+        fprintf(stderr, "There are no files provided!\n");
         exit(1);
     }
 
     init_tokenizer();
 
-    struct source_suite_list * source_suite_iterator = suites;
-    struct test_suite_result * test_suite_result;
     struct list_iterator iterator;
-    while (source_suite_iterator != NULL) {
-        source_suite_iterator->parsed_suite = compile_test_suite(source_suite_iterator->filename);
-        test_suite_result = make_test_suite_result(source_suite_iterator->parsed_suite);
-        list_iterator_init(&iterator, source_suite_iterator->parsed_suite->tests.next, &source_suite_iterator->parsed_suite->tests);
+    struct source * source;
+    struct test_suite_result * test_suite_result;
+    slist_foreach(source_iterator, &sources, {
+        source = list_get_owner(source_iterator, struct source, list_entry);
+        source->parsed_suite = compile_test_suite(source->filename);
+        test_suite_result = make_test_suite_result(source->parsed_suite);
+        list_iterator_init(&iterator, source->parsed_suite->tests.next, &source->parsed_suite->tests);
         show_each_test_result(stdout, &iterator, test_runner_visiter, (void *)test_suite_result);
-        source_suite_iterator = source_suite_iterator->next;
-    }
+    });
 
     if (option_show_allocator_stats) {
         fprintf(stdout, "\n\n\n");
@@ -91,11 +85,12 @@ int main(int argc, char * argv[])
 }
 
 
-void parse_args(int argc, char * argv[], struct source_suite_list ** suites)
+void parse_args(int argc, char * argv[], struct slist * suites)
 {
     int i;
     char * arg;
-    struct source_suite_list * item;
+    struct source * item;
+    struct slist ** end = &suites->next;
     for(i = 1; i < argc; ++i) {
         arg = argv[i];
         if (strncmp(arg, "--show-allocator-stats", sizeof("--show-allocator-stats")) == 0) {
@@ -111,13 +106,8 @@ void parse_args(int argc, char * argv[], struct source_suite_list ** suites)
             exit(1);
         }
 
-        item = alloc_source_suite_list();
-        item->next = NULL;
-        item->filename = arg;
-        item->parsed_suite = NULL;
-
-        *suites = item;
-        suites = &item->next;
+        item = make_source(arg);
+        slist_append(end, &item->list_entry);
     }
 }
 
