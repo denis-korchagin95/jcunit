@@ -26,7 +26,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 #include "headers/token.h"
 #include "headers/runner.h"
 #include "headers/show-result.h"
@@ -35,13 +34,11 @@
 #include "headers/list-iterator.h"
 #include "headers/compiler.h"
 #include "headers/source.h"
-
-
-bool option_show_allocator_stats = false;
-bool option_show_version = false;
-
+#include "headers/options.h"
 
 static void parse_args(int argc, char * argv[], struct slist * sources);
+static void read_sources(struct slist * sources);
+static void run_sources(struct slist * sources);
 
 int main(int argc, char * argv[])
 {
@@ -62,16 +59,8 @@ int main(int argc, char * argv[])
 
     init_tokenizer();
 
-    struct list_iterator iterator;
-    struct source * source;
-    struct test_suite_result * test_suite_result;
-    slist_foreach(source_iterator, &sources, {
-        source = list_get_owner(source_iterator, struct source, list_entry);
-        source->parsed_suite = compile_test_suite(source->filename);
-        test_suite_result = make_test_suite_result(source->parsed_suite);
-        list_iterator_init(&iterator, source->parsed_suite->tests.next, &source->parsed_suite->tests);
-        show_each_test_result(stdout, &iterator, test_runner_visiter, (void *)test_suite_result);
-    });
+    read_sources(&sources);
+    run_sources(&sources);
 
     if (option_show_allocator_stats) {
         fprintf(stdout, "\n\n\n");
@@ -105,9 +94,29 @@ void parse_args(int argc, char * argv[], struct slist * suites)
             fprintf(stderr, "The unknown option: %s\n", arg);
             exit(1);
         }
-
         item = make_source(arg);
         slist_append(end, &item->list_entry);
     }
 }
 
+void read_sources(struct slist * sources)
+{
+    struct source * source;
+    slist_foreach(iterator, sources, {
+        source = list_get_owner(iterator, struct source, list_entry);
+        source->parsed_suite = compile_test_suite(source->filename);
+    });
+}
+
+void run_sources(struct slist * sources)
+{
+    struct source * source;
+    struct test_suite_result * test_suite_result;
+    struct list_iterator list_iterator;
+    slist_foreach(iterator, sources, {
+        source = list_get_owner(iterator, struct source, list_entry);
+        test_suite_result = make_test_suite_result(source->parsed_suite);
+        list_iterator_init(&list_iterator, source->parsed_suite->tests.next, &source->parsed_suite->tests);
+        show_each_test_result(stdout, &list_iterator, test_runner_visiter, (void *)test_suite_result);
+    });
+}
