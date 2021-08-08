@@ -30,6 +30,4 @@
 extern bool option_show_allocator_stats;
 extern bool option_show_version;
 
-void init_options(void);
-
 #endif /* JCUNIT_OPTIONS_H */
