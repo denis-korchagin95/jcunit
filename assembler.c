@@ -1,7 +1,7 @@
 /**
  * JCUnit - a very simple unit testing framework for C
  *
- * Copyright (C) 2021 Denis Korchagin <denis.korchagin.1995@gmail.com>
+ * Copyright (C) 2022 Denis Korchagin <denis.korchagin.1995@gmail.com>
  *
  * This file is part of JCUnit
  *
