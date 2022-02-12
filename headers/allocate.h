@@ -34,8 +34,6 @@
 
 #define MAX_BYTES_POOL_SIZE (8192)
 
-#define SHOW_STAT_ALL_ALLOCATORS (0)
-
 #define allocator(name, type, count)                                                                \
     void * name##_free_list = NULL;                                                                 \
     static unsigned int max_##name##_pool_size = (count);                                           \
@@ -98,6 +96,6 @@ declare_allocator(source, struct source);
 
 void * alloc_bytes(unsigned int len);
 
-void show_allocator_stats(FILE * output, unsigned int allocator);
+void show_allocators_stats(FILE * output);
 
 #endif /* JCUNIT_ALLOCATE_H */

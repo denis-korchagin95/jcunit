@@ -65,7 +65,7 @@ int main(int argc, char * argv[])
     if (option_show_allocator_stats) {
         fprintf(stdout, "\n\n\n");
 
-        show_allocator_stats(stdout, SHOW_STAT_ALL_ALLOCATORS);
+        show_allocators_stats(stdout);
     }
 
     fflush(stdout);

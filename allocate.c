@@ -131,7 +131,7 @@ void * alloc_bytes(unsigned int len)
     return mem;
 }
 
-void show_allocator_stats(FILE * output, unsigned int allocator)
+void show_allocators_stats(FILE * output)
 {
     unsigned int i, len;
     struct allocator_stat * stat;
