@@ -170,10 +170,23 @@ void fetch_one_suite(const char * suite_path, struct application_context * appli
 
 void read_suites(struct application_context * application_context)
 {
+    /* replacing a standard array with something more appropriate like a hashmap is probably what we need but this should do for now. */
+    const char * fnames[1024];
+    int size = 0;
+
     struct source * source;
     slist_foreach(iterator, &application_context->suites, {
         source = list_get_owner(iterator, struct source, list_entry);
-        source->parsed_suite = compile_test_suite(source->filename);
+
+        char flag = false;
+        int i = 0;
+        while(i < size && strcmp(fnames[i], source->filename)) {
+            ++i;
+        }
+        if(i == size){
+            fnames[size++] = source->filename;
+            source->parsed_suite = compile_test_suite(source->filename);
+        }
     });
 }
 
