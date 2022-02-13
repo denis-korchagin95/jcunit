@@ -40,6 +40,8 @@
 
 static char * path_buffer[PATH_MAX] = {0};
 
+static const char * default_tests_path = "./tests";
+
 struct application_context
 {
     struct slist suites;
@@ -69,8 +71,16 @@ int main(int argc, char * argv[])
     fetch_suites(argc, argv, &application_context);
 
     if (list_is_empty(&application_context.suites)) {
-        fprintf(stderr, "There are no files provided!\n");
-        exit(1);
+        const char * resolved_path = realpath(default_tests_path, (char *)path_buffer);
+        if (resolved_path == NULL) {
+            fprintf(stderr, "There are no files provided or default tests path \"%s\" not found!\n", default_tests_path);
+            exit(1);
+        }
+        if (!fs_is_dir(resolved_path)) {
+            fprintf(stderr, "Can't found the specified directory \"%s\"!", default_tests_path);
+            exit(1);
+        }
+        fs_read_dir(resolved_path, fetch_suites_from_directory_handler, (void *)&application_context);
     }
 
     init_tokenizer();
