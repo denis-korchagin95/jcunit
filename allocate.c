@@ -28,7 +28,6 @@
 
 #include "headers/allocate.h"
 
-
 /**
  * It's very simple and static allocator. Maybe this needs to be refactor to dynamic version in the future...
  */
@@ -137,16 +136,20 @@ void show_allocators_stats(FILE * output)
     struct allocator_stat * stat;
     for(i = 0, len = sizeof(stats) / sizeof(struct allocator_stat); i < len; ++i) {
         stat = stats + i;
+        if (*stat->allocated == *stat->freed && *stat->freed == 0) { /* don't show unused allocators */
+            continue;
+        }
         fprintf(
             output,
-            "Allocator: %s, total: %u, pool_usage: %u, allocated: %u, freed: %u%s%s\n",
+            "Allocator: %s, total: %u, pool_usage: %u, allocated: %u, freed: %u%s%s%s\n",
             stat->name,
             *stat->total,
             *stat->pool_usage,
             *stat->allocated,
             *stat->freed,
-            *stat->allocated != *stat->freed ? " [LEAK]" : "",
-            *stat->allocated == *stat->freed && *stat->freed == 0 ? " [UNUSED]" : ""
+            *stat->allocated > *stat->freed ? " [LEAK]" : "",
+            *stat->allocated == *stat->freed && *stat->freed != 0 ? " [OK]" : "",
+            *stat->allocated < *stat->freed ? " [ALLOCATION MISMATCH]" : ""
         );
     }
     unsigned int max_bytes_pool_size = MAX_BYTES_POOL_SIZE;
