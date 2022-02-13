@@ -52,6 +52,19 @@ void list_append(struct list * head, struct list * new)
     do_list_add(new, head->prev, head);
 }
 
+struct list * list_shift(struct list * head)
+{
+    struct list * next = head->next;
+    list_remove(next);
+    return next;
+}
+
+void list_remove(struct list * item)
+{
+    item->next->prev = item->prev;
+    item->prev->next = item->next;
+}
+
 struct slist ** slist_get_end(struct slist * head)
 {
     struct slist ** next = &head->next;

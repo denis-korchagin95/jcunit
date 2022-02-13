@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "headers/token.h"
 #include "headers/runner.h"
@@ -35,32 +36,47 @@
 #include "headers/compiler.h"
 #include "headers/source.h"
 #include "headers/options.h"
+#include "headers/fs.h"
 
-static void parse_args(int argc, char * argv[], struct slist * sources);
-static void read_sources(struct slist * sources);
-static void run_sources(struct slist * sources);
+static char * path_buffer[PATH_MAX] = {0};
+
+struct application_context
+{
+    struct slist suites;
+    struct slist ** end_suites;
+};
+
+static void init_application_context(struct application_context * application_context);
+static void parse_options(int argc, char * argv[]);
+static void fetch_suites(int argc, char * argv[], struct application_context * application_context);
+static void read_suites(struct application_context * application_context);
+static void run_suites(struct application_context * application_context);
+static void fetch_one_suite(const char * suite_path, struct application_context * application_context);
+static bool fetch_suites_from_directory_handler(const char * suite_path, void * context);
 
 int main(int argc, char * argv[])
 {
-    struct slist sources;
-    slist_init(&sources);
-
-    parse_args(argc, argv, &sources);
+    parse_options(argc, argv);
 
     if (option_show_version) {
         fprintf(stdout, "jcunit version %s\n", JCUNIT_VERSION);
         exit(0);
     }
 
-    if (list_is_empty(&sources)) {
+    struct application_context application_context;
+    init_application_context(&application_context);
+
+    fetch_suites(argc, argv, &application_context);
+
+    if (list_is_empty(&application_context.suites)) {
         fprintf(stderr, "There are no files provided!\n");
         exit(1);
     }
 
     init_tokenizer();
 
-    read_sources(&sources);
-    run_sources(&sources);
+    read_suites(&application_context);
+    run_suites(&application_context);
 
     if (option_show_allocator_stats) {
         fprintf(stdout, "\n\n\n");
@@ -73,16 +89,19 @@ int main(int argc, char * argv[])
     return 0;
 }
 
+void init_application_context(struct application_context * application_context)
+{
+    slist_init(&application_context->suites);
+    application_context->end_suites = &application_context->suites.next;
+}
 
-void parse_args(int argc, char * argv[], struct slist * suites)
+void parse_options(int argc, char * argv[])
 {
     int i;
     char * arg;
-    struct source * item;
-    struct slist ** end = &suites->next;
     for(i = 1; i < argc; ++i) {
         arg = argv[i];
-        if (strncmp(arg, "--show-allocator-stats", sizeof("--show-allocator-stats")) == 0) {
+        if (strncmp(arg, "--show-allocators-stats", sizeof("--show-allocators-stats")) == 0) {
             option_show_allocator_stats = true;
             continue;
         }
@@ -94,26 +113,66 @@ void parse_args(int argc, char * argv[], struct slist * suites)
             fprintf(stderr, "The unknown option: %s\n", arg);
             exit(1);
         }
-        item = make_source(arg);
-        slist_append(end, &item->list_entry);
     }
 }
 
-void read_sources(struct slist * sources)
+void fetch_suites(int argc, char * argv[], struct application_context * application_context)
+{
+    int i;
+    char * arg;
+    const char * resolved_path;
+    for(i = 1; i < argc; ++i) {
+        arg = argv[i];
+        if (strncmp("--", arg, 2) == 0) {
+            continue;
+        }
+        resolved_path = realpath(arg, (char *)path_buffer);
+        if (resolved_path == NULL) {
+            fprintf(stderr, "Can't to resolve the path \"%s\"!", arg);
+            exit(1);
+        }
+        if (fs_is_dir(resolved_path)) {
+            fs_read_dir(resolved_path, fetch_suites_from_directory_handler, (void *)application_context);
+            continue;
+        }
+        fetch_one_suite(resolved_path, application_context);
+    }
+}
+
+bool fetch_suites_from_directory_handler(const char * suite_path, void * context)
+{
+    if (!fs_check_extension(suite_path, ".test")) {
+        return true;
+    }
+    fetch_one_suite(suite_path, (struct application_context *)context);
+    return true;
+}
+
+void fetch_one_suite(const char * suite_path, struct application_context * application_context)
+{
+    if (!fs_is_file_exists(suite_path)) {
+        fprintf(stderr, "The file \"%s\" is not exists!", suite_path);
+        exit(1);
+    }
+    struct source * source = make_source(suite_path);
+    slist_append(application_context->end_suites, &source->list_entry);
+}
+
+void read_suites(struct application_context * application_context)
 {
     struct source * source;
-    slist_foreach(iterator, sources, {
+    slist_foreach(iterator, &application_context->suites, {
         source = list_get_owner(iterator, struct source, list_entry);
         source->parsed_suite = compile_test_suite(source->filename);
     });
 }
 
-void run_sources(struct slist * sources)
+void run_suites(struct application_context * application_context)
 {
     struct source * source;
     struct test_suite_result * test_suite_result;
     struct list_iterator list_iterator;
-    slist_foreach(iterator, sources, {
+    slist_foreach(iterator, &application_context->suites, {
         source = list_get_owner(iterator, struct source, list_entry);
         test_suite_result = make_test_suite_result(source->parsed_suite);
         list_iterator_init(&list_iterator, source->parsed_suite->tests.next, &source->parsed_suite->tests);

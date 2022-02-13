@@ -99,6 +99,8 @@ struct list * make_list(void);
 struct slist * make_slist(void);
 
 void list_append(struct list * head, struct list * new);
+void list_remove(struct list * item);
+struct list * list_shift(struct list * head);
 struct slist ** slist_get_end(struct slist * head);
 
 #endif /* JCUNIT_LIST_H */

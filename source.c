@@ -22,13 +22,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#include <string.h>
+
 #include "headers/source.h"
 #include "headers/allocate.h"
 
 struct source * make_source(const char * filename)
 {
     struct source * source = alloc_source();
-    source->filename = filename;
+    char * _filename = alloc_bytes(strlen(filename) + 1);
+    strcpy(_filename, filename);
+    source->filename = _filename;
     source->list_entry.next = NULL;
     source->parsed_suite = NULL;
     source->suite_result = NULL;

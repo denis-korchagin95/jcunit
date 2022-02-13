@@ -127,12 +127,12 @@ void try_to_run_program(
 
     bool try_to_run = true;
 
-    if (!is_file_exists(program)) {
+    if (!fs_is_file_exists(program)) {
         output->error_code = ERROR_CODE_FILE_NOT_FOUND;
         try_to_run = false;
     }
 
-    if (try_to_run && !is_file_executable(program)) {
+    if (try_to_run && !fs_is_file_executable(program)) {
         output->error_code = ERROR_CODE_NOT_EXECUTABLE;
         try_to_run = false;
     }
