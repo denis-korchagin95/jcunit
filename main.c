@@ -38,6 +38,9 @@
 #include "headers/options.h"
 #include "headers/fs.h"
 
+#define RUN_MODE_PASSTHROUGH    (1)
+#define RUN_MODE_DETAIL         (2)
+
 #define FILENAMES_CACHE_MAX 1024
 
 static const char ** filenames_cache[FILENAMES_CACHE_MAX];
