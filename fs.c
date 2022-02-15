@@ -118,7 +118,7 @@ void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * con
             }
             char * file_entry_path = get_entry_path(current_path->path, current_path_len, dirent, GET_ENTRY_PATH_ADD_PATH_SEPARATOR);
             request_to_quit = !read_dir_func(file_entry_path, context);
-            // TODO: free the static memory from bytes allocator
+            /* TODO: free the static memory from bytes allocator */
         }
 
         if (current_path != &base_path) {

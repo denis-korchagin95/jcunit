@@ -30,10 +30,12 @@
 struct source * make_source(const char * filename)
 {
     struct source * source = alloc_source();
-    char * _filename = alloc_bytes(strlen(filename) + 1);
+    unsigned int len = strlen(filename);
+    char * _filename = alloc_bytes(len + 1);
     strcpy(_filename, filename);
+    _filename[len] = '\0';
     source->filename = _filename;
-    source->list_entry.next = NULL;
+    slist_init(&source->list_entry);
     source->parsed_suite = NULL;
     source->suite_result = NULL;
     return source;
