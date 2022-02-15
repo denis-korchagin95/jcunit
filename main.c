@@ -40,7 +40,7 @@
 
 #define FILENAMES_CACHE_MAX 1024
 
-static const char * filenames_cache[FILENAMES_CACHE_MAX];
+static const char ** filenames_cache[FILENAMES_CACHE_MAX];
 
 static long filenames_cache_pos = 0;
 
