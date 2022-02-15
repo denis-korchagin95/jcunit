@@ -38,6 +38,8 @@
 #include "headers/options.h"
 #include "headers/fs.h"
 
+#define FILENAMES_CACHE_MAX 1024
+
 static char * path_buffer[PATH_MAX] = {0};
 
 static const char * default_tests_path = "./tests";
@@ -171,20 +173,20 @@ void fetch_one_suite(const char * suite_path, struct application_context * appli
 void read_suites(struct application_context * application_context)
 {
     /* replacing a standard array with something more appropriate like a hashmap is probably what we need but this should do for now. */
-    const char * fnames[1024];
-    int size = 0;
+    const char * filenames_cache_pos[FILENAMES_CACHE_MAX];
+    short size = 0;
 
     struct source * source;
     slist_foreach(iterator, &application_context->suites, {
         source = list_get_owner(iterator, struct source, list_entry);
 
-        char flag = false;
-        int i = 0;
-        while(i < size && strcmp(fnames[i], source->filename)) {
+        bool flag = false;
+        short i = 0;
+        while(i < size && strcmp(filenames_cache_pos[i], source->filename) != 0) {
             ++i;
         }
         if(i == size){
-            fnames[size++] = source->filename;
+            filenames_cache_pos[size++] = source->filename;
             source->parsed_suite = compile_test_suite(source->filename);
         }
     });
