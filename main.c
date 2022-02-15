@@ -41,6 +41,11 @@
 #define RUN_MODE_PASSTHROUGH    (1)
 #define RUN_MODE_DETAIL         (2)
 
+#define FILENAMES_CACHE_MAX 1024
+
+static const char * filenames_cache[FILENAMES_CACHE_MAX];
+static unsigned int filenames_cache_pos = 0;
+
 static char * path_buffer[PATH_MAX] = {0};
 
 static const char * default_tests_path = "./tests";
@@ -184,8 +189,16 @@ void fetch_one_suite(const char * suite_path, struct application_context * appli
         fprintf(stderr, "The file \"%s\" is not exists!", suite_path);
         exit(1);
     }
-    struct source * source = make_source(suite_path);
-    slist_append(application_context->end_suites, &source->list_entry);
+    unsigned int i = 0;
+    while(i < filenames_cache_pos && strcmp(filenames_cache[i], suite_path) != 0) {
+        ++i;
+    }
+    if(i == filenames_cache_pos) {
+        filenames_cache[filenames_cache_pos++] = suite_path;
+      
+        struct source * source = make_source(suite_path);
+        slist_append(application_context->end_suites, &source->list_entry);
+    }
 }
 
 void read_suites(struct application_context * application_context)
