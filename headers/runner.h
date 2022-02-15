@@ -27,12 +27,11 @@
 
 #include "assembler.h"
 
-#define TEST_RESULT_STATUS_NONE        (0)
-#define TEST_RESULT_STATUS_PASS        (1)
-#define TEST_RESULT_STATUS_FAIL        (2)
-#define TEST_RESULT_STATUS_INCOMPLETE  (3)
+#define TEST_RESULT_STATUS_PASS         (1)
+#define TEST_RESULT_STATUS_FAIL         (2)
+#define TEST_RESULT_STATUS_INCOMPLETE   (3)
+#define TEST_RESULT_STATUS_ERROR        (4)
 
-#define TEST_RESULT_KIND_NONE              (0)
 #define TEST_RESULT_KIND_PROGRAM_RUNNER    (1)
 
 struct test_suite_result
@@ -42,6 +41,7 @@ struct test_suite_result
     unsigned int passed_count;
     unsigned int failed_count;
     unsigned int incomplete_count;
+    unsigned int error_count;
 };
 
 struct abstract_test_result {

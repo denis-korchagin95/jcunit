@@ -79,7 +79,6 @@ int main(int argc, char * argv[])
         exit(0);
     }
 
-
     fetch_suites(argc, argv, &application_context);
 
     init_tokenizer();
@@ -246,19 +245,22 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
     unsigned int total_passes_count = 0;
     unsigned int total_failed_count = 0;
     unsigned int total_incomplete_count = 0;
+    unsigned int total_error_count = 0;
     slist_foreach(iterator, &application_context->suites, {
         source = list_get_owner(iterator, struct source, list_entry);
         test_suite_result = make_test_suite_result(source->parsed_suite);
         list_iterator_init(&list_iterator, source->parsed_suite->tests.next, &source->parsed_suite->tests);
         show_each_test_result_in_passthrough_mode(output, &list_iterator, test_runner, (void *) test_suite_result);
         total_passes_count += test_suite_result->passed_count;
+        total_error_count += test_suite_result->error_count;
         total_failed_count += test_suite_result->failed_count;
         total_incomplete_count += test_suite_result->incomplete_count;
     });
     fprintf(
         output,
-        "\n\nPassed: %u, Failed: %u, Incomplete: %u\n\n",
+        "\n\nPassed: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n",
         total_passes_count,
+        total_error_count,
         total_failed_count,
         total_incomplete_count
     );

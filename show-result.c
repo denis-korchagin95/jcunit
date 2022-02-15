@@ -31,12 +31,7 @@
 #include "headers/child-process.h"
 
 
-static const char * pass_prefix = "\033[42mPASS\033[0m      ";
-static const char * fail_prefix = "\033[41mFAIL\033[0m      ";
-static const char * incomplete_prefix = "\033[43mINCOMPLETE\033[0m";
-
-static const char * resolve_status_prefix(struct abstract_test_result * test_result);
-static bool has_test_result_error(struct abstract_test_result * test_result);
+static const char * stringify_test_status(struct abstract_test_result * test_result, bool use_short_version);
 static void print_error(struct abstract_test_result * test_result, FILE * output);
 static void print_program_runner_error(struct program_runner_test_result * test_result, FILE * output);
 
@@ -44,26 +39,25 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
 {
     assert(test_result != NULL);
 
-    const char * prefix = resolve_status_prefix(test_result);
+    const char * test_status = stringify_test_status(test_result, false);
 
-    if (prefix == NULL) {
+    if (test_status == NULL) {
         fprintf(stderr, "Can't resolve the status of test result!\n");
         exit(1);
     }
 
-    fprintf(output, "\t%s %s\n", prefix, test_result->name->value);
+    fprintf(output, "\t%10s %s\n", test_status, test_result->name->value);
 
     if (test_result->kind == TEST_RESULT_STATUS_INCOMPLETE) {
         return;
     }
 
-    bool has_error = has_test_result_error(test_result);
-
-    if (has_error) {
+    if (test_result->kind == TEST_RESULT_STATUS_ERROR) {
         print_error(test_result, output);
+        return;
     }
 
-    if (!has_error && test_result->status == TEST_RESULT_STATUS_FAIL) {
+    if (test_result->status == TEST_RESULT_STATUS_FAIL) {
         fprintf(output, "--- Expected\n%s$\n", test_result->expected->value);
         fprintf(output, "+++ Actual\n%s$\n", test_result->actual->value);
     }
@@ -73,47 +67,25 @@ void show_test_result_in_passthrough_mode(struct abstract_test_result * test_res
 {
     assert(test_result != NULL);
 
-    const char * single_test_status = NULL;
+    const char * test_status = stringify_test_status(test_result, true);
 
-    switch (test_result->status) {
-        case TEST_RESULT_STATUS_INCOMPLETE:
-            single_test_status = "I";
-            break;
-        case TEST_RESULT_STATUS_FAIL:
-            single_test_status = "F";
-            break;
-        case TEST_RESULT_STATUS_PASS:
-            single_test_status = ".";
-        case TEST_RESULT_STATUS_NONE:
-            break;
+    if (test_status == NULL) {
+        fprintf(stderr, "Can't resolve the status of test result!\n");
+        exit(1);
     }
 
-    bool has_error = has_test_result_error(test_result);
-    if (has_error) {
-        single_test_status = "E";
-    }
-
-    assert(single_test_status != NULL);
-
-    fprintf(output, "%s", single_test_status);
+    fprintf(output, "%s", test_status);
 }
 
-static const char * resolve_status_prefix(struct abstract_test_result * test_result)
+static const char * stringify_test_status(struct abstract_test_result * test_result, bool use_short_version)
 {
     switch (test_result->status) {
-        case TEST_RESULT_STATUS_PASS: return pass_prefix;
-        case TEST_RESULT_STATUS_FAIL: return fail_prefix;
-        case TEST_RESULT_STATUS_INCOMPLETE: return incomplete_prefix;
+        case TEST_RESULT_STATUS_PASS: return use_short_version ? "." : "PASS";
+        case TEST_RESULT_STATUS_FAIL: return use_short_version ? "F" : "FAIL";
+        case TEST_RESULT_STATUS_INCOMPLETE: return use_short_version ? "I" : "INCOMPLETE";
+        case TEST_RESULT_STATUS_ERROR: return use_short_version ? "E" : "ERROR";
     }
     return NULL;
-}
-
-bool has_test_result_error(struct abstract_test_result * test_result)
-{
-    if (test_result->kind == TEST_RESULT_KIND_PROGRAM_RUNNER) {
-        return ((struct program_runner_test_result *)test_result)->error_code != ERROR_CODE_NONE;
-    }
-    return false;
 }
 
 void print_error(struct abstract_test_result * test_result, FILE * output)
@@ -172,8 +144,9 @@ void show_each_test_result_in_detail_mode(
     }
     fprintf(
         output,
-        "\nPassed: %u, Failed: %u, Incomplete: %u\n\n\n",
+        "\nPassed: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n\n",
         test_suite_result->passed_count,
+        test_suite_result->error_count,
         test_suite_result->failed_count,
         test_suite_result->incomplete_count
     );

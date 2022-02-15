@@ -23,4 +23,4 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-const char * JCUNIT_VERSION = "0.7.0";
+const char * JCUNIT_VERSION = "0.7.1";

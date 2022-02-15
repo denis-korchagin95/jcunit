@@ -112,8 +112,7 @@ void try_to_run_program(
     const char * filename,
     int run_mode,
     struct process_output * output
-)
-{
+) {
     static char * args[3] = {0};
 
     output->buffer = process_output_buffer;
@@ -193,6 +192,9 @@ void add_test_result_to_test_suite_result(
         case TEST_RESULT_STATUS_INCOMPLETE:
             ++test_suite_result->incomplete_count;
             break;
+        case TEST_RESULT_STATUS_ERROR:
+            ++test_suite_result->error_count;
+            break;
         default:
             fprintf(stderr, "The unknown status %d of test result!\n", test_result->status);
             exit(1);
@@ -249,6 +251,10 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
 
     test_result->base.status = pass ? TEST_RESULT_STATUS_PASS : TEST_RESULT_STATUS_FAIL;
     test_result->error_code = output.error_code;
+
+    if (test_result->error_code != ERROR_CODE_NONE) {
+        test_result->base.status = TEST_RESULT_STATUS_ERROR;
+    }
 
     return (struct abstract_test_result *)test_result;
 }
