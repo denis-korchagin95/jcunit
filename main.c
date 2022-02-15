@@ -70,19 +70,6 @@ int main(int argc, char * argv[])
 
     fetch_suites(argc, argv, &application_context);
 
-    if (list_is_empty(&application_context.suites)) {
-        const char * resolved_path = realpath(default_tests_path, (char *)path_buffer);
-        if (resolved_path == NULL) {
-            fprintf(stderr, "There are no files provided or default tests path \"%s\" not found!\n", default_tests_path);
-            exit(1);
-        }
-        if (!fs_is_dir(resolved_path)) {
-            fprintf(stderr, "Can't found the specified directory \"%s\"!", default_tests_path);
-            exit(1);
-        }
-        fs_read_dir(resolved_path, fetch_suites_from_directory_handler, (void *)&application_context);
-    }
-
     init_tokenizer();
 
     read_suites(&application_context);
@@ -146,6 +133,18 @@ void fetch_suites(int argc, char * argv[], struct application_context * applicat
             continue;
         }
         fetch_one_suite(resolved_path, application_context);
+    }
+    if (list_is_empty(&application_context->suites)) {
+        resolved_path = realpath(default_tests_path, (char *)path_buffer);
+        if (resolved_path == NULL) {
+            fprintf(stderr, "There are no files provided or default tests path \"%s\" not found!\n", default_tests_path);
+            exit(1);
+        }
+        if (!fs_is_dir(resolved_path)) {
+            fprintf(stderr, "Can't found the specified directory \"%s\"!", default_tests_path);
+            exit(1);
+        }
+        fs_read_dir(resolved_path, fetch_suites_from_directory_handler, (void *)&application_context);
     }
 }
 
