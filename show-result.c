@@ -1,7 +1,7 @@
 /**
  * JCUnit - a very simple unit testing framework for C
  *
- * Copyright (C) 2022 Denis Korchagin <denis.korchagin.1995@gmail.com>
+ * Copyright (C) 2021-2022 Denis Korchagin <denis.korchagin.1995@gmail.com>
  *
  * This file is part of JCUnit
  *
@@ -40,7 +40,7 @@ static bool has_test_result_error(struct abstract_test_result * test_result);
 static void print_error(struct abstract_test_result * test_result, FILE * output);
 static void print_program_runner_error(struct program_runner_test_result * test_result, FILE * output);
 
-void show_test_result(struct abstract_test_result * test_result, FILE * output)
+void show_test_result_in_detail_mode(struct abstract_test_result * test_result, FILE * output)
 {
     assert(test_result != NULL);
 
@@ -67,6 +67,35 @@ void show_test_result(struct abstract_test_result * test_result, FILE * output)
         fprintf(output, "--- Expected\n%s$\n", test_result->expected->value);
         fprintf(output, "+++ Actual\n%s$\n", test_result->actual->value);
     }
+}
+
+void show_test_result_in_passthrough_mode(struct abstract_test_result * test_result, FILE * output)
+{
+    assert(test_result != NULL);
+
+    const char * single_test_status = NULL;
+
+    switch (test_result->status) {
+        case TEST_RESULT_STATUS_INCOMPLETE:
+            single_test_status = "I";
+            break;
+        case TEST_RESULT_STATUS_FAIL:
+            single_test_status = "F";
+            break;
+        case TEST_RESULT_STATUS_PASS:
+            single_test_status = ".";
+        case TEST_RESULT_STATUS_NONE:
+            break;
+    }
+
+    bool has_error = has_test_result_error(test_result);
+    if (has_error) {
+        single_test_status = "E";
+    }
+
+    assert(single_test_status != NULL);
+
+    fprintf(output, "%s", single_test_status);
 }
 
 static const char * resolve_status_prefix(struct abstract_test_result * test_result)
@@ -121,13 +150,12 @@ void print_program_runner_error(struct program_runner_test_result * test_result,
     }
 }
 
-void show_each_test_result(
+void show_each_test_result_in_detail_mode(
     FILE * output,
     struct list_iterator * iterator,
     list_iterator_visiter_func * visiter_func,
     void * context
-)
-{
+) {
     if (list_iterator_finished(iterator)) {
         fprintf(output, "\tThere is no any tests!\n");
         return;
@@ -140,7 +168,7 @@ void show_each_test_result(
         if (test_result == NULL) {
             break;
         }
-        show_test_result(test_result, stdout);
+        show_test_result_in_detail_mode(test_result, output);
     }
     fprintf(
         output,
@@ -151,7 +179,26 @@ void show_each_test_result(
     );
 }
 
-void * test_runner_visiter(void * object, void * context)
+void show_each_test_result_in_passthrough_mode(
+    FILE * output,
+    struct list_iterator * iterator,
+    list_iterator_visiter_func * visiter_func,
+    void * context
+) {
+    if (list_iterator_finished(iterator)) {
+        return;
+    }
+    struct abstract_test_result * test_result;
+    for(;;) {
+        test_result = list_iterator_visit(iterator, visiter_func, context);
+        if (test_result == NULL) {
+            break;
+        }
+        show_test_result_in_passthrough_mode(test_result, output);
+    }
+}
+
+void * test_runner(void * object, void * context)
 {
     struct abstract_test * test;
     struct abstract_test_result * test_result;

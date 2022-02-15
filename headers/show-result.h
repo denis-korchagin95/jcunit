@@ -1,7 +1,7 @@
 /**
  * JCUnit - a very simple unit testing framework for C
  *
- * Copyright (C) 2022 Denis Korchagin <denis.korchagin.1995@gmail.com>
+ * Copyright (C) 2021-2022 Denis Korchagin <denis.korchagin.1995@gmail.com>
  *
  * This file is part of JCUnit
  *
@@ -28,15 +28,22 @@
 #include "runner.h"
 #include "list-iterator.h"
 
-void show_test_result(struct abstract_test_result * test_result, FILE * output);
+void show_test_result_in_detail_mode(struct abstract_test_result * test_result, FILE * output);
+void show_test_result_in_passthrough_mode(struct abstract_test_result * test_result, FILE * output);
 
-void show_each_test_result(
+void show_each_test_result_in_detail_mode(
+    FILE * output,
+    struct list_iterator * iterator,
+    list_iterator_visiter_func * visiter_func,
+    void * context
+);
+void show_each_test_result_in_passthrough_mode(
     FILE * output,
     struct list_iterator * iterator,
     list_iterator_visiter_func * visiter_func,
     void * context
 );
 
-void * test_runner_visiter(void * object, void * context);
+void * test_runner(void * object, void * context);
 
 #endif /* JCUNIT_SHOW_RESULT_H */

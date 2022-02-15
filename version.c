@@ -1,7 +1,7 @@
 /**
  * JCUnit - a very simple unit testing framework for C
  *
- * Copyright (C) 2022 Denis Korchagin <denis.korchagin.1995@gmail.com>
+ * Copyright (C) 2021-2022 Denis Korchagin <denis.korchagin.1995@gmail.com>
  *
  * This file is part of JCUnit
  *
@@ -23,4 +23,4 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-const char * JCUNIT_VERSION = "0.1.0";
+const char * JCUNIT_VERSION = "0.7.0";
