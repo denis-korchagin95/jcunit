@@ -157,8 +157,9 @@ int resolve_run_mode_by_stream_code(unsigned int stream_code)
 
 bool is_test_passes(struct string * expected, struct process_output * output)
 {
-    return  expected->len == output->len &&
-            strncmp((const char *)expected->value, (const char *)output->buffer, output->len) == 0;
+    return expected != NULL
+        && expected->len == output->len
+        && strncmp((const char *)expected->value, (const char *)output->buffer, output->len) == 0;
 }
 
 struct test_suite_result * make_test_suite_result(struct test_suite * test_suite)

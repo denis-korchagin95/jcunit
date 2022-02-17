@@ -10,7 +10,7 @@
 
 @endtest
 
-@test("A fail test example")
+@test("A fail test example #1")
 @given("file")
 @@test
 
@@ -19,6 +19,14 @@
 <TOKEN_DIRECTIVE 'test'>
 <TOKEN_EOF>
 
+@endtest
+
+@test("A fail test example #2")
+@given("file")
+@@test
+
+@whenRun("./bin/test-tokenizer")
+@expectOutput("stdout")
 @endtest
 
 @test("An incomplete test example")

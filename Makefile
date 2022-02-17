@@ -51,7 +51,7 @@ ifeq ($(DEVELOPMENT), 1)
 	OBJECTS+=print.o
 endif
 
-OBJECTS_TEST_TOKENIZER=test-tokenizer.o print.o tokenizer.o allocate.o string.o util.o
+OBJECTS_TEST_TOKENIZER=test-tokenizer.o print.o tokenizer.o allocate.o string.o util.o options.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)

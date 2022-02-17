@@ -58,7 +58,7 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
     }
 
     if (test_result->status == TEST_RESULT_STATUS_FAIL) {
-        fprintf(output, "--- Expected\n%s$\n", test_result->expected->value);
+        fprintf(output, "--- Expected\n%s$\n", test_result->expected == NULL ? "" : test_result->expected->value);
         fprintf(output, "+++ Actual\n%s$\n", test_result->actual->value);
     }
 }
