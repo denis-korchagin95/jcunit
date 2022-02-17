@@ -22,31 +22,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef JCUNIT_FS_H
-#define JCUNIT_FS_H 1
+#ifndef JCUNIT_APPLICATION_H
+#define JCUNIT_APPLICATION_H 1
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "string.h"
 #include "list.h"
 
-#define PATH_SEPARATOR '/'
+#define RUN_MODE_PASSTHROUGH    (1)
+#define RUN_MODE_DETAIL         (2)
 
-struct path_list
+struct application_context
 {
-    struct list list_entry;
-    const char * path;
+    struct slist sources;
+    struct slist ** end_sources;
+    struct test_suite ** parsed_suites;
+    unsigned int parsed_suites_count;
+    unsigned int run_mode;
 };
 
-bool fs_is_file_exists(const char * path);
-bool fs_is_file_executable(const char * path);
-bool fs_is_dir(const char * path);
-bool fs_check_extension(const char * path, const char * extension);
+void init_application_context(struct application_context * application_context);
+void fetch_sources(int argc, char * argv[], struct application_context * context);
+void read_suites(struct application_context * application_context);
+void run_suites(FILE * output, struct application_context * application_context);
 
-typedef bool fs_read_dir_func(const char * path, void * context);
-
-void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * context);
-const char * fs_resolve_path(const char * path);
-
-#endif /* JCUNIT_FS_H */
+#endif /* JCUNIT_APPLICATION_H */

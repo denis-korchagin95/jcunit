@@ -36,7 +36,5 @@ struct source * make_source(const char * filename)
     _filename[len] = '\0';
     source->filename = _filename;
     slist_init(&source->list_entry);
-    source->parsed_suite = NULL;
-    source->suite_result = NULL;
     return source;
 }

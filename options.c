@@ -22,7 +22,48 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+
 #include "headers/options.h"
+
 
 bool option_show_allocator_stats = false;
 bool option_show_version = false;
+
+
+void parse_options(int argc, char * argv[], struct application_context * application_context)
+{
+    int i;
+    char * arg;
+    for(i = 1; i < argc; ++i) {
+        arg = argv[i];
+        if (strncmp("--show-allocators-stats", arg, sizeof("--show-allocators-stats") - 1) == 0) {
+            option_show_allocator_stats = true;
+            continue;
+        }
+        if (strncmp("--version", arg, sizeof("--version") - 1) == 0) {
+            option_show_version = true;
+            continue;
+        }
+        if (strncmp("--run-mode=", arg, sizeof("--run-mode=") - 1) == 0) {
+            const char * run_mode = arg + sizeof("--run-mode=") - 1;
+            if (strcmp(run_mode, "detail") == 0) {
+                application_context->run_mode = RUN_MODE_DETAIL;
+                continue;
+            }
+            if (strcmp(run_mode, "passthrough") == 0) {
+                application_context->run_mode = RUN_MODE_PASSTHROUGH;
+                continue;
+            }
+            fprintf(stderr, "The unknown run mode '%s'!\n", run_mode);
+            exit(1);
+        }
+        if (strncmp("--", arg, 2) == 0) {
+            fprintf(stderr, "The unknown option: %s!\n", arg);
+            exit(1);
+        }
+    }
+}

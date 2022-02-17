@@ -28,11 +28,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <limits.h>
 
 #include "headers/fs.h"
 #include "headers/allocate.h"
 
 #define GET_ENTRY_PATH_ADD_PATH_SEPARATOR (1)
+
+static char * path_buffer[PATH_MAX] = {0};
 
 static struct stat st_buf;
 static char * get_entry_path(const char * path, uint32_t path_len, struct dirent * dirent, unsigned int flags);
@@ -142,4 +145,9 @@ char * get_entry_path(const char * path, uint32_t path_len, struct dirent * dire
     }
     entry_path[entry_len] = '\0';
     return entry_path;
+}
+
+const char * fs_resolve_path(const char * path)
+{
+    return realpath(path, (char *) path_buffer);
 }

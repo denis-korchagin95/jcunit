@@ -30,8 +30,6 @@
 struct source {
     struct slist list_entry;
     const char * filename;
-    struct test_suite * parsed_suite;
-    struct test_suite_result * suite_result;
 };
 
 struct source * make_source(const char * filename);

@@ -45,6 +45,7 @@ OBJECTS+=list-iterator.o
 OBJECTS+=compiler.o
 OBJECTS+=source.o
 OBJECTS+=options.o
+OBJECTS+=application.o
 
 ifeq ($(DEVELOPMENT), 1)
 	OBJECTS+=print.o
