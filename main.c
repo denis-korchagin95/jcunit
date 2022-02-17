@@ -51,7 +51,7 @@ int main(int argc, char * argv[])
 
     run_suites(stdout, &application_context);
 
-    if (option_show_allocator_stats) {
+    if (option_show_allocators_stats) {
         fprintf(stdout, "\n\n\n");
 
         show_allocators_stats(stdout);

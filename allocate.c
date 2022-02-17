@@ -27,6 +27,7 @@
 
 
 #include "headers/allocate.h"
+#include "headers/options.h"
 
 /**
  * It's very simple and static allocator. Maybe this needs to be refactor to dynamic version in the future...
@@ -144,6 +145,9 @@ void show_allocators_stats(FILE * output)
     struct allocator_stat * stat;
     for(i = 0, len = sizeof(stats) / sizeof(struct allocator_stat); i < len; ++i) {
         stat = stats + i;
+        if (option_show_allocators_stats_leak_only && !(*stat->allocated > *stat->freed)) {
+            continue;
+        }
         if (*stat->allocated == *stat->freed && *stat->freed == 0) { /* don't show unused allocators */
             continue;
         }

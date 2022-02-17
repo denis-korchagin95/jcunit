@@ -29,7 +29,8 @@
 
 #include "application.h"
 
-extern bool option_show_allocator_stats;
+extern bool option_show_allocators_stats;
+extern bool option_show_allocators_stats_leak_only;
 extern bool option_show_version;
 
 void parse_options(int argc, char * argv[], struct application_context * application_context);
