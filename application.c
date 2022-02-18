@@ -133,7 +133,7 @@ void read_suites(struct application_context * application_context)
     unsigned int i = 0;
     slist_foreach(iterator, &application_context->sources, {
         source = list_get_owner(iterator, struct source, list_entry);
-        application_context->parsed_suites[i] = compile_test_suite(source->filename);
+        application_context->parsed_suites[i++] = compile_test_suite(source->filename);
     });
 }
 
