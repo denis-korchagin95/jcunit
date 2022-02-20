@@ -73,3 +73,14 @@ struct slist ** slist_get_end(struct slist * head)
     }
     return next;
 }
+
+unsigned int slist_count(struct slist * head)
+{
+    struct slist * iterator = head;
+    unsigned int count = 0;
+    while (iterator->next != head) {
+        ++count;
+        iterator = iterator->next;
+    }
+    return count;
+}

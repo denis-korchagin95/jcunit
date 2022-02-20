@@ -1,11 +1,12 @@
-@test("Test #1")
+@test("A pass test example #1")
 @given("file")
 @@test
 
-@whenRun(program="./bin/test-tokenizer")
+@whenRun(program="./bin/test-tokenizer", args="--some-extra-args")
 @expectOutput("stdout")
 <TOKEN_DIRECTIVE 'test'>
 <TOKEN_NEWLINE '\n'>
 <TOKEN_EOF>
 
 @endtest
+

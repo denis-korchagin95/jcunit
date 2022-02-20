@@ -111,11 +111,21 @@ struct abstract_test * program_runner_test_assembler(struct ast_test * ast_test)
     struct program_runner_test * test = make_program_runner_test();
     ast_requirement = find_ast_requirement_by_name(ast_test, GIVEN_REQUIREMENT_NAME);
     if (ast_requirement != NULL) {
-        if (!string_equals_with_cstring(ast_requirement->argument, "file")) {
+        unsigned int arguments_count = slist_count(&ast_requirement->arguments);
+        if (arguments_count != 1) {
+            fprintf(stderr, "Expected only the one argument instead of %u arguments!\n", arguments_count);
+            exit(1);
+        }
+        struct ast_requirement_argument * argument = list_get_owner(ast_requirement->arguments.next, struct ast_requirement_argument, list_entry);
+        if (argument->name != NULL) {
+            fprintf(stderr, "Unexpected named argument '%s' for the given directive!\n", ast_requirement->name->value);
+            exit(1);
+        }
+        if (!string_equals_with_cstring(argument->value, "file")) {
             fprintf(
                 stderr,
                 "The unknown \"%s\" given type!\n",
-                ast_requirement->argument->value
+                argument->value->value
             );
             exit(1);
         }
@@ -128,17 +138,71 @@ struct abstract_test * program_runner_test_assembler(struct ast_test * ast_test)
             fprintf(stderr, "The 'whenRun' requirement must not contain any content!\n");
             exit(1);
         }
-        test->program_path = ast_requirement->argument;
+        unsigned int arguments_count = slist_count(&ast_requirement->arguments);
+        if (arguments_count == 0) {
+            fprintf(stderr, "No arguments are given for 'whenRun' directive!\n");
+            exit(1);
+        }
+        struct string * program = NULL, * args = NULL;
+        slist_foreach(iterator, &ast_requirement->arguments, {
+            struct ast_requirement_argument * argument = list_get_owner(iterator, struct ast_requirement_argument, list_entry);
+            if (argument->name == NULL) {
+                program = argument->value;
+                continue;
+            }
+            if (argument->name != NULL && strcmp("program", argument->name->value) == 0) {
+                if (program != NULL) {
+                    fprintf(stderr, "Cannot be both definition of 'program' named and unnamed for the 'whenRun' requirement!\n");
+                    exit(1);
+                }
+                program = argument->value;
+                continue;
+            }
+            if (argument->name != NULL && strcmp("args", argument->name->value) == 0) {
+                args = argument->value;
+                continue;
+            }
+            fprintf(stderr, "Unknown named argument '%s' for the 'whenRun' requirement!\n", argument->name->value);
+            exit(1);
+        });
+        if (program == NULL) {
+            fprintf(stderr, "Missing the 'program' named argument (can be unnamed) for the 'whenRun' requirement!\n");
+            exit(1);
+        }
+        if (program->len == 0) {
+            fprintf(stderr, "The program cannot be empty for the 'whenRun' requirement!\n");
+            exit(1);
+        }
+        if (args != NULL && args->len == 0) {
+            fprintf(stderr, "The args cannot be empty for the 'whenRun' requirement!\n");
+            exit(1);
+        }
+        test->program_path = program;
+        test->program_args = args;
         test->base.flags |= TEST_FLAG_HAS_WHEN;
     }
     ast_requirement = find_ast_requirement_by_name(ast_test, EXPECT_OUTPUT_REQUIREMENT_NAME);
     if (ast_requirement != NULL) {
-        int stream_code = resolve_stream_code_by_name(ast_requirement->argument);
-        if (stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_NONE) {
+        unsigned int arguments_count = slist_count(&ast_requirement->arguments);
+        if (arguments_count == 0) {
+            fprintf(stderr, "No arguments are given for 'expectOutput' directive!\n");
+            exit(1);
+        }
+        struct ast_requirement_argument * argument = list_get_owner(ast_requirement->arguments.next, struct ast_requirement_argument, list_entry);
+        if (argument->name != NULL && strcmp("stream", argument->name->value)) {
+            fprintf(stderr, "Unexpected named argument '%s' for the 'expectOutput' directive!\n", argument->name->value);
+            exit(1);
+        }
+        if (argument->value->len == 0) {
+            fprintf(stderr, "The stream name cannot be empty for the 'expectOutput' directive!\n");
+            exit(1);
+        }
+        int stream_code = resolve_stream_code_by_name(argument->value);
+        if (stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_UNKNOWN) {
             fprintf(
                 stderr,
-                "The unknown stream name \"%s\" for 'expectOutput' requirement!\n",
-                ast_requirement->argument->value
+                "The unknown stream name \"%s\" for 'expectOutput' directive!\n",
+                argument->value->value
             );
             exit(1);
         }
@@ -159,11 +223,11 @@ struct program_runner_test * make_program_runner_test(void)
 
 int resolve_stream_code_by_name(struct string * name)
 {
-    int stream_code = TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_NONE;
     if (string_equals_with_cstring(name, TEST_PROGRAM_RUNNER_STREAM_STDOUT_NAME)) {
-        stream_code = TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT;
-    } else if (string_equals_with_cstring(name, TEST_PROGRAM_RUNNER_STREAM_STDERR_NAME)) {
-        stream_code = TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR;
+        return TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT;
     }
-    return stream_code;
+    if (string_equals_with_cstring(name, TEST_PROGRAM_RUNNER_STREAM_STDERR_NAME)) {
+        return TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR;
+    }
+    return TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_UNKNOWN;
 }

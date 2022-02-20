@@ -41,6 +41,9 @@ void print_token(struct token * token, FILE * output)
         case TOKEN_KIND_DIRECTIVE:
             fprintf(output, "<TOKEN_DIRECTIVE '%.*s'>", token->content.string->len, token->content.string->value);
             break;
+        case TOKEN_KIND_NAME:
+            fprintf(output, "<TOKEN_NAME '%.*s'>", token->content.string->len, token->content.string->value);
+            break;
         case TOKEN_KIND_STRING:
             fprintf(output, "<TOKEN_STRING '%.*s'>", token->content.string->len, token->content.string->value);
             break;
@@ -68,6 +71,7 @@ void print_ast_requirement(struct ast_requirement * requirement, FILE * output)
 {
     fprintf(output, "Requirement\n");
     fprintf(output, "\tName: %.*s\n", requirement->name->len, requirement->name->value);
+    /* TODO: fix the printing of the test's requirement
     if (requirement->argument != NULL) {
         fprintf(output, "\tArgument: %.*s\n", requirement->argument->len, requirement->argument->value);
     } else {
@@ -78,4 +82,5 @@ void print_ast_requirement(struct ast_requirement * requirement, FILE * output)
     } else {
         fprintf(output, "\tContent: <not provided>\n");
     }
+    */
 }

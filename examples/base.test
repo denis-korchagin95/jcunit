@@ -1,4 +1,4 @@
-@test("A pass test example")
+@test(name="A pass test example")
 @given("file")
 @@test
 
@@ -14,7 +14,7 @@
 @given("file")
 @@test
 
-@whenRun("./bin/test-tokenizer")
+@whenRun(program="./bin/test-tokenizer")
 @expectOutput("stdout")
 <TOKEN_DIRECTIVE 'test'>
 <TOKEN_EOF>

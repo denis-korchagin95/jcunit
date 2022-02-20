@@ -41,5 +41,6 @@ struct ast_requirement * make_ast_requirement(void)
 {
     struct ast_requirement * requirement = alloc_ast_requirement();
     memset((void *)requirement, 0, sizeof(struct ast_requirement));
+    slist_init(&requirement->arguments);
     return requirement;
 }

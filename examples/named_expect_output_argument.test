@@ -1,0 +1,12 @@
+@test("A pass test example #1")
+@given("file")
+@@test
+
+@whenRun("./bin/test-tokenizer")
+@expectOutput(stream="stdout")
+<TOKEN_DIRECTIVE 'test'>
+<TOKEN_NEWLINE '\n'>
+<TOKEN_EOF>
+
+@endtest
+

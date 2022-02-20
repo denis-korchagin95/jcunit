@@ -24,6 +24,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 #include "headers/parse.h"
@@ -31,13 +32,23 @@
 #include "headers/allocate.h"
 
 
+struct directive_parse_context
+{
+    struct string ** directive;
+    struct slist ** arguments_end;
+    bool has_unnamed_argument;
+};
+
 static struct ast_test * parse_test(struct tokenizer_context * context);
 static void parse_test_prolog(struct tokenizer_context * context, struct ast_test ** ast_test);
 static void parse_test_epilog(struct tokenizer_context * context);
 static void parse_requirement_list(struct tokenizer_context * context, struct ast_test ** ast_test);
 static void parse_requirement(struct tokenizer_context * context, struct ast_requirement * requirement);
-static void parse_directive(struct tokenizer_context * context, struct string ** directive, struct string ** argument);
+static void parse_directive(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context);
+static void parse_directive_argument(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context);
+static void parse_named_directive_argument(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context);
 static void release_token(struct token * token);
+static void skip_whitespaces(struct tokenizer_context * context);
 
 
 struct slist * parse_test_suite(struct tokenizer_context * context)
@@ -59,6 +70,7 @@ struct slist * parse_test_suite(struct tokenizer_context * context)
                 }
                 release_token(token);
             }
+            continue;
         }
         ast_test = parse_test(context);
 
@@ -120,7 +132,11 @@ void parse_requirement_list(struct tokenizer_context * context, struct ast_test 
 void parse_requirement(struct tokenizer_context * context, struct ast_requirement * requirement)
 {
     static char buffer[MAX_REQUIREMENT_CONTENT_SIZE] = {0};
-    parse_directive(context, &requirement->name, &requirement->argument);
+    struct directive_parse_context directive_parse_context;
+    directive_parse_context.directive = &requirement->name;
+    directive_parse_context.arguments_end = &requirement->arguments.next;
+    directive_parse_context.has_unnamed_argument = false;
+    parse_directive(context, &directive_parse_context);
     struct token * token = peek_one_token(context);
     if (is_token_directive(token)) {
         return; /* no content for requirement */
@@ -158,34 +174,60 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
 
 void parse_test_prolog(struct tokenizer_context * context, struct ast_test ** ast_test)
 {
-    struct string * directive = NULL, * argument = NULL;
-    parse_directive(context, &directive, &argument);
+    struct string * directive = NULL;
+    struct slist arguments;
+    slist_init(&arguments);
+    struct directive_parse_context directive_parse_context;
+    directive_parse_context.directive = &directive;
+    directive_parse_context.arguments_end = &arguments.next;
+    directive_parse_context.has_unnamed_argument = false;
+    parse_directive(context, &directive_parse_context);
     if (!string_equals_with_cstring(directive, "test")) {
         fprintf(stderr, "Expected test directive, but given '%.*s'!\n", directive->len, directive->value);
         exit(1);
     }
-    if (argument == NULL) {
+    if (list_is_empty(&arguments)) {
         fprintf(stderr, "For test directive is require to specify a test name!\n");
         exit(1);
     }
-    if (argument->len == 0) {
+    unsigned int arguments_count = slist_count(&arguments);
+    if (arguments_count != 1) {
+        fprintf(stderr, "Expected only 1 argument as a name of test, but %u arguments given!\n", arguments_count);
+        exit(1);
+    }
+    struct ast_requirement_argument * argument = list_get_owner(arguments.next, struct ast_requirement_argument, list_entry);
+    if (argument->name != NULL && strcmp("name", argument->name->value) != 0) {
+        fprintf(stderr, "Expected 'name' argument for a test, but given '%.*s'!\n", argument->name->len, argument->name->value);
+        exit(1);
+    }
+    if (argument->value->len == 0) {
         fprintf(stderr, "The test must have a non-empty name!\n");
         exit(1);
     }
-    (*ast_test)->name = argument;
+    (*ast_test)->name = argument->value;
 }
 
 void parse_test_epilog(struct tokenizer_context * context)
 {
-    struct string * directive = NULL, * argument = NULL;
-    parse_directive(context, &directive, &argument);
+    struct string * directive = NULL;
+    struct slist arguments;
+    slist_init(&arguments);
+    struct directive_parse_context directive_parse_context;
+    directive_parse_context.directive = &directive;
+    directive_parse_context.arguments_end = &arguments.next;
+    directive_parse_context.has_unnamed_argument = false;
+    parse_directive(context, &directive_parse_context);
     if (!string_equals_with_cstring(directive, "endtest")) {
         fprintf(stderr, "Expected endtest directive, but given '%.*s'!\n", directive->len, directive->value);
         exit(1);
     }
+    if (!list_is_empty(&arguments)) {
+        fprintf(stderr, "Unexpected arguments for 'endtest' directive!\n");
+        exit(1);
+    }
 }
 
-void parse_directive_argument(struct tokenizer_context * context, struct string ** argument)
+void parse_directive_arguments(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context)
 {
     struct token * token = get_one_token(context);
     if (!is_token_punctuator(token, '(')) {
@@ -193,13 +235,16 @@ void parse_directive_argument(struct tokenizer_context * context, struct string 
         exit(1);
     }
     release_token(token);
-    token = get_one_token(context);
-    if (!is_token_string(token)) {
-        fprintf(stderr, "Expected string as directive argument!\n");
-        exit(1);
+    for (;;) {
+        skip_whitespaces(context);
+        parse_directive_argument(context, directive_parse_context);
+        token = get_one_token(context);
+        if (!is_token_punctuator(token, ',')) {
+            unget_one_token(context, token);
+            break;
+        }
+        release_token(token);
     }
-    (*argument) = token->content.string;
-    release_token(token);
     token = get_one_token(context);
     if (!is_token_punctuator(token, ')')) {
         fprintf(stderr, "Expected ')' at end of directive argument!\n");
@@ -208,7 +253,58 @@ void parse_directive_argument(struct tokenizer_context * context, struct string 
     release_token(token);
 }
 
-void parse_directive(struct tokenizer_context * context, struct string ** directive, struct string ** argument)
+void parse_directive_argument(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context)
+{
+    struct token * token = get_one_token(context);
+    if (is_token_name(token)) {
+        unget_one_token(context, token);
+        return parse_named_directive_argument(context, directive_parse_context);
+    }
+    if (!is_token_string(token)) {
+        fprintf(stderr, "Expected string as a 'directive' argument!\n");
+        exit(1);
+    }
+    if (directive_parse_context->has_unnamed_argument) {
+        fprintf(stderr, "A directive cannot have two unnamed arguments!\n");
+        exit(1);
+    }
+    struct ast_requirement_argument * argument = alloc_ast_requirement_argument();
+    argument->name = NULL;
+    argument->value = token->content.string;
+    slist_append(directive_parse_context->arguments_end, &argument->list_entry);
+    directive_parse_context->has_unnamed_argument = true;
+    release_token(token);
+}
+
+void parse_named_directive_argument(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context)
+{
+    struct token * token = get_one_token(context);
+    struct string * name = NULL;
+    if (!is_token_name(token)) {
+        fprintf(stderr, "Expected argument's name of directive!\n");
+        exit(1);
+    }
+    name = token->content.string;
+    release_token(token);
+    token = get_one_token(context);
+    if (!is_token_punctuator(token, '=')) {
+        fprintf(stderr, "Expected '=' after name of argument!\n");
+        exit(1);
+    }
+    release_token(token);
+    token = get_one_token(context);
+    if (!is_token_string(token)) {
+        fprintf(stderr, "Expected value of the named argument as a string!\n");
+        exit(1);
+    }
+    struct ast_requirement_argument * argument = alloc_ast_requirement_argument();
+    argument->name = name;
+    argument->value = token->content.string;
+    slist_append(directive_parse_context->arguments_end, &argument->list_entry);
+    release_token(token);
+}
+
+void parse_directive(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context)
 {
     struct token * token = get_one_token(context);
 
@@ -217,7 +313,7 @@ void parse_directive(struct tokenizer_context * context, struct string ** direct
         exit(1);
     }
 
-    (*directive) = token->content.string;
+    *directive_parse_context->directive = token->content.string;
 
     release_token(token);
 
@@ -227,7 +323,7 @@ void parse_directive(struct tokenizer_context * context, struct string ** direct
     int ch = peek_one_char(context);
 
     if (ch == '(') {
-        parse_directive_argument(context, argument);
+        parse_directive_arguments(context, directive_parse_context);
     }
 
     token = get_one_token(context);
@@ -248,4 +344,13 @@ void release_token(struct token * token)
         return;
     }
     free_token(token);
+}
+
+void skip_whitespaces(struct tokenizer_context * context)
+{
+    int ch = get_one_char(context);
+    while (is_whitespace_char(ch)) {
+        ch = get_one_char(context);
+    }
+    unget_one_char(context, ch);
 }

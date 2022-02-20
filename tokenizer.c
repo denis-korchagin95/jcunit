@@ -27,7 +27,7 @@
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
-
+#include <ctype.h>
 
 #include "headers/token.h"
 #include "headers/allocate.h"
@@ -136,23 +136,31 @@ int peek_one_char(struct tokenizer_context * context)
     return ch;
 }
 
-struct token * get_one_directive(struct tokenizer_context * context, int ch)
+struct token * get_one_name(struct tokenizer_context * context, int ch, unsigned int token_kind)
 {
     static char buffer[MAX_NAME_LEN] = {0};
 
     char * w = buffer;
 
-    ch = get_one_char(context);
+    unsigned int len = 0;
 
-    while (is_name_char(ch)) {
+    for (;;) {
         *w++ = (char)ch;
+        ++len;
+        if (len >= MAX_NAME_LEN) {
+            fprintf(stderr, "Too long name '%.*s' exceed %d characters!", len, buffer, MAX_NAME_LEN);
+            exit(1);
+        }
         ch = get_one_char(context);
+        if (!is_name_char(ch)) {
+            break;
+        }
     }
     unget_one_char(context, ch);
 
     struct token * token = alloc_token();
-    token->kind = TOKEN_KIND_DIRECTIVE;
-    token->content.string = make_string(buffer, w - buffer);
+    token->kind = token_kind;
+    token->content.string = make_string(buffer, len);
     return token;
 }
 
@@ -170,9 +178,9 @@ struct token * get_one_token(struct tokenizer_context * context)
     if (ch == '@') {
         int next = get_one_char(context);
         if (is_start_name_char(next)) {
-            unget_one_char(context, next);
-            return get_one_directive(context, ch);
-        } else if (next == '@') {
+            return get_one_name(context, next, TOKEN_KIND_DIRECTIVE);
+        }
+        if (next == '@') {
             goto character;
         }
         unget_one_char(context, next);
@@ -187,6 +195,10 @@ struct token * get_one_token(struct tokenizer_context * context)
         return &newline_token;
     }
 
+    if (ch == ',') {
+        return make_punctuator_token(ch);
+    }
+
     if (ch == '(') {
         return make_punctuator_token(ch);
     }
@@ -195,8 +207,16 @@ struct token * get_one_token(struct tokenizer_context * context)
         return make_punctuator_token(ch);
     }
 
+    if (ch == '=') {
+        return make_punctuator_token(ch);
+    }
+
     if (ch == '"') {
         return get_one_string(context, ch);
+    }
+
+    if (is_start_name_char(ch)) {
+        return get_one_name(context, ch, TOKEN_KIND_NAME);
     }
 
     struct token * token;

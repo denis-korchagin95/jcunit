@@ -47,6 +47,7 @@ static void make_given_file(struct program_runner_test_result * result, struct s
 static void try_to_run_program(
     const char * program,
     const char * given_filename,
+    const char * extra_args,
     int run_mode,
     struct process_output * output
 );
@@ -110,10 +111,11 @@ void make_given_file(struct program_runner_test_result * result, struct string *
 void try_to_run_program(
     const char * program,
     const char * filename,
+    const char * extra_args,
     int run_mode,
     struct process_output * output
 ) {
-    static char * args[3] = {0};
+    static char * args[4] = {0};
 
     output->buffer = process_output_buffer;
     output->size = MAX_PROCESS_OUTPUT_BUFFER_LEN;
@@ -122,7 +124,13 @@ void try_to_run_program(
 
     args[0] = (char *)program;
     args[1] = (char *)filename;
-    args[2] = NULL;
+
+    if (extra_args != NULL) {
+        args[2] = (char *)extra_args;
+        args[3] = NULL;
+    } else {
+        args[2] = NULL;
+    }
 
     bool try_to_run = true;
 
@@ -239,6 +247,7 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
     try_to_run_program(
         executable->value,
         test_result->given_filename->value,
+        this_test->program_args != NULL ? this_test->program_args->value : NULL,
         run_mode,
         &output
     );

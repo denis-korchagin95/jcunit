@@ -28,34 +28,36 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define TOKEN_KIND_EOF           (-1)
-#define TOKEN_KIND_DIRECTIVE     (1)
-#define TOKEN_KIND_PUNCTUATOR    (2)
-#define TOKEN_KIND_STRING        (3)
-#define TOKEN_KIND_NEWLINE       (4)
-#define TOKEN_KIND_CHARACTER     (5)
+#define TOKEN_KIND_EOF          (-1)
+#define TOKEN_KIND_DIRECTIVE    (1)
+#define TOKEN_KIND_PUNCTUATOR   (2)
+#define TOKEN_KIND_STRING       (3)
+#define TOKEN_KIND_NEWLINE      (4)
+#define TOKEN_KIND_CHARACTER    (5)
+#define TOKEN_KIND_NAME         (6)
 
 #define TOKENIZER_MODE_NONE                 (0)
 #define TOKENIZER_MODE_DIRECTIVE_AND_TEXT   (1)
 
-#define MAX_TOKEN_BUFFER_SIZE (4)
-#define MAX_CHAR_BUFFER_SIZE (4)
-#define MAX_NAME_LEN (256)
-#define MAX_STRING_LEN (1024)
-#define MAX_REQUIREMENT_CONTENT_SIZE (8192)
-#define MAX_REQUIREMENT_COUNT (12)
+#define MAX_TOKEN_BUFFER_SIZE           (4)
+#define MAX_CHAR_BUFFER_SIZE            (4)
+#define MAX_NAME_LEN                    (256)
+#define MAX_STRING_LEN                  (1024)
+#define MAX_REQUIREMENT_CONTENT_SIZE    (8192)
+#define MAX_REQUIREMENT_COUNT           (12)
 
 #define is_upper_char(ch) ((ch) >= 'A' && (ch) <= 'Z')
 #define is_lower_char(ch) ((ch) >= 'a' && (ch) <= 'z')
 #define is_char(ch) (is_lower_char(ch) || is_upper_char(ch))
-#define is_digit_char(ch) ((ch) >= '0' && (ch) <= '9')
-#define is_start_name_char(ch) (is_char(ch) || (ch) == '_')
-#define is_name_char(ch) (is_char(ch) || (ch) == '_' || is_digit_char(ch))
+#define is_start_name_char(ch) (is_char(ch))
+#define is_name_char(ch) (is_char(ch) || (ch) == '_')
+#define is_whitespace_char(ch) ((ch) == ' ' || (ch) == '\t' || (ch) == '\v' || (ch) == '\f')
 
 #define is_token_string(token) ((token)->kind == TOKEN_KIND_STRING)
 #define is_token_directive(token) ((token)->kind == TOKEN_KIND_DIRECTIVE)
 #define is_token_eof(token) ((token) == &eof_token)
 #define is_token_newline(token) ((token) == &newline_token)
+#define is_token_name(token) ((token)->kind == TOKEN_KIND_NAME)
 
 struct token
 {

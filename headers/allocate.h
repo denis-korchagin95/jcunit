@@ -95,6 +95,7 @@ declare_allocator(program_runner_test_result, struct program_runner_test_result)
 declare_allocator(program_runner_test, struct program_runner_test);
 declare_allocator(source, struct source);
 declare_allocator(path_list, struct path_list);
+declare_allocator(ast_requirement_argument, struct ast_requirement_argument);
 
 void * alloc_bytes(unsigned int len);
 
