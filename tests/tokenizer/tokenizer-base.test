@@ -1,0 +1,185 @@
+@test("It should tokenize an 'EOF' token on empty file")
+@given("file")
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should tokenize '(' punctuator")
+@given("file")
+(
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_PUNCTUATOR '('>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should tokenize ')' punctuator")
+@given("file")
+)
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_PUNCTUATOR ')'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should tokenize '=' punctuator")
+@given("file")
+=
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_PUNCTUATOR '='>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should tokenize ',' punctuator")
+@given("file")
+,
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_PUNCTUATOR ','>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should tokenize newline character")
+@given("file")
+
+
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_NEWLINE '\n'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should tokenize unclassified input as a single character")
+@given("file")
+$
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_CHARACTER '$'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should token a name #1")
+@given("file")
+abc
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_NAME 'abc'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should token a name #2")
+@given("file")
+some_Name
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_NAME 'some_Name'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should token a name #3")
+@given("file")
+Name
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_NAME 'Name'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should show an error for a too long name")
+@given("file")
+it_a_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very___very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_long_name
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stderr")
+Too long name 'it_a_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very___very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_long_name' exceed 256 characters!
+@endtest
+
+@test("It should tokenize a directive #1")
+@given("file")
+@@test
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_DIRECTIVE 'test'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should tokenize a directive #2")
+@given("file")
+@@Test
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_DIRECTIVE 'Test'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should tokenize a directive #3")
+@given("file")
+@@when_run_Program
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_DIRECTIVE 'when_run_Program'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should allow escape the '@' character")
+@given("file")
+@@@@test
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_CHARACTER '@'>
+<TOKEN_NAME 'test'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should tokenize a string")
+@given("file")
+"some string"
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stdout")
+<TOKEN_STRING 'some string'>
+<TOKEN_EOF>
+
+@endtest
+
+@test("It should show an error on a unterminated string")
+@given("file")
+"some
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stderr")
+Unterminated string!
+
+@endtest
+
+@test("It should show an error on a newline character in a string found")
+@given("file")
+"some
+ string"
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stderr")
+Newline inside the string!
+
+@endtest
+
+@test("It should show an error for a too long string")
+@given("file")
+"some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some long string some"
+@whenRun("./bin/testers/tokenizer-tester")
+@expectOutput("stderr")
+Too long string!
+
+@endtest

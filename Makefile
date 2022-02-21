@@ -6,6 +6,9 @@ DEPENDENCIES_FILE=dependencies.mk
 CFLAGS=-std=c89
 LFLAGS=
 INSTALL_PATH=/usr/local/bin/
+TESTERS_PATH=testers/
+BIN_TESTERS=$(BIN)$(TESTERS_PATH)
+OBJ_TESTERS=$(OBJ)$(TESTERS_PATH)
 
 DEVELOPMENT ?= 0
 
@@ -15,11 +18,11 @@ else
 	CFLAGS+=-O3 -DNDEBUG
 endif
 
+TESTERS=tokenizer-tester
+
 PROGRAM=jcunit
-PROGRAM_TEST_TOKENIZER=test-tokenizer
 
 SAMPLE_FILE=./examples/base.test
-SAMPLE_TEST_TOKENIZER=./examples/test-tokenizer.test
 
 vpath %.c $(SRC)
 vpath %.c $(HEADERS)
@@ -51,18 +54,19 @@ ifeq ($(DEVELOPMENT), 1)
 	OBJECTS+=print.o
 endif
 
-OBJECTS_TEST_TOKENIZER=test-tokenizer.o print.o tokenizer.o allocate.o string.o util.o options.o
+OBJECTS_TEST_TOKENIZER=$(TESTERS_PATH)tokenizer-tester.o print.o tokenizer.o allocate.o string.o util.o options.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
 
-test-tokenizer: $(addprefix $(OBJ), $(OBJECTS_TEST_TOKENIZER))
-	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM_TEST_TOKENIZER)
-	$(BIN)$(PROGRAM_TEST_TOKENIZER) $(SAMPLE_TEST_TOKENIZER)
+tokenizer-tester: $(addprefix $(OBJ), $(OBJECTS_TEST_TOKENIZER))
+	$(CC) $(LFLAGS) $^ -o $(BIN_TESTERS)tokenizer-tester
 
 dependencies:
 	@rm -rf $(DEPENDENCIES_FILE)
 	@$(foreach file, $(OBJECTS), $(CC) -MT $(OBJ)$(file) -MM $(patsubst %.o, %.c, $(file)) >> $(DEPENDENCIES_FILE);)
+
+testers: $(TESTERS)
 
 run:
 	$(BIN)$(PROGRAM) $(SAMPLE_FILE)
@@ -75,8 +79,9 @@ uninstall:
 
 clean:
 	rm -rfv $(BIN)$(PROGRAM)
-	rm -rfv $(OBJ)*
-	rm -rfv $(BIN)$(PROGRAM_TEST_TOKENIZER)
+	rm -rfv $(OBJ)*.o
+	rm -rfv $(OBJ_TESTERS)*.o
+	rm -rfv $(BIN_TESTERS)*
 
 $(OBJ)%.o: %.c
 	$(CC) $(CFLAGS) -c $(SRC)$*.c -o $@

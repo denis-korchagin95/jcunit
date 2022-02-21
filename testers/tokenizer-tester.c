@@ -24,8 +24,8 @@
  */
 #include <stdio.h>
 
-#include "headers/token.h"
-#include "headers/print.h"
+#include "../headers/token.h"
+#include "../headers/print.h"
 
 
 int main(int argc, char * argv[])

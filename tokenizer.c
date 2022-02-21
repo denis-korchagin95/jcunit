@@ -64,7 +64,7 @@ struct token * get_one_string(struct tokenizer_context * context, int ch)
         ++len;
         ch = get_one_char(context);
     }
-    if (ch != '"') {
+    if (len >= MAX_STRING_LEN) {
         fprintf(stderr, "Too long string!\n");
         exit(1);
     }
