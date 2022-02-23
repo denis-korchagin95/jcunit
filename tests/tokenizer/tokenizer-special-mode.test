@@ -1,0 +1,28 @@
+@test("It should tokenize requirement's content text character by character")
+@given("file")
+@@expectOutput("stdout")
+<TOKEN_EOF>
+
+@whenRun("./bin/testers/tokenizer-special-mode-tester", args="--turn-special-mode-after-token=5")
+@expectOutput("stdout")
+<TOKEN_DIRECTIVE 'expectOutput'>
+<TOKEN_PUNCTUATOR '('>
+<TOKEN_STRING 'stdout'>
+<TOKEN_PUNCTUATOR ')'>
+<TOKEN_NEWLINE '\n'>
+<TOKEN_CHARACTER '<'>
+<TOKEN_CHARACTER 'T'>
+<TOKEN_CHARACTER 'O'>
+<TOKEN_CHARACTER 'K'>
+<TOKEN_CHARACTER 'E'>
+<TOKEN_CHARACTER 'N'>
+<TOKEN_CHARACTER '_'>
+<TOKEN_CHARACTER 'E'>
+<TOKEN_CHARACTER 'O'>
+<TOKEN_CHARACTER 'F'>
+<TOKEN_CHARACTER '>'>
+<TOKEN_CHARACTER '
+'>
+<TOKEN_EOF>
+
+@endtest
