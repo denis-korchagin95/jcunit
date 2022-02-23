@@ -1,0 +1,108 @@
+@test("It should correct printing of a parsed test")
+@given("file")
+
+@@test(name="Some test")
+@@given("file")
+@@@@test
+
+@@whenRun("./bin/test-tokenizer")
+@@expectOutput("stdout")
+@@endtest
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stdout")
+Test:
+    Arguments:
+        Argument #1: name="Some test"
+    Requirements:
+        Requirement #1:
+            Name: "given"
+            Arguments:
+                Argument #1: "file" (unnamed)
+            Content: "@@test
+"
+        Requirement #2:
+            Name: "whenRun"
+            Arguments:
+                Argument #1: "./bin/test-tokenizer" (unnamed)
+            Content: <not provided>
+        Requirement #3:
+            Name: "expectOutput"
+            Arguments:
+                Argument #1: "stdout" (unnamed)
+            Content: <not provided>
+
+@endtest
+
+@test("It should correct printing of named arguments of a requirement")
+@given("file")
+
+@@test(name="Some test")
+@@given("file")
+@@@@test
+
+@@whenRun(program="./bin/test-tokenizer")
+@@expectOutput("stdout")
+@@endtest
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stdout")
+Test:
+    Arguments:
+        Argument #1: name="Some test"
+    Requirements:
+        Requirement #1:
+            Name: "given"
+            Arguments:
+                Argument #1: "file" (unnamed)
+            Content: "@@test
+"
+        Requirement #2:
+            Name: "whenRun"
+            Arguments:
+                Argument #1: program="./bin/test-tokenizer"
+            Content: <not provided>
+        Requirement #3:
+            Name: "expectOutput"
+            Arguments:
+                Argument #1: "stdout" (unnamed)
+            Content: <not provided>
+
+@endtest
+
+@test("It should correct printing of the many arguments of a requirement")
+@given("file")
+
+@@test(name="Some test")
+@@given("file")
+@@@@test
+
+@@whenRun("./bin/test-tokenizer", args="some args")
+@@expectOutput("stdout")
+@@endtest
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stdout")
+Test:
+    Arguments:
+        Argument #1: name="Some test"
+    Requirements:
+        Requirement #1:
+            Name: "given"
+            Arguments:
+                Argument #1: "file" (unnamed)
+            Content: "@@test
+"
+        Requirement #2:
+            Name: "whenRun"
+            Arguments:
+                Argument #1: "./bin/test-tokenizer" (unnamed)
+                Argument #2: args="some args"
+            Content: <not provided>
+        Requirement #3:
+            Name: "expectOutput"
+            Arguments:
+                Argument #1: "stdout" (unnamed)
+            Content: <not provided>
+
+@endtest

@@ -18,7 +18,7 @@ else
 	CFLAGS+=-O3 -DNDEBUG
 endif
 
-TESTERS=tokenizer-tester tokenizer-special-mode-tester
+TESTERS=tokenizer-tester tokenizer-special-mode-tester parser-tester
 
 PROGRAM=jcunit
 
@@ -56,6 +56,7 @@ endif
 
 OBJECTS_TOKENIZER_TESTER=$(TESTERS_PATH)tokenizer-tester.o print.o tokenizer.o allocate.o string.o util.o options.o
 OBJECTS_TOKENIZER_SPECIAL_MODE_TESTER=$(TESTERS_PATH)tokenizer-special-mode-tester.o print.o tokenizer.o allocate.o string.o util.o options.o
+OBJECTS_PARSER_TESTER=$(TESTERS_PATH)parser-tester.o print.o tokenizer.o allocate.o string.o util.o options.o parse.o ast.o list.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
@@ -65,6 +66,9 @@ tokenizer-tester: $(addprefix $(OBJ), $(OBJECTS_TOKENIZER_TESTER))
 
 tokenizer-special-mode-tester: $(addprefix $(OBJ), $(OBJECTS_TOKENIZER_SPECIAL_MODE_TESTER))
 	$(CC) $(LFLAGS) $^ -o $(BIN_TESTERS)tokenizer-special-mode-tester
+
+parser-tester: $(addprefix $(OBJ), $(OBJECTS_PARSER_TESTER))
+	$(CC) $(LFLAGS) $^ -o $(BIN_TESTERS)parser-tester
 
 dependencies:
 	@rm -rf $(DEPENDENCIES_FILE)

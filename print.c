@@ -27,6 +27,14 @@
 
 #include "headers/print.h"
 
+#define INDENT_WIDTH (4)
+
+static void do_print_ast_requirement_arguments(struct ast_requirement * requirement, FILE * output, unsigned int depth);
+static void do_print_ast_requirements(struct ast_test * test, FILE * output, unsigned int depth);
+static void do_print_ast_requirement(struct ast_requirement * requirement, FILE * output, unsigned int depth, unsigned int requirement_number);
+static void do_print_ast_test(struct ast_test * test, FILE * output, unsigned int depth);
+static void do_indent(FILE * output, unsigned int depth);
+
 
 void print_token(struct token * token, FILE * output)
 {
@@ -60,27 +68,72 @@ void print_token(struct token * token, FILE * output)
 
 void print_ast_test(struct ast_test * test, FILE * output)
 {
-    fprintf(output, "test: %.*s\n", test->name->len, test->name->value);
+    do_print_ast_test(test, output, 0);
+}
+
+void do_print_ast_test(struct ast_test * test, FILE * output, unsigned int depth)
+{
+    fprintf(output, "Test:\n");
+    do_indent(output, depth + 1);
+    fprintf(output, "Arguments:\n");
+    do_indent(output, depth + 2);
+    fprintf(output, "Argument #1: %s=\"%s\"\n", "name", test->name->value);
+    do_indent(output, depth + 1);
+    do_print_ast_requirements(test, output, depth + 1);
+}
+
+void do_print_ast_requirements(struct ast_test * test, FILE * output, unsigned int depth)
+{
+    fprintf(output, "Requirements:\n");
+    unsigned int requirement_number = 0;
     slist_foreach(iterator, &test->requirements, {
         struct ast_requirement * requirement = list_get_owner(iterator, struct ast_requirement, list_entry);
-        print_ast_requirement(requirement, output);
+        ++requirement_number;
+        do_indent(output, depth + 1);
+        do_print_ast_requirement(requirement, output, depth + 1, requirement_number);
     });
 }
 
 void print_ast_requirement(struct ast_requirement * requirement, FILE * output)
 {
-    fprintf(output, "Requirement\n");
-    fprintf(output, "\tName: %.*s\n", requirement->name->len, requirement->name->value);
-    /* TODO: fix the printing of the test's requirement
-    if (requirement->argument != NULL) {
-        fprintf(output, "\tArgument: %.*s\n", requirement->argument->len, requirement->argument->value);
+    do_print_ast_requirement(requirement, output, 0, 1);
+}
+
+void do_print_ast_requirement(struct ast_requirement * requirement, FILE * output, unsigned int depth, unsigned int requirement_number)
+{
+    fprintf(output, "Requirement #%u:\n", requirement_number);
+    do_indent(output, depth + 1);
+    fprintf(output, "Name: \"%s\"\n", requirement->name->value);
+    do_indent(output, depth + 1);
+    do_print_ast_requirement_arguments(requirement, output, depth + 1);
+    do_indent(output, depth + 1);
+    if (requirement->content == NULL) {
+        fprintf(output, "Content: <not provided>\n");
     } else {
-        fprintf(output, "\tArgument: <not provided>\n");
+        fprintf(output, "Content: \"%s\"\n", requirement->content->value);
     }
-    if (requirement->content != NULL) {
-        fprintf(output, "\tContent: %.*s\n", requirement->content->len, requirement->content->value);
-    } else {
-        fprintf(output, "\tContent: <not provided>\n");
+}
+
+void do_print_ast_requirement_arguments(struct ast_requirement * requirement, FILE * output, unsigned int depth)
+{
+    fprintf(output, "Arguments:\n");
+    unsigned int argument_number = 0;
+    slist_foreach(iterator, &requirement->arguments, {
+        struct ast_requirement_argument * argument = list_get_owner(iterator, struct ast_requirement_argument, list_entry);
+        ++argument_number;
+        do_indent(output, depth + 1);
+        if (argument->name != NULL) {
+            fprintf(output, "Argument #%u: %s=\"%s\"\n", argument_number, argument->name->value, argument->value->value);
+        } else {
+            fprintf(output, "Argument #%u: \"%s\" (unnamed)\n", argument_number, argument->value->value);
+        }
+    });
+}
+
+static void do_indent(FILE * output, unsigned int depth)
+{
+    unsigned int i, len;
+    for (i = 0, len = depth * INDENT_WIDTH; i < len; ++i) {
+        fprintf(output, " ");
     }
-    */
 }
