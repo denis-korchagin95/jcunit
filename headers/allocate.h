@@ -99,6 +99,6 @@ declare_allocator(ast_requirement_argument, struct ast_requirement_argument);
 
 void * alloc_bytes(unsigned int len);
 
-void show_allocators_stats(FILE * output);
+void show_allocators_stats(FILE * output, bool show_leak_only);
 
 #endif /* JCUNIT_ALLOCATE_H */

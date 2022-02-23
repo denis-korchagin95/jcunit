@@ -38,7 +38,7 @@ int main(int argc, char * argv[])
 
     parse_options(argc, argv, &application_context);
 
-    if (option_show_version) {
+    if (application_context.options & OPTION_SHOW_VERSION) {
         fprintf(stdout, "jcunit version %s\n", JCUNIT_VERSION);
         exit(0);
     }
@@ -51,10 +51,12 @@ int main(int argc, char * argv[])
 
     run_suites(stdout, &application_context);
 
-    if (option_show_allocators_stats) {
+    if (application_context.options & OPTION_SHOW_ALLOCATORS_STATS) {
         fprintf(stdout, "\n\n\n");
 
-        show_allocators_stats(stdout);
+        bool show_leak_only = (application_context.options & OPTION_SHOW_ALLOCATORS_STATS_LEAK_ONLY) > 0 ? true : false;
+
+        show_allocators_stats(stdout, show_leak_only);
     }
 
     fflush(stdout);

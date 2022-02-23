@@ -29,10 +29,6 @@
 
 #include "headers/options.h"
 
-bool option_show_allocators_stats = false;
-bool option_show_allocators_stats_leak_only = false;
-bool option_show_version = false;
-
 
 void parse_options(int argc, char * argv[], struct application_context * application_context)
 {
@@ -41,16 +37,15 @@ void parse_options(int argc, char * argv[], struct application_context * applica
     for(i = 1; i < argc; ++i) {
         arg = argv[i];
         if (strncmp("--show-allocators-stats-leak-only", arg, sizeof("--show-allocators-stats-leak-only") - 1) == 0) {
-            option_show_allocators_stats = true;
-            option_show_allocators_stats_leak_only = true;
+            application_context->options |= (OPTION_SHOW_ALLOCATORS_STATS | OPTION_SHOW_ALLOCATORS_STATS_LEAK_ONLY);
             continue;
         }
         if (strncmp("--show-allocators-stats", arg, sizeof("--show-allocators-stats") - 1) == 0) {
-            option_show_allocators_stats = true;
+            application_context->options |= OPTION_SHOW_ALLOCATORS_STATS;
             continue;
         }
         if (strncmp("--version", arg, sizeof("--version") - 1) == 0) {
-            option_show_version = true;
+            application_context->options |= OPTION_SHOW_VERSION;
             continue;
         }
         if (strncmp("--run-mode=", arg, sizeof("--run-mode=") - 1) == 0) {
