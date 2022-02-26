@@ -54,6 +54,7 @@ static void try_to_run_program(
 static bool is_test_passes(struct string * expected, struct process_output * output);
 static int resolve_run_mode_by_stream_code(unsigned int stream_code);
 static struct abstract_test_result * run_incomplete_test(struct abstract_test * test);
+static struct abstract_test_result * run_skipped_test(struct abstract_test * test);
 
 static test_runner_func * resolve_test_runner(struct abstract_test * test);
 
@@ -68,6 +69,9 @@ struct abstract_test_result * test_run(struct abstract_test * test)
 {
     if (test->flags & TEST_FLAG_INCOMPLETE) {
         return run_incomplete_test(test);
+    }
+    if (test->flags & TEST_FLAG_SKIPPED) {
+        return run_skipped_test(test);
     }
     test_runner_func * runner = resolve_test_runner(test);
     if (runner == NULL) {
@@ -204,6 +208,9 @@ void add_test_result_to_test_suite_result(
         case TEST_RESULT_STATUS_ERROR:
             ++test_suite_result->error_count;
             break;
+        case TEST_RESULT_STATUS_SKIPPED:
+            ++test_suite_result->skipped_count;
+            break;
         default:
             fprintf(stderr, "The unknown status %d of test result!\n", test_result->status);
             exit(1);
@@ -274,6 +281,15 @@ struct abstract_test_result * run_incomplete_test(struct abstract_test * test)
     struct abstract_test_result * test_result = alloc_abstract_test_result();
     memset((void *)test_result, 0, sizeof(struct abstract_test_result));
     test_result->status = TEST_RESULT_STATUS_INCOMPLETE;
+    test_result->name = test->name;
+    return test_result;
+}
+
+struct abstract_test_result * run_skipped_test(struct abstract_test * test)
+{
+    struct abstract_test_result * test_result = alloc_abstract_test_result();
+    memset((void *)test_result, 0, sizeof(struct abstract_test_result));
+    test_result->status = TEST_RESULT_STATUS_SKIPPED;
     test_result->name = test->name;
     return test_result;
 }

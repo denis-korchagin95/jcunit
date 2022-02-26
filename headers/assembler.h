@@ -28,14 +28,16 @@
 #include "list.h"
 #include "ast.h"
 
-#define TEST_FLAG_HAS_GIVEN    (1)
-#define TEST_FLAG_HAS_WHEN     (2)
-#define TEST_FLAG_HAS_THEN     (4)
-#define TEST_FLAG_INCOMPLETE   (8)
+#define TEST_FLAG_HAS_GIVEN     (1)
+#define TEST_FLAG_HAS_WHEN      (2)
+#define TEST_FLAG_HAS_THEN      (4)
+#define TEST_FLAG_INCOMPLETE    (8)
+#define TEST_FLAG_SKIPPED       (16)
 
-#define WHEN_RUN_REQUIREMENT_NAME       "whenRun"
-#define GIVEN_REQUIREMENT_NAME          "given"
-#define EXPECT_OUTPUT_REQUIREMENT_NAME  "expectOutput"
+#define WHEN_RUN_REQUIREMENT_NAME           "whenRun"
+#define GIVEN_REQUIREMENT_NAME              "given"
+#define EXPECT_OUTPUT_REQUIREMENT_NAME      "expectOutput"
+#define SHOULD_BE_SKIPPED_REQUIREMENT_NAME  "shouldBeSkipped"
 
 #define TEST_KIND_PROGRAM_RUNNER (1)
 
@@ -72,8 +74,16 @@ struct program_runner_test {
     unsigned int stream_code;
 };
 
+struct test_requirement_assembler_context
+{
+    struct ast_requirement * requirement;
+    struct program_runner_test * test;
+    struct ast_test * ast_test;
+};
+
 struct test_suite * assemble_test_suite(const char * filename, struct slist * ast_tests);
 
 typedef struct abstract_test * test_assembler_func(struct ast_test * ast_test);
+typedef void test_requirement_assembler_func(struct test_requirement_assembler_context * context);
 
 #endif /* JCUNIT_ASSEMBLER_H */

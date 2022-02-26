@@ -1,0 +1,59 @@
+@test("An assembler should recognize the 'shouldBeSkipped' requirement for a test")
+@given("file")
+
+@@test("It should tokenize an 'EOF' token on empty file")
+@@shouldBeSkipped
+@@given("file")
+@@whenRun("./bin/testers/tokenizer-tester")
+@@expectOutput("stdout")
+<TOKEN_EOF>
+
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stderr")
+
+@endtest
+
+@test("It should allow to skip a test for detail mode and show it")
+@shouldBeSkipped
+@given("file")
+
+@@test("It should tokenize an 'EOF' token on empty file")
+@@shouldBeSkipped
+@@given("file")
+@@whenRun("./bin/testers/tokenizer-tester")
+@@expectOutput("stdout")
+<TOKEN_EOF>
+
+@@endtest
+
+@whenRun("./bin/jcunit", args="--run-mode=detail")
+@expectOutput("stdout")
+Test Suite: jcunit_gf_kKqM1t3WZuK9
+              SKIPPED It should tokenize an 'EOF' token on empty file
+
+Passed: 0, Skipped: 1, Errors: 0, Failed: 0, Incomplete: 0
+
+@endtest
+
+@test("It should allow to skip a test for passthrough mode and show it")
+@given("file")
+
+@@test("It should tokenize an 'EOF' token on empty file")
+@@shouldBeSkipped
+@@given("file")
+@@whenRun("./bin/testers/tokenizer-tester")
+@@expectOutput("stdout")
+<TOKEN_EOF>
+
+@@endtest
+
+@whenRun("./bin/jcunit", args="--run-mode=passthrough")
+@expectOutput("stdout")
+S
+
+Passed: 0, Skipped: 1, Errors: 0, Failed: 0, Incomplete: 0
+
+
+@endtest

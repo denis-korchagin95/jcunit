@@ -84,6 +84,7 @@ static const char * stringify_test_status(struct abstract_test_result * test_res
         case TEST_RESULT_STATUS_FAIL: return use_short_version ? "F" : "FAIL";
         case TEST_RESULT_STATUS_INCOMPLETE: return use_short_version ? "I" : "INCOMPLETE";
         case TEST_RESULT_STATUS_ERROR: return use_short_version ? "E" : "ERROR";
+        case TEST_RESULT_STATUS_SKIPPED: return use_short_version ? "S" : "SKIPPED";
     }
     return NULL;
 }
@@ -144,8 +145,9 @@ void show_each_test_result_in_detail_mode(
     }
     fprintf(
         output,
-        "\nPassed: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n\n",
+        "\nPassed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n\n",
         test_suite_result->passed_count,
+        test_suite_result->skipped_count,
         test_suite_result->error_count,
         test_suite_result->failed_count,
         test_suite_result->incomplete_count

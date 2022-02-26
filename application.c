@@ -173,6 +173,7 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
     struct test_suite_result * test_suite_result;
     struct list_iterator list_iterator;
     unsigned int total_passes_count = 0;
+    unsigned int total_skipped_count = 0;
     unsigned int total_failed_count = 0;
     unsigned int total_incomplete_count = 0;
     unsigned int total_error_count = 0;
@@ -182,14 +183,16 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
         list_iterator_init(&list_iterator, test_suite->tests.next, &test_suite->tests);
         show_each_test_result_in_passthrough_mode(output, &list_iterator, test_runner, (void *) test_suite_result);
         total_passes_count += test_suite_result->passed_count;
+        total_skipped_count += test_suite_result->skipped_count;
         total_error_count += test_suite_result->error_count;
         total_failed_count += test_suite_result->failed_count;
         total_incomplete_count += test_suite_result->incomplete_count;
     }
     fprintf(
         output,
-        "\n\nPassed: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n",
+        "\n\nPassed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n",
         total_passes_count,
+        total_skipped_count,
         total_error_count,
         total_failed_count,
         total_incomplete_count

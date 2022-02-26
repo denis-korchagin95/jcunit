@@ -31,6 +31,7 @@
 #define TEST_RESULT_STATUS_FAIL         (2)
 #define TEST_RESULT_STATUS_INCOMPLETE   (3)
 #define TEST_RESULT_STATUS_ERROR        (4)
+#define TEST_RESULT_STATUS_SKIPPED      (5)
 
 #define TEST_RESULT_KIND_PROGRAM_RUNNER    (1)
 
@@ -39,6 +40,7 @@ struct test_suite_result
     struct slist test_results;
     struct test_suite * test_suite;
     unsigned int passed_count;
+    unsigned int skipped_count;
     unsigned int failed_count;
     unsigned int incomplete_count;
     unsigned int error_count;
