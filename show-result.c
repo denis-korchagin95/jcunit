@@ -46,7 +46,7 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
         exit(1);
     }
 
-    fprintf(output, "\t%10s %s\n", test_status, test_result->name->value);
+    fprintf(output, "    %10s %s\n", test_status, test_result->name->value);
 
     if (test_result->kind == TEST_RESULT_STATUS_INCOMPLETE) {
         return;

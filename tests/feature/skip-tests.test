@@ -16,8 +16,7 @@
 @endtest
 
 @test("It should allow to skip a test for detail mode and show it")
-@shouldBeSkipped
-@given("file")
+@given("file", filename="some-test.test")
 
 @@test("It should tokenize an 'EOF' token on empty file")
 @@shouldBeSkipped
@@ -30,10 +29,12 @@
 
 @whenRun("./bin/jcunit", args="--run-mode=detail")
 @expectOutput("stdout")
-Test Suite: jcunit_gf_kKqM1t3WZuK9
-              SKIPPED It should tokenize an 'EOF' token on empty file
+Test Suite: some-test.test
+       SKIPPED It should tokenize an 'EOF' token on empty file
 
 Passed: 0, Skipped: 1, Errors: 0, Failed: 0, Incomplete: 0
+
+
 
 @endtest
 

@@ -38,12 +38,13 @@
 
 
 #define MAX_PROCESS_OUTPUT_BUFFER_LEN (8192)
-#define MAX_TEST_GIVEN_FILENAME_LEN (50)
+#define MAX_TEST_GIVEN_FILENAME_LEN (255)
 
 
 static void fill_file_from_string(FILE * file, struct string * content);
 static struct program_runner_test_result * make_program_runner_test_result(struct string * name);
-static void make_given_file(struct program_runner_test_result * result, struct string * content);
+static void make_given_file(struct string * filename, struct string * content);
+static void resolve_given_filename(struct program_runner_test * test, struct program_runner_test_result * test_result);
 static void try_to_run_program(
     const char * program,
     const char * given_filename,
@@ -95,11 +96,9 @@ struct program_runner_test_result * make_program_runner_test_result(struct strin
     return test_result;
 }
 
-void make_given_file(struct program_runner_test_result * result, struct string * content)
+void make_given_file(struct string * filename, struct string * content)
 {
-    strncpy(given_filename, (const char *)jcunit_given_file_template, MAX_TEST_GIVEN_FILENAME_LEN);
-    (void)mktemp(given_filename);
-    FILE * file = fopen(given_filename, "w");
+    FILE * file = fopen(filename->value, "w");
     if (file == NULL) {
         fprintf(stderr, "Can't open the file: %s!\n", strerror(errno));
         exit(1);
@@ -108,8 +107,22 @@ void make_given_file(struct program_runner_test_result * result, struct string *
         fill_file_from_string(file, content);
     }
     fclose(file);
+}
 
-    result->given_filename = make_string(given_filename, strlen(given_filename));
+void resolve_given_filename(struct program_runner_test * test, struct program_runner_test_result * test_result)
+{
+    if (test->given_filename != NULL) {
+        const char * given_filename_prefix = "/tmp/";
+        if (test->given_filename->len - sizeof(given_filename_prefix) - 1 >= MAX_TEST_GIVEN_FILENAME_LEN) {
+            fprintf(stderr, "Too long 'filename' of the 'given' requirement!\n");
+            exit(1);
+        }
+        sprintf(given_filename, "%s%s", given_filename_prefix, test->given_filename->value);
+    } else {
+        strncpy(given_filename, (const char *)jcunit_given_file_template, MAX_TEST_GIVEN_FILENAME_LEN);
+        (void)mktemp(given_filename);
+    }
+    test_result->given_filename = make_string(given_filename, strlen(given_filename));
 }
 
 void try_to_run_program(
@@ -238,7 +251,9 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
     );
     test_result->executable = executable;
 
-    make_given_file(test_result, this_test->given_file_content);
+    resolve_given_filename(this_test, test_result);
+
+    make_given_file(test_result->given_filename, this_test->given_file_content);
 
     int run_mode = resolve_run_mode_by_stream_code(this_test->stream_code);
 

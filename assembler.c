@@ -177,29 +177,70 @@ void unknown_test_requirement_assembler(struct test_requirement_assembler_contex
 
 void given_test_requirement_assembler(struct test_requirement_assembler_context * context)
 {
-    unsigned int arguments_count = slist_count(&context->requirement->arguments);
-    if (arguments_count != 1) {
-        fprintf(stderr, "Expected only the one argument instead of %u arguments!\n", arguments_count);
+    struct string * given_type = NULL, * given_filename = NULL;
+    slist_foreach(iterator, &context->requirement->arguments, {
+        struct ast_requirement_argument * argument = list_get_owner(
+            iterator,
+            struct ast_requirement_argument,
+            list_entry
+        );
+        if (argument->name == NULL) {
+            given_type = argument->value;
+            continue;
+        }
+        if (strcmp("type", argument->name->value) == 0) {
+            if (given_type != NULL) {
+                fprintf(
+                    stderr,
+                    "Cannot be both definition of 'type' named and unnamed or redefinition of 'type' for the 'given' requirement!\n"
+                );
+                exit(1);
+            }
+            given_type = argument->value;
+            continue;
+        }
+        if (strcmp("filename", argument->name->value) == 0) {
+            if (given_filename != NULL) {
+                fprintf(
+                    stderr,
+                    "Cannot be both redefinition of 'filename' for the 'given' requirement!\n"
+                );
+                exit(1);
+            }
+            given_filename = argument->value;
+            continue;
+        }
+        fprintf(stderr, "Unknown named argument '%s' for the 'given' requirement!\n", argument->name->value);
+        exit(1);
+    });
+    if (given_type == NULL) {
+        fprintf(stderr, "Missing the 'type' named argument (can be unnamed) for the 'given' requirement!\n");
         exit(1);
     }
-    struct ast_requirement_argument * argument = list_get_owner(
-        context->requirement->arguments.next,
-        struct ast_requirement_argument,
-        list_entry
-    );
-    if (argument->name != NULL) {
-        fprintf(stderr, "Unexpected named argument '%s' for the given directive!\n", context->requirement->name->value);
+    if (given_type->len == 0) {
+        fprintf(stderr, "The type cannot be empty for the 'given' requirement!\n");
         exit(1);
     }
-    if (!string_equals_with_cstring(argument->value, "file")) {
+    if (!string_equals_with_cstring(given_type, "file")) {
         fprintf(
             stderr,
             "The unknown \"%s\" given type!\n",
-            argument->value->value
+            given_type->value
         );
         exit(1);
     }
+    if (given_filename != NULL) {
+        if (given_filename->len == 0) {
+            fprintf(stderr, "The filename cannot be empty for the 'given' requirement!\n");
+            exit(1);
+        }
+        if (strchr(given_filename->value, '/') != NULL) {
+            fprintf(stderr, "Cannot be any path separators in 'filename' argument of the 'given' requirement!\n");
+            exit(1);
+        }
+    }
     context->test->given_file_content = context->requirement->content;
+    context->test->given_filename = given_filename;
     context->test->base.flags |= TEST_FLAG_HAS_GIVEN;
 }
 
@@ -225,7 +266,7 @@ void when_run_requirement_assembler(struct test_requirement_assembler_context * 
             program = argument->value;
             continue;
         }
-        if (argument->name != NULL && strcmp("program", argument->name->value) == 0) {
+        if (strcmp("program", argument->name->value) == 0) {
             if (program != NULL) {
                 fprintf(
                     stderr,
