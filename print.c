@@ -29,7 +29,7 @@
 
 #define INDENT_WIDTH (4)
 
-static void do_print_ast_requirement_arguments(struct ast_requirement * requirement, FILE * output, unsigned int depth);
+static void do_print_directive_arguments(struct slist * arguments, FILE * output, unsigned int depth);
 static void do_print_ast_requirements(struct ast_test * test, FILE * output, unsigned int depth);
 static void do_print_ast_requirement(struct ast_requirement * requirement, FILE * output, unsigned int depth, unsigned int requirement_number);
 static void do_print_ast_test(struct ast_test * test, FILE * output, unsigned int depth);
@@ -75,9 +75,7 @@ void do_print_ast_test(struct ast_test * test, FILE * output, unsigned int depth
 {
     fprintf(output, "Test:\n");
     do_indent(output, depth + 1);
-    fprintf(output, "Arguments:\n");
-    do_indent(output, depth + 2);
-    fprintf(output, "Argument #1: %s=\"%s\"\n", "name", test->name->value);
+    do_print_directive_arguments(&test->arguments, output, depth + 1);
     do_indent(output, depth + 1);
     do_print_ast_requirements(test, output, depth + 1);
 }
@@ -105,7 +103,7 @@ void do_print_ast_requirement(struct ast_requirement * requirement, FILE * outpu
     do_indent(output, depth + 1);
     fprintf(output, "Name: \"%s\"\n", requirement->name->value);
     do_indent(output, depth + 1);
-    do_print_ast_requirement_arguments(requirement, output, depth + 1);
+    do_print_directive_arguments(&requirement->arguments, output, depth + 1);
     do_indent(output, depth + 1);
     if (requirement->content == NULL) {
         fprintf(output, "Content: <not provided>\n");
@@ -114,11 +112,11 @@ void do_print_ast_requirement(struct ast_requirement * requirement, FILE * outpu
     }
 }
 
-void do_print_ast_requirement_arguments(struct ast_requirement * requirement, FILE * output, unsigned int depth)
+void do_print_directive_arguments(struct slist * arguments, FILE * output, unsigned int depth)
 {
     fprintf(output, "Arguments:\n");
     unsigned int argument_number = 0;
-    slist_foreach(iterator, &requirement->arguments, {
+    slist_foreach(iterator, arguments, {
         struct ast_requirement_argument * argument = list_get_owner(iterator, struct ast_requirement_argument, list_entry);
         ++argument_number;
         do_indent(output, depth + 1);

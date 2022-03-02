@@ -1,0 +1,65 @@
+@test("A compiler should not handle any test without 'whenRun' requirement")
+@given("file")
+
+@@test("Some Test Name", name="Some Test Name Again")
+@@given("file")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Cannot find any assembler to assemble the test!
+
+@endtest
+
+@test("It should prevent both definition of the name of a test")
+@given("file")
+
+@@test("Some Test Name", name="Some Test Name Again")
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Cannot be both definition of 'name' named and unnamed for the 'test' directive!
+
+@endtest
+
+@test("It should show an error on unknown named argument of the 'test' directive")
+@given("file")
+
+@@test(some_unknown_argument="Some Test Name Again")
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Unknown named argument 'some_unknown_argument' for the 'test' directive!
+
+@endtest
+
+@test("A name of the test should not be an empty")
+@given("file")
+
+@@test(name="")
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The 'name' cannot be empty for the 'test' directive!
+
+@endtest
+
+@test("It should show an error on unknown requirement of the test")
+@given("file")
+
+@@test(name="Some Test Name")
+@@some_unknown_requirement
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+An unknown 'some_unknown_requirement' requirement for the test 'Some Test Name'!
+
+@endtest

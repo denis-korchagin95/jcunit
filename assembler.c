@@ -48,6 +48,8 @@ static void when_run_requirement_assembler(struct test_requirement_assembler_con
 static void expect_output_requirement_assembler(struct test_requirement_assembler_context * context);
 static void should_be_skipped_requirement_assembler(struct test_requirement_assembler_context * context);
 
+static void test_arguments_assembler(struct abstract_test * test, struct ast_test * ast_test);
+
 struct test_suite * assemble_test_suite(const char * filename, struct slist * ast_tests)
 {
     const char * test_name = basename(filename);
@@ -77,11 +79,10 @@ struct abstract_test * assemble_ast_test(struct ast_test * ast_test)
 
     test_assembler_func * assembler = resolve_test_assembler(ast_test);
     if (assembler == NULL) {
-        fprintf(stderr, "Cannot find any assembler to assemble the test \"%s\"!", ast_test->name->value);
+        fprintf(stderr, "Cannot find any assembler to assemble the test!\n");
         exit(1);
     }
     struct abstract_test * test = assembler(ast_test);
-    test->name = ast_test->name;
 
     if ((test->flags & TEST_COMPLETE_MASK) != TEST_COMPLETE_MASK) {
         test->flags |= TEST_FLAG_INCOMPLETE;
@@ -130,19 +131,19 @@ test_requirement_assembler_func * resolve_test_requirement_assembler(struct ast_
 
 struct abstract_test * program_runner_test_assembler(struct ast_test * ast_test)
 {
-    struct program_runner_test * test = make_program_runner_test();
-    struct ast_requirement * requirement;
-    test_requirement_assembler_func * test_requirement_assembler;
     struct test_requirement_assembler_context context;
+    struct program_runner_test * test = make_program_runner_test();
+
+    test_arguments_assembler((struct abstract_test *) test, ast_test);
     slist_foreach(iterator, &ast_test->requirements, {
-        requirement = list_get_owner(iterator, struct ast_requirement, list_entry);
-        test_requirement_assembler = resolve_test_requirement_assembler(requirement);
+        struct ast_requirement * requirement = list_get_owner(iterator, struct ast_requirement, list_entry);
+        test_requirement_assembler_func * test_requirement_assembler = resolve_test_requirement_assembler(requirement);
         context.test = test;
         context.ast_test = ast_test;
         context.requirement = requirement;
         test_requirement_assembler(&context);
     });
-    return (struct abstract_test *)test;
+    return (struct abstract_test *) test;
 }
 
 struct program_runner_test * make_program_runner_test(void)
@@ -170,7 +171,7 @@ void unknown_test_requirement_assembler(struct test_requirement_assembler_contex
         stderr,
         "An unknown '%s' requirement for the test '%s'!\n",
         context->requirement->name->value,
-        context->ast_test->name->value
+        context->test->base.name->value
     );
     exit(1);
 }
@@ -213,7 +214,7 @@ void given_test_requirement_assembler(struct test_requirement_assembler_context 
         fprintf(stderr, "Unknown named argument '%s' for the 'given' requirement!\n", argument->name->value);
         exit(1);
     });
-    if (given_type == NULL) {
+    if (given_type == NULL) { /* unreachable error for now */
         fprintf(stderr, "Missing the 'type' named argument (can be unnamed) for the 'given' requirement!\n");
         exit(1);
     }
@@ -251,7 +252,7 @@ void when_run_requirement_assembler(struct test_requirement_assembler_context * 
         exit(1);
     }
     unsigned int arguments_count = slist_count(&context->requirement->arguments);
-    if (arguments_count == 0) {
+    if (arguments_count == 0) { /* unreachable error for now */
         fprintf(stderr, "No arguments are given for 'whenRun' directive!\n");
         exit(1);
     }
@@ -284,7 +285,7 @@ void when_run_requirement_assembler(struct test_requirement_assembler_context * 
         fprintf(stderr, "Unknown named argument '%s' for the 'whenRun' requirement!\n", argument->name->value);
         exit(1);
     });
-    if (program == NULL) {
+    if (program == NULL) { /* unreachable error for now */
         fprintf(stderr, "Missing the 'program' named argument (can be unnamed) for the 'whenRun' requirement!\n");
         exit(1);
     }
@@ -304,7 +305,7 @@ void when_run_requirement_assembler(struct test_requirement_assembler_context * 
 void expect_output_requirement_assembler(struct test_requirement_assembler_context * context)
 {
     unsigned int arguments_count = slist_count(&context->requirement->arguments);
-    if (arguments_count == 0) {
+    if (arguments_count == 0) { /* unreachable error for now */
         fprintf(stderr, "No arguments are given for 'expectOutput' directive!\n");
         exit(1);
     }
@@ -313,19 +314,19 @@ void expect_output_requirement_assembler(struct test_requirement_assembler_conte
         struct ast_requirement_argument,
         list_entry
     );
-    if (argument->name != NULL && strcmp("stream", argument->name->value)) {
-        fprintf(stderr, "Unexpected named argument '%s' for the 'expectOutput' directive!\n", argument->name->value);
+    if (argument->name != NULL && strcmp("stream", argument->name->value) != 0) {
+        fprintf(stderr, "Unexpected named argument '%s' for the 'expectOutput' requirement!\n", argument->name->value);
         exit(1);
     }
     if (argument->value->len == 0) {
-        fprintf(stderr, "The stream name cannot be empty for the 'expectOutput' directive!\n");
+        fprintf(stderr, "The stream name cannot be empty for the 'expectOutput' requirement!\n");
         exit(1);
     }
     int stream_code = resolve_stream_code_by_name(argument->value);
     if (stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_UNKNOWN) {
         fprintf(
             stderr,
-            "The unknown stream name \"%s\" for 'expectOutput' directive!\n",
+            "The unknown stream name \"%s\" for 'expectOutput' requirement!\n",
             argument->value->value
         );
         exit(1);
@@ -338,4 +339,39 @@ void expect_output_requirement_assembler(struct test_requirement_assembler_conte
 void should_be_skipped_requirement_assembler(struct test_requirement_assembler_context * context)
 {
     context->test->base.flags |= TEST_FLAG_SKIPPED;
+}
+
+void test_arguments_assembler(struct abstract_test * test, struct ast_test * ast_test)
+{
+    struct string * name = NULL;
+    slist_foreach(iterator, &ast_test->arguments, {
+        struct ast_requirement_argument * argument = list_get_owner(
+            iterator,
+            struct ast_requirement_argument,
+            list_entry
+        );
+        if (argument->name == NULL) {
+            name = argument->value;
+            continue;
+        }
+        if (strcmp("name", argument->name->value) == 0) {
+            if (name != NULL) {
+                fprintf(stderr, "Cannot be both definition of 'name' named and unnamed for the 'test' directive!\n");
+                exit(1);
+            }
+            name = argument->value;
+            continue;
+        }
+        fprintf(stderr, "Unknown named argument '%s' for the 'test' directive!\n", argument->name->value);
+        exit(1);
+    });
+    if (name == NULL) { /* unreachable error for now */
+        fprintf(stderr, "Missing the 'name' named argument (can be unnamed) for the 'test' directive!\n");
+        exit(1);
+    }
+    if (name->len == 0) {
+        fprintf(stderr, "The 'name' cannot be empty for the 'test' directive!\n");
+        exit(1);
+    }
+    test->name = name;
 }

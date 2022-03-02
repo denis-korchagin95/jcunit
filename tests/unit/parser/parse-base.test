@@ -1,0 +1,152 @@
+@test("Any test must start with a directive")
+@given(type="file")
+
+@@bad_start_directive
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+Expected test directive, but given 'bad_start_directive'!
+
+@endtest
+
+@test("Any input are wrong outside the directives!")
+@given(type="file")
+
+"some string"
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+Expected a directive!
+
+@endtest
+
+@test("The newline should follow after each directive!")
+@given(type="file")
+
+@@test @@some-other-directive
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+Expected newline character after directive!
+
+@endtest
+
+@test("The ')' character should be at the end of arguments of a directive!")
+@given(type="file")
+
+@@test("Some Test Name"
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+Expected ')' at end of directive argument!
+
+@endtest
+
+@test("An unnamed argument of a directive should be a string!")
+@given(type="file")
+
+@@test(12)
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+An unnamed argument of a directive should be a string!
+
+@endtest
+
+@test("A directive cannot have two unnamed arguments!")
+@given(type="file")
+
+@@test("Some Test Name", "Another Some Test Name")
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+A directive cannot have two unnamed arguments!
+
+@endtest
+
+@test("A named argument of a directive should have a separator '=' between the name and value of the argument!")
+@given(type="file")
+
+@@test(name"Some Test Name")
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+Expected '=' after name of argument!
+
+@endtest
+
+@test("A directive cannot have two unnamed arguments!")
+@given(type="file")
+
+@@test("Some Test Name", "Another Some Test Name")
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+A directive cannot have two unnamed arguments!
+
+@endtest
+
+@test("A value of a named argument should be a string!")
+@given(type="file")
+
+@@test(name=12)
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+Expected value of the named argument as a string!
+
+@endtest
+
+@test("It should denies the tests without any requirements!")
+@given(type="file")
+
+@@test(name="Some Test Name")
+@@endtest
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+There is no any requirement provided for test!
+
+@endtest
+
+@test("The requirement count are limited up to 4 items!")
+@given(type="file")
+
+@@test(name="Some Test Name")
+@@shouldBeSkipped
+@@given("file")
+@@whenRun("./bin/some-program")
+@@expectOutput("stdout")
+@@someExtraRequirement
+@@endtest
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+Exceed max requirement for test!
+
+@endtest
+
+@test("It should handle unterminated tests correctly on reading the requirement's content")
+@given(type="file")
+
+@@test(name="Some Test Name")
+@@given("file")
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+An unterminated test!
+
+@endtest
+
+@test("An arguments for the 'endtest' directive are prohibited")
+@given(type="file")
+
+@@test(name="Some Test Name")
+@@given("file")
+@@endtest("some")
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+Unexpected arguments for the 'endtest' directive!
+
+@endtest

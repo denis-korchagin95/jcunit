@@ -33,7 +33,7 @@
 #include "source.h"
 #include "fs.h"
 
-#define MAX_BYTES_POOL_SIZE (8192 * 2)
+#define MAX_BYTES_POOL_SIZE (8192 * 4)
 
 #define allocator(name, type, count)                                                                \
     void * name##_free_list = NULL;                                                                 \

@@ -1,0 +1,65 @@
+@test("The 'whenRun' requirement must not contain any content")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("./bin/some-program")
+some content of the 'whenRun' requirement
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The 'whenRun' requirement must not contain any content!
+
+@endtest
+
+@test("It should show an error on redefinition of the 'program' argument of the 'whenRun' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("./bin/some-program", program="./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Cannot be both definition of 'program' named and unnamed for the 'whenRun' requirement!
+
+@endtest
+
+@test("It should show an error on unknown argument of the 'whenRun' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("./bin/some-program", some_unknown_argument_program="./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Unknown named argument 'some_unknown_argument_program' for the 'whenRun' requirement!
+
+@endtest
+
+@test("It should show an error on empty 'program' argument of the 'whenRun' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The program cannot be empty for the 'whenRun' requirement!
+
+@endtest
+
+@test("It should show an error on empty 'args' argument of the 'whenRun' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("./bin/some-tester", args="")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The args cannot be empty for the 'whenRun' requirement!
+
+@endtest

@@ -1,0 +1,97 @@
+@test("It should prevent both definition of the type of a 'given' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@given("file", type="file")
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Cannot be both definition of 'type' named and unnamed or redefinition of 'type' for the 'given' requirement!
+
+@endtest
+
+@test("It should prevent both definition of the type of a 'filename' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@given("file", filename="some.test", filename="some.test")
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Cannot be both redefinition of 'filename' for the 'given' requirement!
+
+@endtest
+
+@test("It should show an error on unknown named argument of the 'given' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@given("file", some_unknown_argument="some value")
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Unknown named argument 'some_unknown_argument' for the 'given' requirement!
+
+@endtest
+
+@test("It should show an error on empty 'filename' argument of the 'given' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@given("file", filename="")
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The filename cannot be empty for the 'given' requirement!
+
+@endtest
+
+@test("It should show an error on unknown type of the 'given' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@given("some_unknown_type")
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The unknown "some_unknown_type" given type!
+
+@endtest
+
+@test("It should show an error on empty 'type' argument of the 'given' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@given("")
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The type cannot be empty for the 'given' requirement!
+
+@endtest
+
+@test("It should show an error if there are path separators in the 'filename' argument of the 'given' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@given("file", filename="../some.test")
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Cannot be any path separators in 'filename' argument of the 'given' requirement!
+
+@endtest

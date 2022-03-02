@@ -1,0 +1,41 @@
+@test("It should show an error on unknown argument of the 'expectOutput' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("./bin/some-tester")
+@@expectOutput(some_unknown_argument="some value")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Unexpected named argument 'some_unknown_argument' for the 'expectOutput' requirement!
+
+@endtest
+
+@test("It should show an error on empty 'stream' of the 'expectOutput' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("./bin/some-tester")
+@@expectOutput(stream="")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The stream name cannot be empty for the 'expectOutput' requirement!
+
+@endtest
+
+@test("It should show an error on unknown name of the 'stream' of the 'expectOutput' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("./bin/some-tester")
+@@expectOutput("unknown_stream_name")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The unknown stream name "unknown_stream_name" for 'expectOutput' requirement!
+
+@endtest

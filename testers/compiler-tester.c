@@ -22,26 +22,22 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <memory.h>
+#include <stdio.h>
+
+#include "../headers/token.h"
+#include "../headers/print.h"
+#include "../headers/compiler.h"
 
 
-#include "headers/ast.h"
-#include "headers/allocate.h"
-
-
-struct ast_test * make_ast_test(void)
+int main(int argc, char * argv[])
 {
-    struct ast_test * ast_test = alloc_ast_test();
-    memset((void *)ast_test, 0, sizeof(struct ast_test));
-    slist_init(&ast_test->requirements);
-    slist_init(&ast_test->arguments);
-    return ast_test;
-}
+    if (argc <= 1) {
+        fprintf(stderr, "No specified args!\n");
+        return 1;
+    }
 
-struct ast_requirement * make_ast_requirement(void)
-{
-    struct ast_requirement * requirement = alloc_ast_requirement();
-    memset((void *)requirement, 0, sizeof(struct ast_requirement));
-    slist_init(&requirement->arguments);
-    return requirement;
+    init_tokenizer();
+    (void)compile_test_suite(argv[1]);
+
+    return 0;
 }

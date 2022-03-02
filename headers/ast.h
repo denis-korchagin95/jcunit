@@ -31,8 +31,8 @@
 struct ast_test
 {
     struct slist list_entry;
+    struct slist arguments;
     struct slist requirements;
-    struct string * name;
 };
 
 struct ast_requirement_argument

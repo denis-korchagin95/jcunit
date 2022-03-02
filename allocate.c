@@ -43,7 +43,7 @@ static unsigned char bytes_pool[MAX_BYTES_POOL_SIZE] = {0};
 static unsigned int bytes_pool_pos = 0;
 
 allocator(token, struct token, 512)
-allocator(string, struct string, 512)
+allocator(string, struct string, 1024)
 allocator(tokenizer_context, struct tokenizer_context, 4)
 allocator(ast_test, struct ast_test, 256)
 allocator(ast_requirement, struct ast_requirement, 512)
@@ -56,7 +56,7 @@ allocator(program_runner_test_result, struct program_runner_test_result, 256)
 allocator(program_runner_test, struct program_runner_test, 256)
 allocator(source, struct source, 256)
 allocator(path_list, struct path_list, 256)
-allocator(ast_requirement_argument, struct ast_requirement_argument, 128)
+allocator(ast_requirement_argument, struct ast_requirement_argument, 256)
 
 static struct allocator_stat stats[] = {
         { "token", &max_token_pool_size, &token_pool_pos, &token_freed, &token_allocated },
