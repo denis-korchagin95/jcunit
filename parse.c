@@ -207,6 +207,10 @@ void parse_directive_arguments(struct tokenizer_context * context, struct direct
     struct token * token;
     for (;;) {
         skip_whitespaces(context);
+        token = peek_one_token(context);
+        if (is_token_punctuator(token, ')')) {
+            break;
+        }
         parse_directive_argument(context, directive_parse_context);
         token = get_one_token(context);
         if (!is_token_punctuator(token, ',')) {

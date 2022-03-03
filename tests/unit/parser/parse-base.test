@@ -150,3 +150,15 @@ An unterminated test!
 Unexpected arguments for the 'endtest' directive!
 
 @endtest
+
+@test("It should parse correctly an empty arguments of any directive")
+@given("file")
+
+@@test()
+@@whenRun("./bin/jcunit")
+@@endtest()
+
+@whenRun("./bin/testers/parser-tester")
+@expectOutput("stderr")
+
+@endtest
