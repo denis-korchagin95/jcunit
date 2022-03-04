@@ -174,3 +174,37 @@ void show_allocators_stats(FILE * output, bool show_leak_only)
     fprintf(output, "Allocator: bytes, total: %u, pool_usage: %u\n", max_bytes_pool_size, bytes_pool_pos);
     fflush(output);
 }
+
+void release_ast_tests(struct slist * ast_tests)
+{
+    slist_foreach_safe(iterator, ast_tests, {
+        release_ast_test(list_get_owner(iterator, struct ast_test, list_entry));
+    });
+}
+
+void release_ast_test(struct ast_test * ast_test)
+{
+    release_ast_arguments(&ast_test->arguments);
+    release_ast_requirements(&ast_test->requirements);
+    free_ast_test(ast_test);
+}
+
+void release_ast_requirements(struct slist * requirements)
+{
+    slist_foreach_safe(iterator, requirements, {
+        release_ast_requirement(list_get_owner(iterator, struct ast_requirement, list_entry));
+    });
+}
+
+void release_ast_arguments(struct slist * arguments)
+{
+    slist_foreach_safe(iterator, arguments, {
+        free_ast_requirement_argument(list_get_owner(iterator, struct ast_requirement_argument, list_entry));
+    });
+}
+
+void release_ast_requirement(struct ast_requirement * requirement)
+{
+    release_ast_arguments(&requirement->arguments);
+    free_ast_requirement(requirement);
+}

@@ -101,4 +101,10 @@ void * alloc_bytes(unsigned int len);
 
 void show_allocators_stats(FILE * output, bool show_leak_only);
 
+void release_ast_tests(struct slist * ast_tests);
+void release_ast_requirements(struct slist * requirements);
+void release_ast_requirement(struct ast_requirement * requirement);
+void release_ast_test(struct ast_test * ast_test);
+void release_ast_arguments(struct slist * arguments);
+
 #endif /* JCUNIT_ALLOCATE_H */
