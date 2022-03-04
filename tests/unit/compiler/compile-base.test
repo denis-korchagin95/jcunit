@@ -63,3 +63,16 @@ The 'name' cannot be empty for the 'test' directive!
 An unknown 'some_unknown_requirement' requirement for the test 'Some Test Name'!
 
 @endtest
+
+@test("It should show an error on 'name' argument of the 'test' directive")
+@given("file")
+
+@@test()
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Missing the 'name' named argument (can be unnamed) for the 'test' directive!
+
+@endtest

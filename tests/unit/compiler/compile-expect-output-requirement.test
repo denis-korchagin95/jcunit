@@ -39,3 +39,17 @@ The stream name cannot be empty for the 'expectOutput' requirement!
 The unknown stream name "unknown_stream_name" for 'expectOutput' requirement!
 
 @endtest
+
+@test("It should show an error on missing arguments of the 'expectOutput' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("./bin/some-program")
+@@expectOutput()
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+No arguments are given for 'expectOutput' directive!
+
+@endtest

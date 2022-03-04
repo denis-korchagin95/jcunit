@@ -63,3 +63,16 @@ The program cannot be empty for the 'whenRun' requirement!
 The args cannot be empty for the 'whenRun' requirement!
 
 @endtest
+
+@test("It should show an error on missing arguments of the 'whenRun' requirement")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun()
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Missing the 'program' named argument (can be unnamed) for the 'whenRun' requirement!
+
+@endtest

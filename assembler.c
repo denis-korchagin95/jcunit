@@ -214,7 +214,7 @@ void given_test_requirement_assembler(struct test_requirement_assembler_context 
         fprintf(stderr, "Unknown named argument '%s' for the 'given' requirement!\n", argument->name->value);
         exit(1);
     });
-    if (given_type == NULL) { /* unreachable error for now */
+    if (given_type == NULL) {
         fprintf(stderr, "Missing the 'type' named argument (can be unnamed) for the 'given' requirement!\n");
         exit(1);
     }
@@ -251,11 +251,6 @@ void when_run_requirement_assembler(struct test_requirement_assembler_context * 
         fprintf(stderr, "The 'whenRun' requirement must not contain any content!\n");
         exit(1);
     }
-    unsigned int arguments_count = slist_count(&context->requirement->arguments);
-    if (arguments_count == 0) { /* unreachable error for now */
-        fprintf(stderr, "No arguments are given for 'whenRun' directive!\n");
-        exit(1);
-    }
     struct string * program = NULL, * args = NULL;
     slist_foreach(argument_iterator, &context->requirement->arguments, {
         struct ast_requirement_argument * argument = list_get_owner(
@@ -285,7 +280,7 @@ void when_run_requirement_assembler(struct test_requirement_assembler_context * 
         fprintf(stderr, "Unknown named argument '%s' for the 'whenRun' requirement!\n", argument->name->value);
         exit(1);
     });
-    if (program == NULL) { /* unreachable error for now */
+    if (program == NULL) {
         fprintf(stderr, "Missing the 'program' named argument (can be unnamed) for the 'whenRun' requirement!\n");
         exit(1);
     }
@@ -305,7 +300,7 @@ void when_run_requirement_assembler(struct test_requirement_assembler_context * 
 void expect_output_requirement_assembler(struct test_requirement_assembler_context * context)
 {
     unsigned int arguments_count = slist_count(&context->requirement->arguments);
-    if (arguments_count == 0) { /* unreachable error for now */
+    if (arguments_count == 0) {
         fprintf(stderr, "No arguments are given for 'expectOutput' directive!\n");
         exit(1);
     }
@@ -365,7 +360,7 @@ void test_arguments_assembler(struct abstract_test * test, struct ast_test * ast
         fprintf(stderr, "Unknown named argument '%s' for the 'test' directive!\n", argument->name->value);
         exit(1);
     });
-    if (name == NULL) { /* unreachable error for now */
+    if (name == NULL) {
         fprintf(stderr, "Missing the 'name' named argument (can be unnamed) for the 'test' directive!\n");
         exit(1);
     }

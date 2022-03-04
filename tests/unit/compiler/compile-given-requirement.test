@@ -95,3 +95,17 @@ The type cannot be empty for the 'given' requirement!
 Cannot be any path separators in 'filename' argument of the 'given' requirement!
 
 @endtest
+
+@test("It should show an error for missing the type of the 'given' requirement!")
+@given("file")
+
+@@test("Some test name")
+@@given()
+@@whenRun("./bin/some-program")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Missing the 'type' named argument (can be unnamed) for the 'given' requirement!
+
+@endtest
