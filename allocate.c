@@ -139,10 +139,26 @@ static struct allocator_stat stats[] = {
 
 void * alloc_bytes(unsigned int len)
 {
-    assert(bytes_pool_pos + len < MAX_BYTES_POOL_SIZE);
+    if (bytes_pool_pos + len >= MAX_BYTES_POOL_SIZE) {
+        fprintf(stderr, "Allocator bytes: out of memory!\n");
+        exit(1);
+    }
     void * mem = bytes_pool + bytes_pool_pos;
     bytes_pool_pos += len;
     return mem;
+}
+
+void free_bytes(void * pointer, unsigned int len)
+{
+    if (pointer < (void *)bytes_pool || pointer >= (void *)(bytes_pool + MAX_BYTES_POOL_SIZE)) {
+        fprintf(stderr, "Allocator bytes: the pointer is not belongs to the allocator!\n");
+        exit(1);
+    }
+    if (bytes_pool_pos < len) {
+        fprintf(stderr, "Allocator bytes: underflow!\n");
+        exit(1);
+    }
+    bytes_pool_pos -= len;
 }
 
 void show_allocators_stats(FILE * output, bool show_leak_only)
@@ -177,6 +193,7 @@ void show_allocators_stats(FILE * output, bool show_leak_only)
 
 void release_ast_tests(struct slist * ast_tests)
 {
+    assert(ast_tests != NULL);
     slist_foreach_safe(iterator, ast_tests, {
         release_ast_test(list_get_owner(iterator, struct ast_test, list_entry));
     });
@@ -184,6 +201,7 @@ void release_ast_tests(struct slist * ast_tests)
 
 void release_ast_test(struct ast_test * ast_test)
 {
+    assert(ast_test != NULL);
     release_ast_arguments(&ast_test->arguments);
     release_ast_requirements(&ast_test->requirements);
     free_ast_test(ast_test);
@@ -191,6 +209,7 @@ void release_ast_test(struct ast_test * ast_test)
 
 void release_ast_requirements(struct slist * requirements)
 {
+    assert(requirements != NULL);
     slist_foreach_safe(iterator, requirements, {
         release_ast_requirement(list_get_owner(iterator, struct ast_requirement, list_entry));
     });
@@ -198,13 +217,39 @@ void release_ast_requirements(struct slist * requirements)
 
 void release_ast_arguments(struct slist * arguments)
 {
+    assert(arguments != NULL);
     slist_foreach_safe(iterator, arguments, {
-        free_ast_requirement_argument(list_get_owner(iterator, struct ast_requirement_argument, list_entry));
+        release_ast_argument(list_get_owner(iterator, struct ast_requirement_argument, list_entry));
     });
 }
 
 void release_ast_requirement(struct ast_requirement * requirement)
 {
+    assert(requirement != NULL);
     release_ast_arguments(&requirement->arguments);
     free_ast_requirement(requirement);
+}
+
+void release_ast_argument(struct ast_requirement_argument * argument)
+{
+    assert(argument != NULL);
+    /*
+    if (argument->name != NULL) {
+        release_string(argument->name);
+        argument->name = NULL;
+    }
+    if (argument->value != NULL) {
+        release_string(argument->value);
+        argument->value = NULL;
+    }
+    */
+    free_ast_requirement_argument(argument);
+}
+
+void release_string(struct string * string)
+{
+    assert(string != NULL);
+    free_bytes(string->value, string->len);
+    string->value = NULL;
+    free_string(string);
 }
