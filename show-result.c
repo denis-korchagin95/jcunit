@@ -173,7 +173,7 @@ void show_each_test_result_in_passthrough_mode(
     }
 }
 
-void * test_runner(void * object, void * context)
+void * test_runner(void * object, void * context, unsigned int current_index)
 {
     struct abstract_test * test;
     struct abstract_test_result * test_result;
@@ -183,7 +183,7 @@ void * test_runner(void * object, void * context)
     test = (struct abstract_test *) object;
     test_result = test_run(test);
 
-    add_test_result_to_test_suite_result(test_suite_result, test_result);
+    add_test_result_to_test_suite_result(test_suite_result, test_result, current_index);
 
     return test_result;
 }

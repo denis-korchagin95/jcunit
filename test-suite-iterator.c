@@ -22,7 +22,7 @@ void * test_suite_iterator_visit(
         return NULL;
     }
 
-    void * result = visiter_func((void *)test_suite_iterator_current(iterator), context);
+    void * result = visiter_func((void *)test_suite_iterator_current(iterator), context, iterator->cursor);
     test_suite_iterator_next(iterator);
     return result;
 }

@@ -44,6 +44,6 @@ void show_each_test_result_in_passthrough_mode(
     void * context
 );
 
-void * test_runner(void * object, void * context);
+void * test_runner(void * object, void * context, unsigned int current_index);
 
 #endif /* JCUNIT_SHOW_RESULT_H */

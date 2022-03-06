@@ -191,22 +191,21 @@ struct test_suite_result * make_test_suite_result(struct test_suite * test_suite
 {
     struct test_suite_result * test_suite_result = alloc_test_suite_result();
     memset((void *)test_suite_result, 0, sizeof(struct test_suite_result));
-    slist_init(&test_suite_result->test_results);
+    test_suite_result->test_results_count = test_suite->tests_count;
+    test_suite_result->test_results = (struct abstract_test_result **) alloc_bytes(test_suite->tests_count * sizeof(void *));
     test_suite_result->test_suite = test_suite;
     return test_suite_result;
 }
 
 void add_test_result_to_test_suite_result(
     struct test_suite_result * test_suite_result,
-    struct abstract_test_result * test_result
-)
-{
+    struct abstract_test_result * test_result,
+    unsigned int test_result_index
+) {
     assert(test_suite_result != NULL);
     assert(test_result != NULL);
 
-    struct slist ** tests_end = slist_get_end(&test_suite_result->test_results);
-
-    slist_append(tests_end, &test_result->list_entry);
+    test_suite_result->test_results[test_result_index] = test_result;
 
     switch (test_result->status) {
         case TEST_RESULT_STATUS_PASS:

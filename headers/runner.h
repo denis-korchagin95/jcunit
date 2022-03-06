@@ -37,8 +37,9 @@
 
 struct test_suite_result
 {
-    struct slist test_results;
+    struct abstract_test_result ** test_results;
     struct test_suite * test_suite;
+    unsigned int test_results_count;
     unsigned int passed_count;
     unsigned int skipped_count;
     unsigned int failed_count;
@@ -47,7 +48,6 @@ struct test_suite_result
 };
 
 struct abstract_test_result {
-    struct slist list_entry;
     struct string * name;
     struct string * expected;
     struct string * actual;
@@ -68,7 +68,8 @@ struct test_suite_result * make_test_suite_result(struct test_suite * test_suite
 
 void add_test_result_to_test_suite_result(
     struct test_suite_result * test_suite_result,
-    struct abstract_test_result * test_result
+    struct abstract_test_result * test_result,
+    unsigned int test_result_index
 );
 
 typedef struct abstract_test_result * test_runner_func(struct abstract_test * test);

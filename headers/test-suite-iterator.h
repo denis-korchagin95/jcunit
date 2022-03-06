@@ -14,7 +14,7 @@ struct test_suite_iterator
     unsigned int cursor;
 };
 
-typedef void * test_suite_iterator_visiter_func(void * object, void * context);
+typedef void * test_suite_iterator_visiter_func(void * object, void * context, unsigned int current_index);
 
 void test_suite_iterator_init(struct test_suite_iterator * iterator, struct test_suite * test_suite);
 void * test_suite_iterator_visit(
