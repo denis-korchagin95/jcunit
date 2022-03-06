@@ -148,19 +148,6 @@ void * alloc_bytes(unsigned int len)
     return mem;
 }
 
-void free_bytes(void * pointer, unsigned int len)
-{
-    if (pointer < (void *)bytes_pool || pointer >= (void *)(bytes_pool + MAX_BYTES_POOL_SIZE)) {
-        fprintf(stderr, "Allocator bytes: the pointer is not belongs to the allocator!\n");
-        exit(1);
-    }
-    if (bytes_pool_pos < len) {
-        fprintf(stderr, "Allocator bytes: underflow!\n");
-        exit(1);
-    }
-    bytes_pool_pos -= len;
-}
-
 void show_allocators_stats(FILE * output, bool show_leak_only)
 {
     unsigned int i, len;
@@ -233,23 +220,6 @@ void release_ast_requirement(struct ast_requirement * requirement)
 void release_ast_argument(struct ast_requirement_argument * argument)
 {
     assert(argument != NULL);
-    /*
-    if (argument->name != NULL) {
-        release_string(argument->name);
-        argument->name = NULL;
-    }
-    if (argument->value != NULL) {
-        release_string(argument->value);
-        argument->value = NULL;
-    }
-    */
+    /* TODO: release string and data of 'name' and 'value' */
     free_ast_requirement_argument(argument);
-}
-
-void release_string(struct string * string)
-{
-    assert(string != NULL);
-    free_bytes(string->value, string->len);
-    string->value = NULL;
-    free_string(string);
 }
