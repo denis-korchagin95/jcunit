@@ -26,21 +26,21 @@
 #define JCUNIT_SHOW_RESULT_H 1
 
 #include "runner.h"
-#include "list-iterator.h"
+#include "test-suite-iterator.h"
 
 void show_test_result_in_detail_mode(struct abstract_test_result * test_result, FILE * output);
 void show_test_result_in_passthrough_mode(struct abstract_test_result * test_result, FILE * output);
 
 void show_each_test_result_in_detail_mode(
     FILE * output,
-    struct list_iterator * iterator,
-    list_iterator_visiter_func * visiter_func,
+    struct test_suite_iterator * iterator,
+    test_suite_iterator_visiter_func * visiter_func,
     void * context
 );
 void show_each_test_result_in_passthrough_mode(
     FILE * output,
-    struct list_iterator * iterator,
-    list_iterator_visiter_func * visiter_func,
+    struct test_suite_iterator * iterator,
+    test_suite_iterator_visiter_func * visiter_func,
     void * context
 );
 

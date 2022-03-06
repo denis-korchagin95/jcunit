@@ -53,12 +53,11 @@
 struct test_suite
 {
     struct string * name;
-    struct list tests;
-    unsigned int test_count;
+    struct abstract_test ** tests;
+    unsigned int tests_count;
 };
 
 struct abstract_test {
-    struct list list_entry;
     struct string * name;
     struct test_suite * test_suite;
     unsigned int kind;

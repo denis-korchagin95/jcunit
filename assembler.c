@@ -33,7 +33,7 @@
 #include "headers/finder.h"
 #include "headers/allocate.h"
 
-static struct test_suite * make_test_suite(struct string * name);
+static struct test_suite * make_test_suite(struct string * name, unsigned int tests_count);
 static struct program_runner_test * make_program_runner_test(void);
 
 static struct abstract_test * assemble_ast_test(struct ast_test * ast_test);
@@ -60,14 +60,18 @@ struct test_suite * assemble_test_suite(const char * filename, struct slist * as
     struct abstract_test * test;
     struct ast_test * ast_test;
 
-    struct test_suite * test_suite = make_test_suite(make_string(test_name, strlen(test_name)));
+    struct test_suite * test_suite = make_test_suite(
+        make_string(test_name, strlen(test_name)),
+        slist_count(ast_tests)
+    );
+
+    unsigned int i = 0;
 
     slist_foreach(iterator, ast_tests, {
         ast_test = list_get_owner(iterator, struct ast_test, list_entry);
         test = assemble_ast_test(ast_test);
         test->test_suite = test_suite;
-        list_append(&test_suite->tests, &test->list_entry);
-        ++test_suite->test_count;
+        test_suite->tests[i++] = test;
     });
 
     return test_suite;
@@ -91,12 +95,13 @@ struct abstract_test * assemble_ast_test(struct ast_test * ast_test)
     return test;
 }
 
-struct test_suite * make_test_suite(struct string * name)
+struct test_suite * make_test_suite(struct string * name, unsigned int tests_count)
 {
     struct test_suite * test_suite = alloc_test_suite();
     memset((void *)test_suite, 0, sizeof(struct test_suite));
-    list_init(&test_suite->tests);
     test_suite->name = name;
+    test_suite->tests_count = tests_count;
+    test_suite->tests = (struct abstract_test **) alloc_bytes(tests_count * sizeof(void *));
     return test_suite;
 }
 
