@@ -50,7 +50,11 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
 
     fprintf(output, "    %10s %s\n", test_status, test_result->name->value);
 
-    if (test_result->kind == TEST_RESULT_STATUS_INCOMPLETE) {
+    if (
+        test_result->status == TEST_RESULT_STATUS_INCOMPLETE
+        || test_result->status == TEST_RESULT_STATUS_PASS
+        || test_result->status == TEST_RESULT_STATUS_SKIPPED
+    ) {
         return;
     }
 
@@ -62,7 +66,10 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
     if (test_result->status == TEST_RESULT_STATUS_FAILURE) {
         fprintf(output, "--- Expected\n%s$\n", test_result->expected == NULL ? "" : test_result->expected->value);
         fprintf(output, "+++ Actual\n%s$\n", test_result->actual->value);
+        return;
     }
+
+    fprintf(output, "The unknown test status!\n");
 }
 
 void show_test_result_in_passthrough_mode(struct abstract_test_result * test_result, FILE * output)
