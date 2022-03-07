@@ -49,7 +49,6 @@ static void fetch_one_source(const char * source_path, struct application_contex
 static void run_suites_in_detail_mode(FILE * output, struct application_context * application_context);
 static void run_suites_in_passthrough_mode(FILE * output, struct application_context * application_context);
 
-
 void init_application_context(struct application_context * application_context)
 {
     slist_init(&application_context->sources);
@@ -168,7 +167,6 @@ void run_suites_in_detail_mode(FILE * output, struct application_context * appli
 
 void run_suites_in_passthrough_mode(FILE * output, struct application_context * application_context)
 {
-    unsigned int i, len;
     struct test_suite * test_suite;
     struct test_suite_result * test_suite_result;
     struct test_suite_iterator iterator;
@@ -177,20 +175,40 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
     unsigned int total_failed_count = 0;
     unsigned int total_incomplete_count = 0;
     unsigned int total_error_count = 0;
-    for (i = 0, len = application_context->parsed_suites_count; i < len; ++i) {
-        test_suite = application_context->parsed_suites[i];
-        test_suite_result = make_test_suite_result(test_suite);
-        test_suite_iterator_init(&iterator, test_suite);
-        show_each_test_result_in_passthrough_mode(output, &iterator, test_runner, (void *) test_suite_result);
-        total_passes_count += test_suite_result->passed_count;
-        total_skipped_count += test_suite_result->skipped_count;
-        total_error_count += test_suite_result->error_count;
-        total_failed_count += test_suite_result->failed_count;
-        total_incomplete_count += test_suite_result->incomplete_count;
+    {
+        unsigned int i, len;
+        for (i = 0, len = application_context->parsed_suites_count; i < len; ++i) {
+            test_suite = application_context->parsed_suites[i];
+            test_suite_result = make_test_suite_result(test_suite);
+            test_suite_iterator_init(&iterator, test_suite);
+            show_each_test_result_in_passthrough_mode(output, &iterator, test_runner, (void *) test_suite_result);
+            total_passes_count += test_suite_result->passed_count;
+            total_skipped_count += test_suite_result->skipped_count;
+            total_error_count += test_suite_result->error_count;
+            total_failed_count += test_suite_result->failed_count;
+            total_incomplete_count += test_suite_result->incomplete_count;
+        }
+    }
+    fprintf(output, "\n\n");
+    if (test_suite_result->error_count > 0) {
+        fprintf(output, "There are %u errors:\n\n", test_suite_result->error_count);
+        {
+            int i, len;
+            unsigned int error_number = 0;
+            for (i = 0, len = test_suite_result->test_results_count; i < len; ++i) {
+                struct abstract_test_result * test_result = test_suite_result->test_results[i];
+                if (test_result->status == TEST_RESULT_STATUS_ERROR) {
+                    ++error_number;
+
+                    show_error_test_result(output, test_result, error_number);
+                }
+            }
+        }
+        fprintf(output, "\n");
     }
     fprintf(
         output,
-        "\n\nPassed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n",
+        "Passed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n",
         total_passes_count,
         total_skipped_count,
         total_error_count,

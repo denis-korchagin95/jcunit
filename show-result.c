@@ -30,6 +30,7 @@
 #include "headers/show-result.h"
 #include "headers/child-process.h"
 #include "headers/test-suite-iterator.h"
+#include "headers/util.h"
 
 
 static const char * stringify_test_status(struct abstract_test_result * test_result, bool use_short_version);
@@ -107,19 +108,19 @@ void print_program_runner_error(struct program_runner_test_result * test_result,
         case ERROR_CODE_FILE_NOT_FOUND:
             fprintf(
                     output,
-                    "\033[0;31mThe file \"%s\" was not found!\033[0m\n",
+                    "The file \"%s\" was not found!\n",
                     test_result->executable->value
             );
             break;
         case ERROR_CODE_NOT_EXECUTABLE:
             fprintf(
                     output,
-                    "\033[0;31mThe file \"%s\" is not executable!\033[0m\n",
+                    "The file \"%s\" is not executable!\n",
                     test_result->executable->value
             );
             break;
         case ERROR_CODE_READ_CHILD_DATA:
-            fprintf(output, "\033[0;31mCan't read the program data!\033[0m\n");
+            fprintf(output, "Can't read the program data!\n");
             break;
     }
 }
@@ -186,4 +187,20 @@ void * test_runner(void * object, void * context, unsigned int current_index)
     add_test_result_to_test_suite_result(test_suite_result, test_result, current_index);
 
     return test_result;
+}
+
+
+void show_error_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int error_number)
+{
+    if (test_result->kind != TEST_RESULT_KIND_PROGRAM_RUNNER) {
+        fprintf(stderr, "An unknown test result!\n");
+        exit(1);
+    }
+    struct program_runner_test_result * result = (struct program_runner_test_result *) test_result;
+    const char * test_suite_name = basename(result->given_filename->value);
+    if (test_suite_name == NULL) {
+        test_suite_name = "<unknown test suite name>";
+    }
+    fprintf(output, "%u) %s : %s\n", error_number, test_suite_name, test_result->name->value);
+    print_error(test_result, output);
 }
