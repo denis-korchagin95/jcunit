@@ -1,7 +1,7 @@
 #ifndef JCUNIT_TEST_ITERATOR_H
 #define JCUNIT_TEST_ITERATOR_H 1
 
-#include "assembler.h"
+#include "compiler.h"
 
 #define test_iterator_finished(iterator) ((iterator)->cursor >= (iterator)->tests_count)
 #define test_iterator_current(iterator) ((iterator)->tests[(iterator)->cursor])

@@ -1,4 +1,4 @@
-@test("An assembler should recognize the 'shouldBeSkipped' requirement for a test")
+@test("An compiler should recognize the 'shouldBeSkipped' requirement for a test")
 @given("file")
 
 @@test("It should tokenize an 'EOF' token on empty file")

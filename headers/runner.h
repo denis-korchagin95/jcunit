@@ -25,7 +25,7 @@
 #ifndef JCUNIT_RUNNER_H
 #define JCUNIT_RUNNER_H 1
 
-#include "assembler.h"
+#include "compiler.h"
 
 #define TEST_RESULT_STATUS_PASS         (1)
 #define TEST_RESULT_STATUS_FAILURE      (2)

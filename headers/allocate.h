@@ -28,7 +28,7 @@
 #include "token.h"
 #include "string.h"
 #include "ast.h"
-#include "assembler.h"
+#include "compiler.h"
 #include "runner.h"
 #include "source.h"
 #include "fs.h"

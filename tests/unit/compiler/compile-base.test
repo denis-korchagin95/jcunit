@@ -7,7 +7,7 @@
 
 @whenRun("./bin/testers/compiler-tester")
 @expectOutput("stderr")
-Cannot find any assembler to assemble the test!
+Cannot find any compiler to compile the test!
 
 @endtest
 

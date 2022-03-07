@@ -25,12 +25,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdbool.h>
 
 
 #include "headers/show-result.h"
 #include "headers/child-process.h"
 #include "headers/test-iterator.h"
 #include "headers/util.h"
+#include "headers/string.h"
 
 
 static const char * stringify_test_status(struct abstract_test_result * test_result, bool use_short_version);

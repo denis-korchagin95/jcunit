@@ -36,9 +36,7 @@ OBJECTS+=string.o
 OBJECTS+=list.o
 OBJECTS+=ast.o
 OBJECTS+=parse.o
-OBJECTS+=assembler.o
 OBJECTS+=runner.o
-OBJECTS+=finder.o
 OBJECTS+=child-process.o
 OBJECTS+=show-result.o
 OBJECTS+=util.o
@@ -57,7 +55,7 @@ endif
 OBJECTS_TOKENIZER_TESTER=$(TESTERS_PATH)tokenizer-tester.o print.o tokenizer.o allocate.o string.o util.o options.o
 OBJECTS_TOKENIZER_SPECIAL_MODE_TESTER=$(TESTERS_PATH)tokenizer-special-mode-tester.o print.o tokenizer.o allocate.o string.o util.o options.o
 OBJECTS_PARSER_TESTER=$(TESTERS_PATH)parser-tester.o print.o tokenizer.o allocate.o string.o util.o options.o parse.o ast.o list.o
-OBJECTS_COMPILER_TESTER=$(TESTERS_PATH)compiler-tester.o print.o tokenizer.o allocate.o string.o util.o options.o parse.o ast.o list.o compiler.o assembler.o finder.o
+OBJECTS_COMPILER_TESTER=$(TESTERS_PATH)compiler-tester.o print.o tokenizer.o allocate.o string.o util.o options.o parse.o ast.o list.o compiler.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
