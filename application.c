@@ -185,7 +185,7 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
             total_passes_count += test_suite_result->passed_count;
             total_skipped_count += test_suite_result->skipped_count;
             total_error_count += test_suite_result->error_count;
-            total_failed_count += test_suite_result->failed_count;
+            total_failed_count += test_suite_result->failure_count;
             total_incomplete_count += test_suite_result->incomplete_count;
         }
     }
@@ -201,6 +201,22 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
                     ++error_number;
 
                     show_error_test_result(output, test_result, error_number);
+                }
+            }
+        }
+        fprintf(output, "\n");
+    }
+    if (test_suite_result->failure_count > 0) {
+        fprintf(output, "There are %u failures:\n\n", test_suite_result->failure_count);
+        {
+            int i, len;
+            unsigned int failure_number = 0;
+            for (i = 0, len = test_suite_result->test_results_count; i < len; ++i) {
+                struct abstract_test_result * test_result = test_suite_result->test_results[i];
+                if (test_result->status == TEST_RESULT_STATUS_FAILURE) {
+                    ++failure_number;
+
+                    show_failure_test_result(output, test_result, failure_number);
                 }
             }
         }

@@ -24,7 +24,7 @@ Passed: 0, Skipped: 0, Errors: 1, Failed: 0, Incomplete: 0
 @given("file")
 
 @@test("A fail test")
-@@given("file")
+@@given("file", filename="some-test.test")
 
 @@@@test()
 
@@ -37,6 +37,16 @@ Some output
 @whenRun("./bin/jcunit")
 @expectOutput("stdout")
 F
+
+There are 1 failures:
+
+1) some-test.test : A fail test
+--- Expected
+Some output
+$
++++ Actual
+Expected a directive!
+$
 
 Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 

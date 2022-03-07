@@ -28,7 +28,7 @@
 #include "assembler.h"
 
 #define TEST_RESULT_STATUS_PASS         (1)
-#define TEST_RESULT_STATUS_FAIL         (2)
+#define TEST_RESULT_STATUS_FAILURE      (2)
 #define TEST_RESULT_STATUS_INCOMPLETE   (3)
 #define TEST_RESULT_STATUS_ERROR        (4)
 #define TEST_RESULT_STATUS_SKIPPED      (5)
@@ -42,7 +42,7 @@ struct test_suite_result
     unsigned int test_results_count;
     unsigned int passed_count;
     unsigned int skipped_count;
-    unsigned int failed_count;
+    unsigned int failure_count;
     unsigned int incomplete_count;
     unsigned int error_count;
 };

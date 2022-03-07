@@ -211,8 +211,8 @@ void add_test_result_to_test_suite_result(
         case TEST_RESULT_STATUS_PASS:
             ++test_suite_result->passed_count;
             break;
-        case TEST_RESULT_STATUS_FAIL:
-            ++test_suite_result->failed_count;
+        case TEST_RESULT_STATUS_FAILURE:
+            ++test_suite_result->failure_count;
             break;
         case TEST_RESULT_STATUS_INCOMPLETE:
             ++test_suite_result->incomplete_count;
@@ -280,7 +280,7 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
         test_result->base.actual = make_string(output.buffer, output.len);
     }
 
-    test_result->base.status = pass ? TEST_RESULT_STATUS_PASS : TEST_RESULT_STATUS_FAIL;
+    test_result->base.status = pass ? TEST_RESULT_STATUS_PASS : TEST_RESULT_STATUS_FAILURE;
     test_result->error_code = output.error_code;
 
     if (test_result->error_code != ERROR_CODE_NONE) {

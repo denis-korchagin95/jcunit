@@ -46,5 +46,6 @@ void show_each_test_result_in_passthrough_mode(
 
 void * test_runner(void * object, void * context, unsigned int current_index);
 void show_error_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int error_number);
+void show_failure_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int failure_number);
 
 #endif /* JCUNIT_SHOW_RESULT_H */

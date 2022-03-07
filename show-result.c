@@ -59,7 +59,7 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
         return;
     }
 
-    if (test_result->status == TEST_RESULT_STATUS_FAIL) {
+    if (test_result->status == TEST_RESULT_STATUS_FAILURE) {
         fprintf(output, "--- Expected\n%s$\n", test_result->expected == NULL ? "" : test_result->expected->value);
         fprintf(output, "+++ Actual\n%s$\n", test_result->actual->value);
     }
@@ -83,7 +83,7 @@ static const char * stringify_test_status(struct abstract_test_result * test_res
 {
     switch (test_result->status) {
         case TEST_RESULT_STATUS_PASS: return use_short_version ? "." : "PASS";
-        case TEST_RESULT_STATUS_FAIL: return use_short_version ? "F" : "FAIL";
+        case TEST_RESULT_STATUS_FAILURE: return use_short_version ? "F" : "FAIL";
         case TEST_RESULT_STATUS_INCOMPLETE: return use_short_version ? "I" : "INCOMPLETE";
         case TEST_RESULT_STATUS_ERROR: return use_short_version ? "E" : "ERROR";
         case TEST_RESULT_STATUS_SKIPPED: return use_short_version ? "S" : "SKIPPED";
@@ -150,7 +150,7 @@ void show_each_test_result_in_detail_mode(
         test_suite_result->passed_count,
         test_suite_result->skipped_count,
         test_suite_result->error_count,
-        test_suite_result->failed_count,
+        test_suite_result->failure_count,
         test_suite_result->incomplete_count
     );
 }
@@ -203,4 +203,20 @@ void show_error_test_result(FILE * output, struct abstract_test_result * test_re
     }
     fprintf(output, "%u) %s : %s\n", error_number, test_suite_name, test_result->name->value);
     print_error(test_result, output);
+}
+
+void show_failure_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int failure_number)
+{
+    if (test_result->kind != TEST_RESULT_KIND_PROGRAM_RUNNER) {
+        fprintf(stderr, "An unknown test result!\n");
+        exit(1);
+    }
+    struct program_runner_test_result * result = (struct program_runner_test_result *) test_result;
+    const char * test_suite_name = basename(result->given_filename->value);
+    if (test_suite_name == NULL) {
+        test_suite_name = "<unknown test suite name>";
+    }
+    fprintf(output, "%u) %s : %s\n", failure_number, test_suite_name, test_result->name->value);
+    fprintf(output, "--- Expected\n%s$\n", test_result->expected == NULL ? "" : test_result->expected->value);
+    fprintf(output, "+++ Actual\n%s$\n", test_result->actual->value);
 }
