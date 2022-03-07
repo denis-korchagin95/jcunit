@@ -7,6 +7,8 @@
 #define test_suite_iterator_current(iterator) ((iterator)->tests[(iterator)->cursor])
 #define test_suite_iterator_next(iterator) (++(iterator)->cursor)
 
+struct test_suite_result;
+
 struct test_suite_iterator
 {
     struct abstract_test ** tests;
@@ -14,13 +16,17 @@ struct test_suite_iterator
     unsigned int cursor;
 };
 
-typedef void * test_suite_iterator_visiter_func(void * object, void * context, unsigned int current_index);
+typedef struct abstract_test_result * test_suite_iterator_visiter_func(
+    struct abstract_test * test,
+    struct test_suite_result * test_suite_result,
+    unsigned int current_index
+);
 
 void test_suite_iterator_init(struct test_suite_iterator * iterator, struct test_suite * test_suite);
-void * test_suite_iterator_visit(
+struct abstract_test_result * test_suite_iterator_visit(
     struct test_suite_iterator * iterator,
     test_suite_iterator_visiter_func * visiter_func,
-    void * context
+    struct test_suite_result * context
 );
 
 #endif /* JCUNIT_TEST_SUITE_ITERATOR_H */

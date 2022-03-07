@@ -136,16 +136,15 @@ void show_each_test_result_in_detail_mode(
     FILE * output,
     struct test_suite_iterator * iterator,
     test_suite_iterator_visiter_func * visiter_func,
-    void * context
+    struct test_suite_result * test_suite_result
 ) {
     if (test_suite_iterator_finished(iterator)) {
         return;
     }
-    struct test_suite_result * test_suite_result = (struct test_suite_result *)context;
     fprintf(output, "Test Suite: %s\n", test_suite_result->test_suite->name->value);
     struct abstract_test_result * test_result;
     for(;;) {
-        test_result = test_suite_iterator_visit(iterator, visiter_func, context);
+        test_result = test_suite_iterator_visit(iterator, visiter_func, test_suite_result);
         if (test_result == NULL) {
             break;
         }
@@ -166,14 +165,14 @@ void show_each_test_result_in_passthrough_mode(
     FILE * output,
     struct test_suite_iterator * iterator,
     test_suite_iterator_visiter_func * visiter_func,
-    void * context
+    struct test_suite_result * test_suite_result
 ) {
     if (test_suite_iterator_finished(iterator)) {
         return;
     }
     struct abstract_test_result * test_result;
     for(;;) {
-        test_result = test_suite_iterator_visit(iterator, visiter_func, context);
+        test_result = test_suite_iterator_visit(iterator, visiter_func, test_suite_result);
         if (test_result == NULL) {
             break;
         }
@@ -181,15 +180,12 @@ void show_each_test_result_in_passthrough_mode(
     }
 }
 
-void * test_runner(void * object, void * context, unsigned int current_index)
-{
-    struct abstract_test * test;
-    struct abstract_test_result * test_result;
-    struct test_suite_result * test_suite_result;
-
-    test_suite_result = (struct test_suite_result *) context;
-    test = (struct abstract_test *) object;
-    test_result = test_run(test);
+struct abstract_test_result * test_runner(
+    struct abstract_test * test,
+    struct test_suite_result * test_suite_result,
+    unsigned int current_index
+) {
+    struct abstract_test_result * test_result = test_run(test);
 
     add_test_result_to_test_suite_result(test_suite_result, test_result, current_index);
 

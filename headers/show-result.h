@@ -25,6 +25,8 @@
 #ifndef JCUNIT_SHOW_RESULT_H
 #define JCUNIT_SHOW_RESULT_H 1
 
+#include <stdio.h>
+
 #include "runner.h"
 #include "test-suite-iterator.h"
 
@@ -35,16 +37,20 @@ void show_each_test_result_in_detail_mode(
     FILE * output,
     struct test_suite_iterator * iterator,
     test_suite_iterator_visiter_func * visiter_func,
-    void * context
+    struct test_suite_result * test_suite_result
 );
 void show_each_test_result_in_passthrough_mode(
     FILE * output,
     struct test_suite_iterator * iterator,
     test_suite_iterator_visiter_func * visiter_func,
-    void * context
+    struct test_suite_result * test_suite_result
 );
 
-void * test_runner(void * object, void * context, unsigned int current_index);
+struct abstract_test_result * test_runner(
+    struct abstract_test * test,
+    struct test_suite_result * test_suite_result,
+    unsigned int current_index
+);
 void show_error_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int error_number);
 void show_failure_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int failure_number);
 
