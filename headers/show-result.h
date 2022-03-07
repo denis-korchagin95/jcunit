@@ -28,21 +28,21 @@
 #include <stdio.h>
 
 #include "runner.h"
-#include "test-suite-iterator.h"
+#include "test-iterator.h"
 
 void show_test_result_in_detail_mode(struct abstract_test_result * test_result, FILE * output);
 void show_test_result_in_passthrough_mode(struct abstract_test_result * test_result, FILE * output);
 
 void show_each_test_result_in_detail_mode(
     FILE * output,
-    struct test_suite_iterator * iterator,
-    test_suite_iterator_visiter_func * visiter_func,
+    struct test_iterator * iterator,
+    test_iterator_visiter_func * visiter_func,
     struct test_suite_result * test_suite_result
 );
 void show_each_test_result_in_passthrough_mode(
     FILE * output,
-    struct test_suite_iterator * iterator,
-    test_suite_iterator_visiter_func * visiter_func,
+    struct test_iterator * iterator,
+    test_iterator_visiter_func * visiter_func,
     struct test_suite_result * test_suite_result
 );
 

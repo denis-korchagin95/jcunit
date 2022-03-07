@@ -34,7 +34,7 @@
 #include "headers/list.h"
 #include "headers/show-result.h"
 #include "headers/allocate.h"
-#include "headers/test-suite-iterator.h"
+#include "headers/test-iterator.h"
 
 
 #define SOURCES_CACHE_POS 1024
@@ -156,11 +156,11 @@ void run_suites_in_detail_mode(FILE * output, struct application_context * appli
     unsigned int i, len;
     struct test_suite * test_suite;
     struct test_suite_result * test_suite_result;
-    struct test_suite_iterator iterator;
+    struct test_iterator iterator;
     for (i = 0, len = application_context->parsed_suites_count; i < len; ++i) {
         test_suite = application_context->parsed_suites[i];
         test_suite_result = make_test_suite_result(test_suite);
-        test_suite_iterator_init(&iterator, test_suite);
+        test_iterator_init(&iterator, test_suite);
         show_each_test_result_in_detail_mode(output, &iterator, test_runner, (void *) test_suite_result);
     }
 }
@@ -180,11 +180,11 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
         unsigned int i, len;
         struct test_suite * test_suite;
         struct test_suite_result * test_suite_result;
-        struct test_suite_iterator iterator;
+        struct test_iterator iterator;
         for (i = 0, len = application_context->parsed_suites_count; i < len; ++i) {
             test_suite = application_context->parsed_suites[i];
             test_suite_result = make_test_suite_result(test_suite);
-            test_suite_iterator_init(&iterator, test_suite);
+            test_iterator_init(&iterator, test_suite);
             show_each_test_result_in_passthrough_mode(output, &iterator, test_runner, (void *) test_suite_result);
 
             results[result_index++] = test_suite_result;

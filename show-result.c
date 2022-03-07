@@ -29,7 +29,7 @@
 
 #include "headers/show-result.h"
 #include "headers/child-process.h"
-#include "headers/test-suite-iterator.h"
+#include "headers/test-iterator.h"
 #include "headers/util.h"
 
 
@@ -134,17 +134,17 @@ void print_program_runner_error(struct program_runner_test_result * test_result,
 
 void show_each_test_result_in_detail_mode(
     FILE * output,
-    struct test_suite_iterator * iterator,
-    test_suite_iterator_visiter_func * visiter_func,
+    struct test_iterator * iterator,
+    test_iterator_visiter_func * visiter_func,
     struct test_suite_result * test_suite_result
 ) {
-    if (test_suite_iterator_finished(iterator)) {
+    if (test_iterator_finished(iterator)) {
         return;
     }
     fprintf(output, "Test Suite: %s\n", test_suite_result->test_suite->name->value);
     struct abstract_test_result * test_result;
     for(;;) {
-        test_result = test_suite_iterator_visit(iterator, visiter_func, test_suite_result);
+        test_result = test_iterator_visit(iterator, visiter_func, test_suite_result);
         if (test_result == NULL) {
             break;
         }
@@ -163,16 +163,16 @@ void show_each_test_result_in_detail_mode(
 
 void show_each_test_result_in_passthrough_mode(
     FILE * output,
-    struct test_suite_iterator * iterator,
-    test_suite_iterator_visiter_func * visiter_func,
+    struct test_iterator * iterator,
+    test_iterator_visiter_func * visiter_func,
     struct test_suite_result * test_suite_result
 ) {
-    if (test_suite_iterator_finished(iterator)) {
+    if (test_iterator_finished(iterator)) {
         return;
     }
     struct abstract_test_result * test_result;
     for(;;) {
-        test_result = test_suite_iterator_visit(iterator, visiter_func, test_suite_result);
+        test_result = test_iterator_visit(iterator, visiter_func, test_suite_result);
         if (test_result == NULL) {
             break;
         }
