@@ -31,6 +31,10 @@
 #include "headers/options.h"
 #include "headers/application.h"
 
+#define PROGRAM_NAME "jcunit"
+
+void show_help(const char * name, FILE * output);
+
 int main(int argc, char * argv[])
 {
     struct application_context application_context;
@@ -38,8 +42,12 @@ int main(int argc, char * argv[])
 
     parse_options(argc, argv, &application_context);
 
+    if (application_context.options & OPTION_SHOW_HELP) {
+        show_help(PROGRAM_NAME, stdout);
+        exit(0);
+    }
     if (application_context.options & OPTION_SHOW_VERSION) {
-        fprintf(stdout, "jcunit version %s\n", JCUNIT_VERSION);
+        fprintf(stdout, "%s version %s\n", PROGRAM_NAME, JCUNIT_VERSION);
         exit(0);
     }
 
@@ -62,4 +70,15 @@ int main(int argc, char * argv[])
     fflush(stdout);
 
     return 0;
+}
+
+void show_help(const char * name, FILE * output)
+{
+    fprintf(output, "Usage: %s [options] path [paths...]\n\n\n", name);
+    fprintf(output, "OPTIONS\n");
+    fprintf(output, "\t--run-mode=(detail|passthrough) default: passthrough\n\t    The mode of showing the results of testing.\n\n");
+    fprintf(output, "\t--help\n\t    Show this message.\n\n");
+    fprintf(output, "\t--version\n\t    Show version of this program.\n\n");
+    fprintf(output, "\t--show-allocators-stats\n\t    Show statistics of memory allocators (for developers).\n\n");
+    fprintf(output, "\t--show-allocators-stats-leak-only\n\t    Show statistics of memory allocators which has a memory leak (for developers).\n\n");
 }

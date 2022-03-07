@@ -61,6 +61,10 @@ void parse_options(int argc, char * argv[], struct application_context * applica
             fprintf(stderr, "The unknown run mode '%s'!\n", run_mode);
             exit(1);
         }
+        if (strncmp("--help", arg, sizeof("--help") - 1) == 0) {
+            application_context->options |= OPTION_SHOW_HELP;
+            continue;
+        }
         if (strncmp("--", arg, 2) == 0) {
             fprintf(stderr, "The unknown option: %s!\n", arg);
             exit(1);
