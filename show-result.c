@@ -54,7 +54,7 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
         return;
     }
 
-    if (test_result->kind == TEST_RESULT_STATUS_ERROR) {
+    if (test_result->status == TEST_RESULT_STATUS_ERROR) {
         print_error(test_result, output);
         return;
     }
@@ -107,16 +107,16 @@ void print_program_runner_error(struct program_runner_test_result * test_result,
             break;
         case ERROR_CODE_FILE_NOT_FOUND:
             fprintf(
-                    output,
-                    "The file \"%s\" was not found!\n",
-                    test_result->executable->value
+                output,
+                "The file \"%s\" was not found!\n",
+                test_result->executable->value
             );
             break;
         case ERROR_CODE_NOT_EXECUTABLE:
             fprintf(
-                    output,
-                    "The file \"%s\" is not executable!\n",
-                    test_result->executable->value
+                output,
+                "The file \"%s\" is not executable!\n",
+                test_result->executable->value
             );
             break;
         case ERROR_CODE_READ_CHILD_DATA:
