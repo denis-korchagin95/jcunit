@@ -1,4 +1,4 @@
-@test("It should show an error test in the detail mode")
+@test("It should show an error test in the passthrough mode")
 @given("file")
 
 @@test("An error test")
@@ -20,7 +20,7 @@ Passed: 0, Skipped: 0, Errors: 1, Failed: 0, Incomplete: 0
 
 @endtest
 
-@test("It should show a fail test in the detail mode")
+@test("It should show a fail test in the passthrough mode")
 @given("file")
 
 @@test("A fail test")
@@ -53,7 +53,7 @@ Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 @endtest
 
 
-@test("It should show a passed test in the detail mode")
+@test("It should show a passed test in the passthrough mode")
 @given("file")
 
 @@test("A passed test")
@@ -77,7 +77,7 @@ Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 @endtest
 
 
-@test("It should show an incomplete test in the detail mode")
+@test("It should show an incomplete test in the passthrough mode")
 @given("file")
 
 @@test("An incomplete test")

@@ -1,4 +1,4 @@
-@test("It should show an error test in the detail mode")
+@test("It should show an error test in the passthrough mode")
 @given("file")
 
 @@test("An error test")
@@ -20,7 +20,7 @@ Passed: 0, Skipped: 0, Errors: 1, Failed: 0, Incomplete: 0
 
 @endtest
 
-@test("It should show a failure test in the detail mode")
+@test("It should show a failure test in the passthrough mode")
 @given("file")
 
 @@test("A failure test")
@@ -46,5 +46,47 @@ Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 $
 
 Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
+
+@endtest
+
+@test("It should show an error & a failure tests in the passthrough mode")
+@given("file")
+
+@@test("An error test")
+@@given("file", filename="some-test.test")
+@@whenRun("./bin/some-program")
+@@expectOutput("stdout")
+@@endtest
+
+@@test("A failure test")
+@@given("file", filename="some-test.test")
+@@whenRun("./bin/jcunit")
+@@expectOutput("stdout")
+Some output
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+EF
+
+There are 1 errors:
+
+1) some-test.test : An error test
+The file "./bin/some-program" was not found!
+
+---
+
+There are 1 failures:
+
+1) some-test.test : A failure test
+--- Expected
+Some output$
++++ Actual
+
+
+Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+$
+
+Passed: 0, Skipped: 0, Errors: 1, Failed: 1, Incomplete: 0
 
 @endtest

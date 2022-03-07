@@ -206,6 +206,9 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
         }
         fprintf(output, "\n");
     }
+    if (test_suite_result->error_count > 0  && test_suite_result->failure_count > 0) {
+        fprintf(output, "---\n\n");
+    }
     if (test_suite_result->failure_count > 0) {
         fprintf(output, "There are %u failures:\n\n", test_suite_result->failure_count);
         {
