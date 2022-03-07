@@ -1,0 +1,88 @@
+@test("It should show an error test in the detail mode")
+@given("file")
+
+@@test("An error test")
+@@given("file")
+@@whenRun("./bin/some-program")
+@@expectOutput("stdout")
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+E
+
+Passed: 0, Skipped: 0, Errors: 1, Failed: 0, Incomplete: 0
+
+
+@endtest
+
+@test("It should show a fail test in the detail mode")
+@given("file")
+
+@@test("A fail test")
+@@given("file")
+
+@@@@test()
+
+@@whenRun("./bin/jcunit")
+@@expectOutput("stderr")
+Some output
+
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+F
+
+Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
+
+
+@endtest
+
+
+@test("It should show a passed test in the detail mode")
+@given("file")
+
+@@test("A passed test")
+@@given("file")
+
+@@@@test()
+@@@@endtest()
+
+@@whenRun("./bin/jcunit")
+@@expectOutput("stderr")
+There is no any requirement provided for test!
+
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+.
+
+Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+
+
+@endtest
+
+
+@test("It should show an incomplete test in the detail mode")
+@given("file")
+
+@@test("An incomplete test")
+@@given("file")
+
+@@@@test("Some test")
+@@@@whenRun("./bin/jcunit")
+@@@@endtest()
+
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+I
+
+Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
+
+
+@endtest
