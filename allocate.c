@@ -43,7 +43,7 @@ static unsigned char bytes_pool[MAX_BYTES_POOL_SIZE] = {0};
 static unsigned int bytes_pool_pos = 0;
 
 allocator(token, struct token, 512)
-allocator(string, struct string, 1024)
+allocator(string, struct string, 2048)
 allocator(tokenizer_context, struct tokenizer_context, 4)
 allocator(ast_test, struct ast_test, 256)
 allocator(ast_requirement, struct ast_requirement, 512)
