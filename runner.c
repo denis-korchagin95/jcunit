@@ -184,24 +184,24 @@ bool is_test_passes(struct string * expected, struct process_output * output)
         && strncmp((const char *)expected->value, (const char *)output->buffer, output->len) == 0;
 }
 
-struct tests_results * make_tests_results(struct test_suite * test_suite)
+struct tests_results * make_tests_results(unsigned int total_tests_count)
 {
     struct tests_results * tests_results = alloc_tests_results();
     memset((void *)tests_results, 0, sizeof(struct tests_results));
-    tests_results->tests_results_count = test_suite->tests_count;
-    tests_results->tests_results = (struct abstract_test_result **) alloc_bytes(test_suite->tests_count * sizeof(void *));
+    tests_results->results_count = total_tests_count;
+    tests_results->results = (struct abstract_test_result **) alloc_bytes(total_tests_count * sizeof(void *));
     return tests_results;
 }
 
 void add_test_result_to_test_suite_result(
     struct tests_results * tests_results,
     struct abstract_test_result * test_result,
-    unsigned int test_result_index
+    unsigned int result_index
 ) {
     assert(tests_results != NULL);
     assert(test_result != NULL);
 
-    tests_results->tests_results[test_result_index] = test_result;
+    tests_results->results[result_index] = test_result;
 
     switch (test_result->status) {
         case TEST_RESULT_STATUS_PASS:

@@ -132,54 +132,6 @@ void print_program_runner_error(struct program_runner_test_result * test_result,
     }
 }
 
-void show_each_test_result_in_detail_mode(
-    FILE * output,
-    struct test_iterator * iterator,
-    test_iterator_visiter_func * visiter_func,
-    struct tests_results * tests_results
-) {
-    if (test_iterator_finished(iterator)) {
-        return;
-    }
-    fprintf(output, "Test Suite: %s\n", test_iterator_current(iterator)->test_suite->name->value);
-    struct abstract_test_result * test_result;
-    for(;;) {
-        test_result = test_iterator_visit(iterator, visiter_func, tests_results);
-        if (test_result == NULL) {
-            break;
-        }
-        show_test_result_in_detail_mode(test_result, output);
-    }
-    fprintf(
-        output,
-        "\nPassed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n\n",
-        tests_results->passed_count,
-        tests_results->skipped_count,
-        tests_results->error_count,
-        tests_results->failure_count,
-        tests_results->incomplete_count
-    );
-}
-
-void show_each_test_result_in_passthrough_mode(
-    FILE * output,
-    struct test_iterator * iterator,
-    test_iterator_visiter_func * visiter_func,
-    struct tests_results * tests_results
-) {
-    if (test_iterator_finished(iterator)) {
-        return;
-    }
-    struct abstract_test_result * test_result;
-    for(;;) {
-        test_result = test_iterator_visit(iterator, visiter_func, tests_results);
-        if (test_result == NULL) {
-            break;
-        }
-        show_test_result_in_passthrough_mode(test_result, output);
-    }
-}
-
 struct abstract_test_result * test_runner(
     struct abstract_test * test,
     struct tests_results * tests_results,

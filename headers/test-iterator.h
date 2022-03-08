@@ -46,7 +46,14 @@ typedef struct abstract_test_result * test_iterator_visiter_func(
     unsigned int current_index
 );
 
-void test_iterator_init(struct test_iterator * iterator, struct test_suite * test_suite);
+void test_iterator_init_by_suite(struct test_iterator * iterator, struct test_suite * test_suite);
+
+void test_iterator_init_by_suites(
+    struct test_iterator * iterator,
+    struct test_suite ** suites,
+    unsigned int suites_count
+);
+
 struct abstract_test_result * test_iterator_visit(
     struct test_iterator * iterator,
     test_iterator_visiter_func * visiter_func,

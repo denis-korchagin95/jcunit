@@ -148,88 +148,89 @@ void run_suites(FILE * output, struct application_context * application_context)
 
 void run_suites_in_detail_mode(FILE * output, struct application_context * application_context)
 {
-    unsigned int i, len;
-    struct test_suite * test_suite;
+    unsigned int test_suite_iterator = 0, suites_count = application_context->parsed_suites_count;
     struct tests_results * tests_results;
-    struct test_iterator iterator;
-    for (i = 0, len = application_context->parsed_suites_count; i < len; ++i) {
-        test_suite = application_context->parsed_suites[i];
-        tests_results = make_tests_results(test_suite);
-        test_iterator_init(&iterator, test_suite);
-        show_each_test_result_in_detail_mode(output, &iterator, test_runner, (void *) tests_results);
+    struct test_iterator test_iterator;
+    for (; test_suite_iterator < suites_count; ++test_suite_iterator) {
+        struct test_suite * test_suite = application_context->parsed_suites[test_suite_iterator];
+        test_iterator_init_by_suite(&test_iterator, test_suite);
+        if (test_iterator_finished(&test_iterator)) {
+            continue;
+        }
+        fprintf(output, "Test Suite: %s\n", test_iterator_current(&test_iterator)->test_suite->name->value);
+        tests_results = make_tests_results(test_suite->tests_count);
+        for (;;) {
+            struct abstract_test_result * test_result = test_iterator_visit(
+                &test_iterator,
+                test_runner,
+                (void *) tests_results
+            );
+            if (test_result == NULL) {
+                break;
+            }
+            show_test_result_in_detail_mode(test_result, output);
+        }
+        fprintf(
+            output,
+            "\nPassed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n\n",
+            tests_results->passed_count,
+            tests_results->skipped_count,
+            tests_results->error_count,
+            tests_results->failure_count,
+            tests_results->incomplete_count
+        );
     }
 }
 
 void run_suites_in_passthrough_mode(FILE * output, struct application_context * application_context)
 {
-    unsigned int total_passes_count = 0;
-    unsigned int total_skipped_count = 0;
-    unsigned int total_failure_count = 0;
-    unsigned int total_incomplete_count = 0;
-    unsigned int total_error_count = 0;
-    struct tests_results ** results = (struct tests_results **) alloc_bytes(
-        application_context->parsed_suites_count * sizeof(void *)
+    struct test_iterator test_iterator;
+    test_iterator_init_by_suites(
+        &test_iterator,
+        application_context->parsed_suites,
+        application_context->parsed_suites_count
     );
-    unsigned int result_index = 0;
-    {
-        unsigned int i, len;
-        struct test_suite * test_suite;
-        struct tests_results * tests_results;
-        struct test_iterator iterator;
-        for (i = 0, len = application_context->parsed_suites_count; i < len; ++i) {
-            test_suite = application_context->parsed_suites[i];
-            tests_results = make_tests_results(test_suite);
-            test_iterator_init(&iterator, test_suite);
-            show_each_test_result_in_passthrough_mode(output, &iterator, test_runner, (void *) tests_results);
-
-            results[result_index++] = tests_results;
-
-            total_passes_count += tests_results->passed_count;
-            total_skipped_count += tests_results->skipped_count;
-            total_error_count += tests_results->error_count;
-            total_failure_count += tests_results->failure_count;
-            total_incomplete_count += tests_results->incomplete_count;
+    struct tests_results * tests_results = make_tests_results(test_iterator.tests_count);
+    for (;;) {
+        struct abstract_test_result * test_result = test_iterator_visit(
+            &test_iterator,
+            test_runner,
+            (void *) tests_results
+        );
+        if (test_result == NULL) {
+            break;
         }
+        show_test_result_in_passthrough_mode(test_result, output);
     }
     fprintf(output, "\n\n");
-    if (total_error_count > 0) {
-        fprintf(output, "There are %u errors:\n\n", total_error_count);
+    if (tests_results->error_count > 0) {
+        fprintf(output, "There are %u errors:\n\n", tests_results->error_count);
         {
-            unsigned int test_suite_iterator = 0, test_suite_count = application_context->parsed_suites_count;
-            unsigned int error_number = 0;
-            for (; test_suite_iterator < test_suite_count; ++test_suite_iterator) {
-                struct tests_results * tests_results = results[test_suite_iterator];
-                unsigned int test_result_iterator = 0, test_result_count = tests_results->tests_results_count;
-                for (; test_result_iterator < test_result_count; ++test_result_iterator) {
-                    struct abstract_test_result * test_result = tests_results->tests_results[test_result_iterator];
-                    if (test_result->status == TEST_RESULT_STATUS_ERROR) {
-                        ++error_number;
+            unsigned int i, error_number = 0;
+            for (i = 0; i < tests_results->results_count; ++i) {
+                struct abstract_test_result * test_result = tests_results->results[i];
+                if (test_result->status == TEST_RESULT_STATUS_ERROR) {
+                    ++error_number;
 
-                        show_error_test_result(output, test_result, error_number);
-                    }
+                    show_error_test_result(output, test_result, error_number);
                 }
             }
         }
         fprintf(output, "\n");
     }
-    if (total_error_count > 0  && total_failure_count > 0) {
+    if (tests_results->error_count > 0  && tests_results->failure_count > 0) {
         fprintf(output, "---\n\n");
     }
-    if (total_failure_count > 0) {
-        fprintf(output, "There are %u failures:\n\n", total_failure_count);
+    if (tests_results->failure_count > 0) {
+        fprintf(output, "There are %u failures:\n\n", tests_results->failure_count);
         {
-            unsigned int test_suite_iterator = 0, test_suite_count = application_context->parsed_suites_count;
-            unsigned int failure_number = 0;
-            for (; test_suite_iterator < test_suite_count; ++test_suite_iterator) {
-                struct tests_results * tests_results = results[test_suite_iterator];
-                unsigned int test_result_iterator = 0, test_result_count = tests_results->tests_results_count;
-                for (; test_result_iterator < test_result_count; ++test_result_iterator) {
-                    struct abstract_test_result * test_result = tests_results->tests_results[test_result_iterator];
-                    if (test_result->status == TEST_RESULT_STATUS_FAILURE) {
-                        ++failure_number;
+            unsigned int i, failure_number = 0;
+            for (i = 0; i < tests_results->results_count; ++i) {
+                struct abstract_test_result * test_result = tests_results->results[i];
+                if (test_result->status == TEST_RESULT_STATUS_FAILURE) {
+                    ++failure_number;
 
-                        show_failure_test_result(output, test_result, failure_number);
-                    }
+                    show_failure_test_result(output, test_result, failure_number);
                 }
             }
         }
@@ -238,10 +239,10 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
     fprintf(
         output,
         "Passed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n",
-        total_passes_count,
-        total_skipped_count,
-        total_error_count,
-        total_failure_count,
-        total_incomplete_count
+        tests_results->passed_count,
+        tests_results->skipped_count,
+        tests_results->error_count,
+        tests_results->failure_count,
+        tests_results->incomplete_count
     );
 }
