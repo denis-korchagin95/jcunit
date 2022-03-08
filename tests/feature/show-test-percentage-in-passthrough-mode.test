@@ -1,0 +1,253 @@
+@test("It should show a 100% percent for the first one line if the tests less than the limit on a line (1 test)")
+@given("file")
+
+@@test("Some test")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+I                                                  (100%)
+
+Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
+
+@endtest
+
+@test("It should show a 100% percent for the first one line if the tests less than the limit on a line (3 test)")
+@given("file")
+
+@@test("Some test #1")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #2")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #3")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+III                                                (100%)
+
+Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 3
+
+@endtest
+
+@test("It should show a calculated percentage for a line if the tests more than the limit on a line (51 test)")
+@given("file")
+
+@@test("Some test #1")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #2")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #3")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #4")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #5")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #6")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #7")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #8")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #9")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #10")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #11")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #12")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #13")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #14")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #15")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #16")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #17")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #18")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #19")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #20")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #21")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #22")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #23")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #24")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #25")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #26")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #27")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #28")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #29")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #30")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #31")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #32")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #33")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #34")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #35")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #36")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #37")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #38")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #39")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #40")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #41")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #42")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #43")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #44")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #45")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #46")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #47")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #48")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #49")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #50")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("Some test #51")
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII ( 98%)
+I                                                  (100%)
+
+Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 51
+
+@endtest

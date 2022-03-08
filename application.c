@@ -38,6 +38,7 @@
 
 
 #define SOURCES_CACHE_POS 1024
+#define TEST_RESULT_PER_LINE (50)
 
 static const char * sources_cache[SOURCES_CACHE_POS];
 static unsigned int sources_cache_pos = 0;
@@ -191,6 +192,7 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
         application_context->parsed_suites_count
     );
     struct tests_results * tests_results = make_tests_results(test_iterator.tests_count);
+    unsigned int test_result_in_line = 0;
     for (;;) {
         struct abstract_test_result * test_result = test_iterator_visit(
             &test_iterator,
@@ -201,6 +203,19 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
             break;
         }
         show_test_result_in_passthrough_mode(test_result, output);
+        ++test_result_in_line;
+        if (test_result_in_line == TEST_RESULT_PER_LINE) {
+            test_result_in_line = 0;
+
+            fprintf(output, " (%3u%%)\n", test_iterator.cursor * 100 / test_iterator.tests_count);
+        }
+    }
+    {
+        unsigned int i, len;
+        for (i = 0, len = TEST_RESULT_PER_LINE - test_result_in_line; i < len; ++i) {
+            fprintf(output, " ");
+        }
+        fprintf(output, " (100%%)");
     }
     fprintf(output, "\n\n");
     if (tests_results->error_count > 0) {

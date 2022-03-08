@@ -9,7 +9,7 @@
 
 @whenRun("./bin/jcunit")
 @expectOutput("stdout")
-E
+E                                                  (100%)
 
 There are 1 errors:
 
@@ -36,7 +36,7 @@ Some output
 
 @whenRun("./bin/jcunit")
 @expectOutput("stdout")
-F
+F                                                  (100%)
 
 There are 1 failures:
 
@@ -70,7 +70,7 @@ There is no any requirement provided for test!
 
 @whenRun("./bin/jcunit")
 @expectOutput("stdout")
-.
+.                                                  (100%)
 
 Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 
@@ -92,7 +92,7 @@ Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 
 @whenRun("./bin/jcunit")
 @expectOutput("stdout")
-I
+I                                                  (100%)
 
 Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
 

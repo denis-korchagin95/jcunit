@@ -52,7 +52,7 @@ Passed: 0, Skipped: 1, Errors: 0, Failed: 0, Incomplete: 0
 
 @whenRun("./bin/jcunit", args="--run-mode=passthrough")
 @expectOutput("stdout")
-S
+S                                                  (100%)
 
 Passed: 0, Skipped: 1, Errors: 0, Failed: 0, Incomplete: 0
 
