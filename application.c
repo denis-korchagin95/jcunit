@@ -158,7 +158,7 @@ void run_suites_in_detail_mode(FILE * output, struct application_context * appli
         if (test_iterator_finished(&test_iterator)) {
             continue;
         }
-        fprintf(output, "Test Suite: %s\n", test_iterator_current(&test_iterator)->test_suite->name->value);
+        fprintf(output, "Test Suite: %s\n", test_suite->name->value);
         tests_results = make_tests_results(test_suite->tests_count);
         for (;;) {
             struct abstract_test_result * test_result = test_iterator_visit(

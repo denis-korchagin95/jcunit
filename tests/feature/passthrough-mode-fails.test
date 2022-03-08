@@ -1,8 +1,8 @@
 @test("It should show an error test in the passthrough mode")
-@given("file")
+@given("file", filename="some-test.test")
 
 @@test("An error test")
-@@given("file", filename="some-test.test")
+@@given("file")
 @@whenRun("./bin/some-program")
 @@expectOutput("stdout")
 @@endtest
@@ -21,10 +21,10 @@ Passed: 0, Skipped: 0, Errors: 1, Failed: 0, Incomplete: 0
 @endtest
 
 @test("It should show a failure test in the passthrough mode")
-@given("file")
+@given("file", filename="some-test.test")
 
 @@test("A failure test")
-@@given("file", filename="some-test.test")
+@@given("file")
 @@whenRun("./bin/jcunit")
 @@expectOutput("stdout")
 Some output
@@ -50,10 +50,10 @@ Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 @endtest
 
 @test("It should show an error & a failure tests in the passthrough mode")
-@given("file")
+@given("file", filename="some-test.test")
 
 @@test("An error test")
-@@given("file", filename="some-test.test")
+@@given("file")
 @@whenRun("./bin/some-program")
 @@expectOutput("stdout")
 @@endtest

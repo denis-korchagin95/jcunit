@@ -144,18 +144,18 @@ struct abstract_test_result * test_runner(
     return test_result;
 }
 
-
 void show_error_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int error_number)
 {
     if (test_result->kind != TEST_RESULT_KIND_PROGRAM_RUNNER) {
         jcunit_fatal_error("An unknown test result!");
     }
-    struct program_runner_test_result * result = (struct program_runner_test_result *) test_result;
-    const char * test_suite_name = basename(result->given_filename->value);
-    if (test_suite_name == NULL) {
-        test_suite_name = "<unknown test suite name>";
-    }
-    fprintf(output, "%u) %s : %s\n", error_number, test_suite_name, test_result->name->value);
+    fprintf(
+        output,
+        "%u) %s : %s\n",
+        error_number,
+        test_result->test->test_suite->name->value,
+        test_result->name->value
+    );
     print_error(test_result, output);
 }
 
@@ -164,12 +164,13 @@ void show_failure_test_result(FILE * output, struct abstract_test_result * test_
     if (test_result->kind != TEST_RESULT_KIND_PROGRAM_RUNNER) {
         jcunit_fatal_error("An unknown test result!");
     }
-    struct program_runner_test_result * result = (struct program_runner_test_result *) test_result;
-    const char * test_suite_name = basename(result->given_filename->value);
-    if (test_suite_name == NULL) {
-        test_suite_name = "<unknown test suite name>";
-    }
-    fprintf(output, "%u) %s : %s\n", failure_number, test_suite_name, test_result->name->value);
+    fprintf(
+        output,
+        "%u) %s : %s\n",
+        failure_number,
+        test_result->test->test_suite->name->value,
+        test_result->name->value
+    );
     fprintf(output, "--- Expected\n%s$\n", test_result->expected == NULL ? "" : test_result->expected->value);
     fprintf(output, "+++ Actual\n%s$\n", test_result->actual->value);
 }
