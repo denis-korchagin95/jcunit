@@ -136,15 +136,15 @@ void show_each_test_result_in_detail_mode(
     FILE * output,
     struct test_iterator * iterator,
     test_iterator_visiter_func * visiter_func,
-    struct test_suite_result * test_suite_result
+    struct tests_results * tests_results
 ) {
     if (test_iterator_finished(iterator)) {
         return;
     }
-    fprintf(output, "Test Suite: %s\n", test_suite_result->test_suite->name->value);
+    fprintf(output, "Test Suite: %s\n", test_iterator_current(iterator)->test_suite->name->value);
     struct abstract_test_result * test_result;
     for(;;) {
-        test_result = test_iterator_visit(iterator, visiter_func, test_suite_result);
+        test_result = test_iterator_visit(iterator, visiter_func, tests_results);
         if (test_result == NULL) {
             break;
         }
@@ -153,11 +153,11 @@ void show_each_test_result_in_detail_mode(
     fprintf(
         output,
         "\nPassed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n\n",
-        test_suite_result->passed_count,
-        test_suite_result->skipped_count,
-        test_suite_result->error_count,
-        test_suite_result->failure_count,
-        test_suite_result->incomplete_count
+        tests_results->passed_count,
+        tests_results->skipped_count,
+        tests_results->error_count,
+        tests_results->failure_count,
+        tests_results->incomplete_count
     );
 }
 
@@ -165,14 +165,14 @@ void show_each_test_result_in_passthrough_mode(
     FILE * output,
     struct test_iterator * iterator,
     test_iterator_visiter_func * visiter_func,
-    struct test_suite_result * test_suite_result
+    struct tests_results * tests_results
 ) {
     if (test_iterator_finished(iterator)) {
         return;
     }
     struct abstract_test_result * test_result;
     for(;;) {
-        test_result = test_iterator_visit(iterator, visiter_func, test_suite_result);
+        test_result = test_iterator_visit(iterator, visiter_func, tests_results);
         if (test_result == NULL) {
             break;
         }
@@ -182,12 +182,12 @@ void show_each_test_result_in_passthrough_mode(
 
 struct abstract_test_result * test_runner(
     struct abstract_test * test,
-    struct test_suite_result * test_suite_result,
+    struct tests_results * tests_results,
     unsigned int current_index
 ) {
     struct abstract_test_result * test_result = test_run(test);
 
-    add_test_result_to_test_suite_result(test_suite_result, test_result, current_index);
+    add_test_result_to_test_suite_result(tests_results, test_result, current_index);
 
     return test_result;
 }

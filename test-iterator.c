@@ -13,7 +13,7 @@ void test_iterator_init(struct test_iterator * iterator, struct test_suite * tes
 struct abstract_test_result * test_iterator_visit(
     struct test_iterator * iterator,
     test_iterator_visiter_func * visiter_func,
-    struct test_suite_result * context
+    struct tests_results * tests_results
 ) {
     assert(iterator != NULL);
     assert(visiter_func != NULL);
@@ -22,7 +22,7 @@ struct abstract_test_result * test_iterator_visit(
         return NULL;
     }
 
-    void * result = visiter_func(test_iterator_current(iterator), context, iterator->cursor);
+    void * result = visiter_func(test_iterator_current(iterator), tests_results, iterator->cursor);
     test_iterator_next(iterator);
     return result;
 }

@@ -46,7 +46,6 @@ struct test_requirement_compiler_context
 {
     struct ast_requirement * requirement;
     struct program_runner_test * test;
-    struct ast_test * ast_test;
 };
 
 typedef struct abstract_test * test_compiler_func(struct ast_test * ast_test);
@@ -184,7 +183,6 @@ struct abstract_test * program_runner_test_compiler(struct ast_test * ast_test)
         struct ast_requirement * requirement = list_get_owner(iterator, struct ast_requirement, list_entry);
         test_requirement_compiler_func * test_requirement_compiler = resolve_test_requirement_compiler(requirement);
         context.test = test;
-        context.ast_test = ast_test;
         context.requirement = requirement;
         test_requirement_compiler(&context);
     });

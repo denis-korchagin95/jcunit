@@ -50,7 +50,7 @@ allocator(ast_requirement, struct ast_requirement, 512)
 allocator(list, struct list, 512)
 allocator(slist, struct slist, 512)
 allocator(test_suite, struct test_suite, 32)
-allocator(test_suite_result, struct test_suite_result, 256)
+allocator(tests_results, struct tests_results, 256)
 allocator(abstract_test_result, struct abstract_test_result, 256)
 allocator(program_runner_test_result, struct program_runner_test_result, 256)
 allocator(program_runner_test, struct program_runner_test, 256)
@@ -87,10 +87,10 @@ static struct allocator_stat stats[] = {
         { "test_suite", &max_test_suite_pool_size, &test_suite_pool_pos, &test_suite_freed, &test_suite_allocated },
         {
             "test_suite_result",
-            &max_test_suite_result_pool_size,
-            &test_suite_result_pool_pos,
-            &test_suite_result_freed,
-            &test_suite_result_allocated
+            &max_tests_results_pool_size,
+            &tests_results_pool_pos,
+            &tests_results_freed,
+            &tests_results_allocated
         },
         {
             "program_runner_test_result",

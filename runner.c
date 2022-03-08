@@ -41,7 +41,7 @@
 
 
 static void fill_file_from_string(FILE * file, struct string * content);
-static struct program_runner_test_result * make_program_runner_test_result(struct string * name);
+static struct program_runner_test_result * make_program_runner_test_result(struct program_runner_test * test);
 static void make_given_file(struct string * filename, struct string * content);
 static void resolve_given_filename(struct program_runner_test * test, struct program_runner_test_result * test_result);
 static void try_to_run_program(
@@ -85,11 +85,12 @@ void fill_file_from_string(FILE * file, struct string * content)
     fwrite((const void *)content->value, sizeof(char), content->len, file);
 }
 
-struct program_runner_test_result * make_program_runner_test_result(struct string * name)
+struct program_runner_test_result * make_program_runner_test_result(struct program_runner_test * test)
 {
     struct program_runner_test_result * test_result = alloc_program_runner_test_result();
     memset((void *)test_result, 0, sizeof(struct program_runner_test_result));
-    test_result->base.name = name;
+    test_result->base.test = (struct abstract_test *) test;
+    test_result->base.name = test->base.name;
     test_result->base.kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     return test_result;
 }
@@ -183,41 +184,40 @@ bool is_test_passes(struct string * expected, struct process_output * output)
         && strncmp((const char *)expected->value, (const char *)output->buffer, output->len) == 0;
 }
 
-struct test_suite_result * make_test_suite_result(struct test_suite * test_suite)
+struct tests_results * make_tests_results(struct test_suite * test_suite)
 {
-    struct test_suite_result * test_suite_result = alloc_test_suite_result();
-    memset((void *)test_suite_result, 0, sizeof(struct test_suite_result));
-    test_suite_result->test_results_count = test_suite->tests_count;
-    test_suite_result->test_results = (struct abstract_test_result **) alloc_bytes(test_suite->tests_count * sizeof(void *));
-    test_suite_result->test_suite = test_suite;
-    return test_suite_result;
+    struct tests_results * tests_results = alloc_tests_results();
+    memset((void *)tests_results, 0, sizeof(struct tests_results));
+    tests_results->tests_results_count = test_suite->tests_count;
+    tests_results->tests_results = (struct abstract_test_result **) alloc_bytes(test_suite->tests_count * sizeof(void *));
+    return tests_results;
 }
 
 void add_test_result_to_test_suite_result(
-    struct test_suite_result * test_suite_result,
+    struct tests_results * tests_results,
     struct abstract_test_result * test_result,
     unsigned int test_result_index
 ) {
-    assert(test_suite_result != NULL);
+    assert(tests_results != NULL);
     assert(test_result != NULL);
 
-    test_suite_result->test_results[test_result_index] = test_result;
+    tests_results->tests_results[test_result_index] = test_result;
 
     switch (test_result->status) {
         case TEST_RESULT_STATUS_PASS:
-            ++test_suite_result->passed_count;
+            ++tests_results->passed_count;
             break;
         case TEST_RESULT_STATUS_FAILURE:
-            ++test_suite_result->failure_count;
+            ++tests_results->failure_count;
             break;
         case TEST_RESULT_STATUS_INCOMPLETE:
-            ++test_suite_result->incomplete_count;
+            ++tests_results->incomplete_count;
             break;
         case TEST_RESULT_STATUS_ERROR:
-            ++test_suite_result->error_count;
+            ++tests_results->error_count;
             break;
         case TEST_RESULT_STATUS_SKIPPED:
-            ++test_suite_result->skipped_count;
+            ++tests_results->skipped_count;
             break;
         default:
             jcunit_fatal_error("The unknown status %d of test result!", test_result->status);
@@ -240,9 +240,7 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
 
     struct string * executable = this_test->program_path;
 
-    struct program_runner_test_result * test_result = make_program_runner_test_result(
-            this_test->base.name
-    );
+    struct program_runner_test_result * test_result = make_program_runner_test_result(this_test);
     test_result->executable = executable;
 
     resolve_given_filename(this_test, test_result);

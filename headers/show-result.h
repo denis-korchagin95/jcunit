@@ -37,18 +37,18 @@ void show_each_test_result_in_detail_mode(
     FILE * output,
     struct test_iterator * iterator,
     test_iterator_visiter_func * visiter_func,
-    struct test_suite_result * test_suite_result
+    struct tests_results * tests_results
 );
 void show_each_test_result_in_passthrough_mode(
     FILE * output,
     struct test_iterator * iterator,
     test_iterator_visiter_func * visiter_func,
-    struct test_suite_result * test_suite_result
+    struct tests_results * tests_results
 );
 
 struct abstract_test_result * test_runner(
     struct abstract_test * test,
-    struct test_suite_result * test_suite_result,
+    struct tests_results * tests_results,
     unsigned int current_index
 );
 void show_error_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int error_number);
