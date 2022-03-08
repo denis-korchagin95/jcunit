@@ -103,6 +103,7 @@ it_a_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_
 @whenRun("./bin/testers/tokenizer-tester")
 @expectOutput("stderr")
 Too long name 'it_a_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_very___very_very_very_very_very_very_very_very_very_very_very_very_very_very_very_long_name' exceed 256 characters!
+
 @endtest
 
 @test("It should tokenize a directive #1")

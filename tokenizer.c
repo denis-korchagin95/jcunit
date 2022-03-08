@@ -23,7 +23,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdio.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
@@ -32,6 +31,7 @@
 #include "headers/token.h"
 #include "headers/allocate.h"
 #include "headers/string.h"
+#include "headers/errors.h"
 
 
 struct token newline_token = {0}, eof_token = {0};
@@ -53,20 +53,17 @@ struct token * get_one_string(struct tokenizer_context * context, int ch)
     unsigned int len = 0;
     while (len < MAX_STRING_LEN && ch != '"') {
         if (ch == EOF) {
-            fprintf(stderr, "Unterminated string!\n");
-            exit(1);
+            jcunit_fatal_error("Unterminated string!");
         }
         if (ch == '\n') {
-            fprintf(stderr, "Newline inside the string!\n");
-            exit(1);
+            jcunit_fatal_error("Newline inside the string!");
         }
         *w++ = (char)ch;
         ++len;
         ch = get_one_char(context);
     }
     if (len >= MAX_STRING_LEN) {
-        fprintf(stderr, "Too long string!\n");
-        exit(1);
+        jcunit_fatal_error("Too long string!");
     }
     struct token * token = alloc_token();
     token->kind = TOKEN_KIND_STRING;
@@ -79,8 +76,7 @@ struct tokenizer_context * make_tokenizer_context(const char * filename)
     struct tokenizer_context * context = alloc_tokenizer_context();
     FILE * source = fopen(filename, "r");
     if (source == NULL) {
-        fprintf(stderr, "Can't read file \"%s\": %s\n", filename, strerror(errno));
-        exit(1);
+        jcunit_fatal_error("Can't read file \"%s\": %s", filename, strerror(errno));
     }
     memset((void *)context, 0, sizeof(struct tokenizer_context));
     context->filename = filename;
@@ -122,8 +118,7 @@ void unget_one_char(struct tokenizer_context * context, int ch)
 {
     assert(context->char_buffer_pos < MAX_CHAR_BUFFER_SIZE);
     if (context->char_buffer_pos >= MAX_CHAR_BUFFER_SIZE) {
-        fprintf(stderr, "The char buffer is overflow!\n");
-        return;
+        jcunit_fatal_error("The char buffer is overflow!");
     }
     if (ch != EOF)
         context->char_buffer[context->char_buffer_pos++] = (char)ch;
@@ -148,8 +143,7 @@ struct token * get_one_name(struct tokenizer_context * context, int ch, unsigned
         *w++ = (char)ch;
         ++len;
         if (len >= MAX_NAME_LEN) {
-            fprintf(stderr, "Too long name '%.*s' exceed %d characters!", len, buffer, MAX_NAME_LEN);
-            exit(1);
+            jcunit_fatal_error("Too long name '%.*s' exceed %d characters!", len, buffer, MAX_NAME_LEN);
         }
         ch = get_one_char(context);
         if (!is_name_char(ch)) {
@@ -232,8 +226,7 @@ void unget_one_token(struct tokenizer_context * context, struct token * token)
 {
     assert(token != NULL);
     if (context->token_buffer_pos >= MAX_TOKEN_BUFFER_SIZE) {
-        fprintf(stderr, "The token buffer is overflow!\n");
-        exit(1);
+        jcunit_fatal_error("The token buffer is overflow!");
     }
     if (!is_token_eof(token))
         context->token_buffer[context->token_buffer_pos++] = token;

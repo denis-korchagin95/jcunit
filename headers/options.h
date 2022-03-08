@@ -25,7 +25,7 @@
 #ifndef JCUNIT_OPTIONS_H
 #define JCUNIT_OPTIONS_H 1
 
-#include "application.h"
+struct application_context;
 
 void parse_options(int argc, char * argv[], struct application_context * application_context);
 

@@ -29,13 +29,13 @@
 
 #include "../headers/token.h"
 #include "../headers/print.h"
+#include "../headers/errors.h"
 
 
 int main(int argc, char * argv[])
 {
     if (argc <= 1) {
-        fprintf(stderr, "No specified args!\n");
-        return 1;
+        jcunit_fatal_error("No specified args!");
     }
     int token_number = -1;
     int i;
@@ -44,8 +44,7 @@ int main(int argc, char * argv[])
         if (strncmp("--turn-special-mode-after-token=", arg, sizeof("--turn-special-mode-after-token=") - 1) == 0) {
             arg += (sizeof("--turn-special-mode-after-token=") - 1);
             if (!isdigit(*arg)) {
-                fprintf(stderr, "Bad token number of option \"--turn-special-mode-after-token\"!\n");
-                exit(1);
+                jcunit_fatal_error("Bad token number of option \"--turn-special-mode-after-token\"!");
             }
             token_number = atoi(arg);
         }

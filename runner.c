@@ -23,7 +23,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -34,7 +33,7 @@
 #include "headers/allocate.h"
 #include "headers/child-process.h"
 #include "headers/fs.h"
-#include "headers/list.h"
+#include "headers/errors.h"
 
 
 #define MAX_PROCESS_OUTPUT_BUFFER_LEN (8192)
@@ -76,8 +75,7 @@ struct abstract_test_result * test_run(struct abstract_test * test)
     }
     test_runner_func * runner = resolve_test_runner(test);
     if (runner == NULL) {
-        fprintf(stderr, "There is no any runner to run the test \"%s\"!", test->name->value);
-        exit(1);
+        jcunit_fatal_error("There is no any runner to run the test \"%s\"!", test->name->value);
     }
     return runner(test);
 }
@@ -100,8 +98,7 @@ void make_given_file(struct string * filename, struct string * content)
 {
     FILE * file = fopen(filename->value, "w");
     if (file == NULL) {
-        fprintf(stderr, "Can't open the file: %s!\n", strerror(errno));
-        exit(1);
+        jcunit_fatal_error("Can't open the file: %s!\n", strerror(errno));
     }
     if (content != NULL) {
         fill_file_from_string(file, content);
@@ -114,8 +111,7 @@ void resolve_given_filename(struct program_runner_test * test, struct program_ru
     if (test->given_filename != NULL) {
         const char * given_filename_prefix = "/tmp/";
         if (test->given_filename->len - sizeof(given_filename_prefix) - 1 >= MAX_TEST_GIVEN_FILENAME_LEN) {
-            fprintf(stderr, "Too long 'filename' of the 'given' requirement!\n");
-            exit(1);
+            jcunit_fatal_error("Too long 'filename' of the 'given' requirement!");
         }
         sprintf(given_filename, "%s%s", given_filename_prefix, test->given_filename->value);
     } else {
@@ -224,8 +220,7 @@ void add_test_result_to_test_suite_result(
             ++test_suite_result->skipped_count;
             break;
         default:
-            fprintf(stderr, "The unknown status %d of test result!\n", test_result->status);
-            exit(1);
+            jcunit_fatal_error("The unknown status %d of test result!", test_result->status);
     }
 }
 
@@ -257,12 +252,7 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
     int run_mode = resolve_run_mode_by_stream_code(this_test->stream_code);
 
     if (run_mode == -1) {
-        fprintf(
-            stderr,
-            "The unknown stream code %d!\n",
-            this_test->stream_code
-        );
-        exit(1);
+        jcunit_fatal_error("The unknown stream code %d!", this_test->stream_code);
     }
 
     try_to_run_program(

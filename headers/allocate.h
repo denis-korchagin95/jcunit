@@ -54,8 +54,7 @@
             return object;                                                                          \
         }                                                                                           \
         if (name##_pool_pos >= (count)) {                                                           \
-            fprintf(stderr, "Allocator " #name ": out of memory!\n");                               \
-            exit(1);                                                                                \
+            jcunit_fatal_error("Allocator " #name ": out of memory!");                              \
         }                                                                                           \
         return &name##_pool[name##_pool_pos++];                                                     \
     }                                                                                               \
@@ -64,12 +63,10 @@
         static unsigned int pointer_size = (unsigned int)sizeof(void *);                            \
         static unsigned int object_size = (unsigned int)sizeof(type);                               \
         if (object_size < pointer_size) {                                                           \
-            fprintf(                                                                                \
-                stderr,                                                                             \
-                "Cannot free element with size less than size of pointer! (pointer size: %u)\n",    \
+            jcunit_fatal_error(                                                                     \
+                "Cannot free element with size less than size of pointer! (pointer size: %u)",      \
                 pointer_size                                                                        \
             );                                                                                      \
-            exit(1);                                                                                \
         }                                                                                           \
         void ** ptr = (void **)object;                                                              \
         *ptr = name##_free_list;                                                                    \

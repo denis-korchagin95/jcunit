@@ -22,7 +22,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdlib.h>
@@ -30,6 +29,7 @@
 #include <errno.h>
 
 #include "headers/child-process.h"
+#include "headers/errors.h"
 
 #define PIPE_COUNT (2)
 
@@ -49,8 +49,7 @@ void child_process_run(const char * path, char * argv[], struct process_output *
     pid_t pid = fork();
 
     if(pid < 0) {
-        fprintf(stderr, "Cannot fork the child process: \"%s\"!\n", strerror(errno));
-        exit(1);
+        jcunit_fatal_error("Cannot fork the child process: \"%s\"!", strerror(errno));
     }
 
     int pipe_index;
@@ -63,8 +62,7 @@ void child_process_run(const char * path, char * argv[], struct process_output *
             pipe_index = PIPE_STDERR;
             break;
         default:
-            fprintf(stderr, "The unknown mode: %u\n", mode);
-            exit(1);
+            jcunit_fatal_error("The unknown mode: %u", mode);
     }
 
     if (pid == 0) {

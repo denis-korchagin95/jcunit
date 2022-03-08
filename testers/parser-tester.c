@@ -27,13 +27,13 @@
 #include "../headers/token.h"
 #include "../headers/print.h"
 #include "../headers/parse.h"
+#include "../headers/errors.h"
 
 
 int main(int argc, char * argv[])
 {
     if (argc <= 1) {
-        fprintf(stderr, "No specified args!\n");
-        return 1;
+        jcunit_fatal_error("No specified args!");
     }
 
     init_tokenizer();

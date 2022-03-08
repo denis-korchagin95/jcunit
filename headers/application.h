@@ -25,6 +25,8 @@
 #ifndef JCUNIT_APPLICATION_H
 #define JCUNIT_APPLICATION_H 1
 
+#include <stdio.h>
+
 #include "list.h"
 
 #define RUN_MODE_PASSTHROUGH    (1)

@@ -24,7 +24,6 @@
  */
 #include <sys/stat.h>
 #include <dirent.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -32,6 +31,7 @@
 
 #include "headers/fs.h"
 #include "headers/allocate.h"
+#include "headers/errors.h"
 
 #define GET_ENTRY_PATH_ADD_PATH_SEPARATOR (1)
 
@@ -90,8 +90,7 @@ void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * con
 
         DIR * dir = opendir(current_path->path);
         if (dir == NULL) {
-            fprintf(stderr, "Can't open directory \"%s\"!", current_path->path);
-            exit(1);
+            jcunit_fatal_error("Can't open directory \"%s\"!", current_path->path);
         }
 
         uint32_t current_path_len = strlen(current_path->path);

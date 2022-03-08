@@ -23,7 +23,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdio.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
 
@@ -33,6 +32,7 @@
 #include "headers/test-iterator.h"
 #include "headers/util.h"
 #include "headers/string.h"
+#include "headers/errors.h"
 
 
 static const char * stringify_test_status(struct abstract_test_result * test_result, bool use_short_version);
@@ -46,8 +46,7 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
     const char * test_status = stringify_test_status(test_result, false);
 
     if (test_status == NULL) {
-        fprintf(stderr, "Can't resolve the status of test result!\n");
-        exit(1);
+        jcunit_fatal_error("Can't resolve the status of test result!");
     }
 
     fprintf(output, "    %10s %s\n", test_status, test_result->name->value);
@@ -81,8 +80,7 @@ void show_test_result_in_passthrough_mode(struct abstract_test_result * test_res
     const char * test_status = stringify_test_status(test_result, true);
 
     if (test_status == NULL) {
-        fprintf(stderr, "Can't resolve the status of test result!\n");
-        exit(1);
+        jcunit_fatal_error("Can't resolve the status of test result!");
     }
 
     fprintf(output, "%s", test_status);
@@ -198,8 +196,7 @@ struct abstract_test_result * test_runner(
 void show_error_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int error_number)
 {
     if (test_result->kind != TEST_RESULT_KIND_PROGRAM_RUNNER) {
-        fprintf(stderr, "An unknown test result!\n");
-        exit(1);
+        jcunit_fatal_error("An unknown test result!");
     }
     struct program_runner_test_result * result = (struct program_runner_test_result *) test_result;
     const char * test_suite_name = basename(result->given_filename->value);
@@ -213,8 +210,7 @@ void show_error_test_result(FILE * output, struct abstract_test_result * test_re
 void show_failure_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int failure_number)
 {
     if (test_result->kind != TEST_RESULT_KIND_PROGRAM_RUNNER) {
-        fprintf(stderr, "An unknown test result!\n");
-        exit(1);
+        jcunit_fatal_error("An unknown test result!");
     }
     struct program_runner_test_result * result = (struct program_runner_test_result *) test_result;
     const char * test_suite_name = basename(result->given_filename->value);

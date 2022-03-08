@@ -23,33 +23,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
-#include "../headers/token.h"
-#include "../headers/print.h"
-#include "../headers/errors.h"
+#include "headers/errors.h"
 
+#define ERROR_BUFFER_SIZE (1024)
 
-int main(int argc, char * argv[])
+void jcunit_fatal_error(const char * fmt, ...)
 {
-    if (argc <= 1) {
-        jcunit_fatal_error("No specified args!");
-    }
+    va_list args;
+    static char buffer[ERROR_BUFFER_SIZE];
 
-    init_tokenizer();
+    va_start(args, fmt);
+    vsnprintf(buffer, ERROR_BUFFER_SIZE, fmt, args);
+    va_end(args);
 
-    struct tokenizer_context * context = make_tokenizer_context(argv[1]);
-
-    struct token * token;
-    for(;;) {
-        token = get_one_token(context);
-        print_token(token, stdout);
-        puts("");
-        if (token->kind == TOKEN_KIND_EOF) {
-            break;
-        }
-    }
-
-    destroy_tokenizer_context(context);
-
-    return 0;
+    fprintf(stderr, "%s\n", buffer);
+    exit(1);
 }

@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdlib.h>
 
 #include "headers/application.h"
 #include "headers/source.h"
@@ -35,6 +34,7 @@
 #include "headers/show-result.h"
 #include "headers/allocate.h"
 #include "headers/test-iterator.h"
+#include "headers/errors.h"
 
 
 #define SOURCES_CACHE_POS 1024
@@ -69,8 +69,7 @@ void fetch_sources(int argc, char * argv[], struct application_context * applica
         }
         resolved_path = fs_resolve_path(arg);
         if (resolved_path == NULL) {
-            fprintf(stderr, "Can't to resolve the path \"%s\"!", arg);
-            exit(1);
+            jcunit_fatal_error("Can't to resolve the path \"%s\"!", arg);
         }
         if (fs_is_dir(resolved_path)) {
             fs_read_dir(resolved_path, fetch_directory_sources, (void *) application_context);
@@ -81,12 +80,10 @@ void fetch_sources(int argc, char * argv[], struct application_context * applica
     if (list_is_empty(&application_context->sources)) {
         resolved_path = fs_resolve_path(default_tests_path);
         if (resolved_path == NULL) {
-            fprintf(stderr, "There are no files provided or default tests path \"%s\" not found!\n", default_tests_path);
-            exit(1);
+            jcunit_fatal_error("There are no files provided or default tests path \"%s\" not found!", default_tests_path);
         }
         if (!fs_is_dir(resolved_path)) {
-            fprintf(stderr, "Can't found the specified directory \"%s\"!", default_tests_path);
-            exit(1);
+            jcunit_fatal_error("Can't found the specified directory \"%s\"!", default_tests_path);
         }
         fs_read_dir(resolved_path, fetch_directory_sources, (void *) application_context);
     }
@@ -104,8 +101,7 @@ bool fetch_directory_sources(const char * source_path, void * context)
 void fetch_one_source(const char * source_path, struct application_context * application_context)
 {
     if (!fs_is_file_exists(source_path)) {
-        fprintf(stderr, "The file \"%s\" is not exists!", source_path);
-        exit(1);
+        jcunit_fatal_error("The file \"%s\" is not exists!", source_path);
     }
     unsigned int i = 0;
     while (i < sources_cache_pos && strcmp(sources_cache[i], source_path) != 0) {
@@ -146,8 +142,7 @@ void run_suites(FILE * output, struct application_context * application_context)
             run_suites_in_passthrough_mode(output, application_context);
             break;
         default:
-            fprintf(stderr, "The unknown running mode '%u'!\n", application_context->run_mode);
-            exit(1);
+            jcunit_fatal_error("The unknown running mode '%u'!", application_context->run_mode);
     }
 }
 

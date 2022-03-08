@@ -23,11 +23,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 
 #include "headers/options.h"
+#include "headers/errors.h"
+#include "headers/application.h"
 
 
 void parse_options(int argc, char * argv[], struct application_context * application_context)
@@ -58,16 +57,14 @@ void parse_options(int argc, char * argv[], struct application_context * applica
                 application_context->run_mode = RUN_MODE_PASSTHROUGH;
                 continue;
             }
-            fprintf(stderr, "The unknown run mode '%s'!\n", run_mode);
-            exit(1);
+            jcunit_fatal_error("The unknown run mode '%s'!", run_mode);
         }
         if (strncmp("--help", arg, sizeof("--help") - 1) == 0) {
             application_context->options |= OPTION_SHOW_HELP;
             continue;
         }
         if (strncmp("--", arg, 2) == 0) {
-            fprintf(stderr, "The unknown option: %s!\n", arg);
-            exit(1);
+            jcunit_fatal_error("The unknown option: %s!", arg);
         }
     }
 }

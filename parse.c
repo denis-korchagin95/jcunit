@@ -22,14 +22,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 
 #include "headers/parse.h"
 #include "headers/ast.h"
 #include "headers/allocate.h"
+#include "headers/errors.h"
 
 
 struct directive_parse_context
@@ -97,8 +96,7 @@ void parse_requirement_list(struct tokenizer_context * context, struct ast_test 
 {
     struct token * token = get_one_token(context);
     if (is_token_directive_equals(token, "endtest")) {
-        fprintf(stderr, "There is no any requirement provided for test!\n");
-        exit(1);
+        jcunit_fatal_error("There is no any requirement provided for test!");
     }
     unget_one_token(context, token);
 
@@ -114,8 +112,7 @@ void parse_requirement_list(struct tokenizer_context * context, struct ast_test 
             break;
         }
         if (loop_control >= MAX_REQUIREMENT_COUNT) {
-            fprintf(stderr, "Exceed max requirement for test!\n");
-            exit(1);
+            jcunit_fatal_error("Exceed max requirement for test!");
         }
         ++loop_control;
 
@@ -145,8 +142,7 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
     while (len < MAX_REQUIREMENT_CONTENT_SIZE) {
         token = get_one_token(context);
         if (is_token_eof(token)) {
-            fprintf(stderr, "An unterminated test!\n");
-            exit(1);
+            jcunit_fatal_error("An unterminated test!");
         }
         if (is_token_directive(token)) {
             unget_one_token(context, token);
@@ -158,8 +154,7 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
         release_token(token);
     }
     if (!is_token_directive(token)) { /* TODO: test it, make configurable 'max_requirement_content_size' */
-        fprintf(stderr, "The requirement's content of the test too long!\n");
-        exit(1);
+        jcunit_fatal_error("The requirement's content of the test too long!");
     }
     if (last_ch == '\n') {
         --len; /* we don't need to take a very last char of the requirement's content */
@@ -177,8 +172,7 @@ void parse_test_prolog(struct tokenizer_context * context, struct ast_test ** as
     directive_parse_context.has_unnamed_argument = false;
     parse_directive(context, &directive_parse_context);
     if (!string_equals_with_cstring(directive, "test")) {
-        fprintf(stderr, "Expected test directive, but given '%.*s'!\n", directive->len, directive->value);
-        exit(1);
+        jcunit_fatal_error("Expected test directive, but given '%.*s'!", directive->len, directive->value);
     }
 }
 
@@ -193,12 +187,10 @@ void parse_test_epilog(struct tokenizer_context * context)
     directive_parse_context.has_unnamed_argument = false;
     parse_directive(context, &directive_parse_context);
     if (!string_equals_with_cstring(directive, "endtest")) { /* unreachable error for now */
-        fprintf(stderr, "Expected endtest directive, but given '%.*s'!\n", directive->len, directive->value);
-        exit(1);
+        jcunit_fatal_error("Expected endtest directive, but given '%.*s'!", directive->len, directive->value);
     }
     if (!list_is_empty(&arguments)) {
-        fprintf(stderr, "Unexpected arguments for the 'endtest' directive!\n");
-        exit(1);
+        jcunit_fatal_error("Unexpected arguments for the 'endtest' directive!");
     }
 }
 
@@ -221,8 +213,7 @@ void parse_directive_arguments(struct tokenizer_context * context, struct direct
     }
     token = get_one_token(context);
     if (!is_token_punctuator(token, ')')) {
-        fprintf(stderr, "Expected ')' at end of directive argument!\n");
-        exit(1);
+        jcunit_fatal_error("Expected ')' at end of directive argument!");
     }
     release_token(token);
 }
@@ -235,12 +226,10 @@ void parse_directive_argument(struct tokenizer_context * context, struct directi
         return parse_named_directive_argument(context, directive_parse_context);
     }
     if (!is_token_string(token)) {
-        fprintf(stderr, "An unnamed argument of a directive should be a string!\n");
-        exit(1);
+        jcunit_fatal_error("An unnamed argument of a directive should be a string!");
     }
     if (directive_parse_context->has_unnamed_argument) {
-        fprintf(stderr, "A directive cannot have two unnamed arguments!\n");
-        exit(1);
+        jcunit_fatal_error("A directive cannot have two unnamed arguments!");
     }
     struct ast_requirement_argument * argument = alloc_ast_requirement_argument();
     argument->name = NULL;
@@ -258,14 +247,12 @@ void parse_named_directive_argument(struct tokenizer_context * context, struct d
     release_token(token);
     token = get_one_token(context);
     if (!is_token_punctuator(token, '=')) {
-        fprintf(stderr, "Expected '=' after name of argument!\n");
-        exit(1);
+        jcunit_fatal_error("Expected '=' after name of argument!");
     }
     release_token(token);
     token = get_one_token(context);
     if (!is_token_string(token)) {
-        fprintf(stderr, "Expected value of the named argument as a string!\n");
-        exit(1);
+        jcunit_fatal_error("Expected value of the named argument as a string!");
     }
     struct ast_requirement_argument * argument = alloc_ast_requirement_argument();
     argument->name = name;
@@ -279,8 +266,7 @@ void parse_directive(struct tokenizer_context * context, struct directive_parse_
     struct token * token = get_one_token(context);
 
     if (!is_token_directive(token)) {
-        fprintf(stderr, "Expected a directive!\n");
-        exit(1);
+        jcunit_fatal_error("Expected a directive!");
     }
 
     *directive_parse_context->directive = token->content.string;
@@ -302,8 +288,7 @@ void parse_directive(struct tokenizer_context * context, struct directive_parse_
     token = get_one_token(context);
 
     if (!is_token_newline(token)) {
-        fprintf(stderr, "Expected newline character after directive!\n");
-        exit(1);
+        jcunit_fatal_error("Expected newline character after directive!");
     }
 
     release_token(token);

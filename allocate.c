@@ -23,9 +23,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <assert.h>
-#include <stdlib.h>
 
 #include "headers/allocate.h"
+#include "headers/errors.h"
 
 /**
  * It's very simple and static allocator. Maybe this needs to be refactor to dynamic version in the future...
@@ -140,8 +140,7 @@ static struct allocator_stat stats[] = {
 void * alloc_bytes(unsigned int len)
 {
     if (bytes_pool_pos + len >= MAX_BYTES_POOL_SIZE) {
-        fprintf(stderr, "Allocator bytes: out of memory!\n");
-        exit(1);
+        jcunit_fatal_error("Allocator bytes: out of memory!");
     }
     void * mem = bytes_pool + bytes_pool_pos;
     bytes_pool_pos += len;

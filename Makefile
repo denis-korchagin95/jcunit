@@ -47,15 +47,16 @@ OBJECTS+=compiler.o
 OBJECTS+=source.o
 OBJECTS+=options.o
 OBJECTS+=application.o
+OBJECTS+=errors.o
 
 ifeq ($(DEVELOPMENT), 1)
 	OBJECTS+=print.o
 endif
 
-OBJECTS_TOKENIZER_TESTER=$(TESTERS_PATH)tokenizer-tester.o print.o tokenizer.o allocate.o string.o util.o options.o
-OBJECTS_TOKENIZER_SPECIAL_MODE_TESTER=$(TESTERS_PATH)tokenizer-special-mode-tester.o print.o tokenizer.o allocate.o string.o util.o options.o
-OBJECTS_PARSER_TESTER=$(TESTERS_PATH)parser-tester.o print.o tokenizer.o allocate.o string.o util.o options.o parse.o ast.o list.o
-OBJECTS_COMPILER_TESTER=$(TESTERS_PATH)compiler-tester.o print.o tokenizer.o allocate.o string.o util.o options.o parse.o ast.o list.o compiler.o
+OBJECTS_TOKENIZER_TESTER=$(TESTERS_PATH)tokenizer-tester.o print.o tokenizer.o allocate.o string.o util.o options.o errors.o
+OBJECTS_TOKENIZER_SPECIAL_MODE_TESTER=$(TESTERS_PATH)tokenizer-special-mode-tester.o print.o tokenizer.o allocate.o string.o util.o options.o errors.o
+OBJECTS_PARSER_TESTER=$(TESTERS_PATH)parser-tester.o print.o tokenizer.o allocate.o string.o util.o options.o parse.o ast.o list.o errors.o
+OBJECTS_COMPILER_TESTER=$(TESTERS_PATH)compiler-tester.o print.o tokenizer.o allocate.o string.o util.o options.o parse.o ast.o list.o compiler.o errors.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)

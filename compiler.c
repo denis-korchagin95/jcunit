@@ -24,13 +24,13 @@
  */
 #include <memory.h>
 #include <assert.h>
-#include <stdlib.h>
 
 #include "headers/compiler.h"
 #include "headers/token.h"
 #include "headers/parse.h"
 #include "headers/allocate.h"
 #include "headers/util.h"
+#include "headers/errors.h"
 
 
 #define WHEN_RUN_REQUIREMENT_NAME           "whenRun"
@@ -136,8 +136,7 @@ struct abstract_test * compile_test(struct ast_test * ast_test)
 
     test_compiler_func * test_compiler = resolve_test_compiler_func(ast_test);
     if (test_compiler == NULL) {
-        fprintf(stderr, "Cannot find any compiler to compile the test!\n");
-        exit(1);
+        jcunit_fatal_error("Cannot find any compiler to compile the test!");
     }
     struct abstract_test * test = test_compiler(ast_test);
 
@@ -233,53 +232,35 @@ void given_test_requirement_compiler(struct test_requirement_compiler_context * 
         }
         if (strcmp("type", argument->name->value) == 0) {
             if (given_type != NULL) {
-                fprintf(
-                        stderr,
-                        "Cannot be both definition of 'type' named and unnamed or redefinition of 'type' for the 'given' requirement!\n"
-                );
-                exit(1);
+                jcunit_fatal_error("Cannot be both definition of 'type' named and unnamed or redefinition of 'type' for the 'given' requirement!");
             }
             given_type = argument->value;
             continue;
         }
         if (strcmp("filename", argument->name->value) == 0) {
             if (given_filename != NULL) {
-                fprintf(
-                        stderr,
-                        "Cannot be both redefinition of 'filename' for the 'given' requirement!\n"
-                );
-                exit(1);
+                jcunit_fatal_error("Cannot be both redefinition of 'filename' for the 'given' requirement!");
             }
             given_filename = argument->value;
             continue;
         }
-        fprintf(stderr, "Unknown named argument '%s' for the 'given' requirement!\n", argument->name->value);
-        exit(1);
+        jcunit_fatal_error("Unknown named argument '%s' for the 'given' requirement!", argument->name->value);
     });
     if (given_type == NULL) {
-        fprintf(stderr, "Missing the 'type' named argument (can be unnamed) for the 'given' requirement!\n");
-        exit(1);
+        jcunit_fatal_error("Missing the 'type' named argument (can be unnamed) for the 'given' requirement!");
     }
     if (given_type->len == 0) {
-        fprintf(stderr, "The type cannot be empty for the 'given' requirement!\n");
-        exit(1);
+        jcunit_fatal_error("The type cannot be empty for the 'given' requirement!");
     }
     if (!string_equals_with_cstring(given_type, "file")) {
-        fprintf(
-                stderr,
-                "The unknown \"%s\" given type!\n",
-                given_type->value
-        );
-        exit(1);
+        jcunit_fatal_error("The unknown \"%s\" given type!", given_type->value);
     }
     if (given_filename != NULL) {
         if (given_filename->len == 0) {
-            fprintf(stderr, "The filename cannot be empty for the 'given' requirement!\n");
-            exit(1);
+            jcunit_fatal_error("The filename cannot be empty for the 'given' requirement!");
         }
         if (strchr(given_filename->value, '/') != NULL) {
-            fprintf(stderr, "Cannot be any path separators in 'filename' argument of the 'given' requirement!\n");
-            exit(1);
+            jcunit_fatal_error("Cannot be any path separators in 'filename' argument of the 'given' requirement!");
         }
     }
     context->test->given_file_content = context->requirement->content;
@@ -290,8 +271,7 @@ void given_test_requirement_compiler(struct test_requirement_compiler_context * 
 void when_run_requirement_compiler(struct test_requirement_compiler_context * context)
 {
     if (context->requirement->content != NULL) {
-        fprintf(stderr, "The 'whenRun' requirement must not contain any content!\n");
-        exit(1);
+        jcunit_fatal_error("The 'whenRun' requirement must not contain any content!");
     }
     struct string * program = NULL, * args = NULL;
     slist_foreach(argument_iterator, &context->requirement->arguments, {
@@ -306,11 +286,7 @@ void when_run_requirement_compiler(struct test_requirement_compiler_context * co
         }
         if (strcmp("program", argument->name->value) == 0) {
             if (program != NULL) {
-                fprintf(
-                        stderr,
-                        "Cannot be both definition of 'program' named and unnamed for the 'whenRun' requirement!\n"
-                );
-                exit(1);
+                jcunit_fatal_error("Cannot be both definition of 'program' named and unnamed for the 'whenRun' requirement!");
             }
             program = argument->value;
             continue;
@@ -319,20 +295,16 @@ void when_run_requirement_compiler(struct test_requirement_compiler_context * co
             args = argument->value;
             continue;
         }
-        fprintf(stderr, "Unknown named argument '%s' for the 'whenRun' requirement!\n", argument->name->value);
-        exit(1);
+        jcunit_fatal_error("Unknown named argument '%s' for the 'whenRun' requirement!", argument->name->value);
     });
     if (program == NULL) {
-        fprintf(stderr, "Missing the 'program' named argument (can be unnamed) for the 'whenRun' requirement!\n");
-        exit(1);
+        jcunit_fatal_error("Missing the 'program' named argument (can be unnamed) for the 'whenRun' requirement!");
     }
     if (program->len == 0) {
-        fprintf(stderr, "The program cannot be empty for the 'whenRun' requirement!\n");
-        exit(1);
+        jcunit_fatal_error("The program cannot be empty for the 'whenRun' requirement!");
     }
     if (args != NULL && args->len == 0) {
-        fprintf(stderr, "The args cannot be empty for the 'whenRun' requirement!\n");
-        exit(1);
+        jcunit_fatal_error("The args cannot be empty for the 'whenRun' requirement!");
     }
     context->test->program_path = program;
     context->test->program_args = args;
@@ -343,8 +315,7 @@ void expect_output_requirement_compiler(struct test_requirement_compiler_context
 {
     unsigned int arguments_count = slist_count(&context->requirement->arguments);
     if (arguments_count == 0) {
-        fprintf(stderr, "No arguments are given for 'expectOutput' directive!\n");
-        exit(1);
+        jcunit_fatal_error("No arguments are given for 'expectOutput' directive!");
     }
     struct ast_requirement_argument * argument = list_get_owner(
             context->requirement->arguments.next,
@@ -352,21 +323,17 @@ void expect_output_requirement_compiler(struct test_requirement_compiler_context
             list_entry
     );
     if (argument->name != NULL && strcmp("stream", argument->name->value) != 0) {
-        fprintf(stderr, "Unexpected named argument '%s' for the 'expectOutput' requirement!\n", argument->name->value);
-        exit(1);
+        jcunit_fatal_error("Unexpected named argument '%s' for the 'expectOutput' requirement!", argument->name->value);
     }
     if (argument->value->len == 0) {
-        fprintf(stderr, "The stream name cannot be empty for the 'expectOutput' requirement!\n");
-        exit(1);
+        jcunit_fatal_error("The stream name cannot be empty for the 'expectOutput' requirement!");
     }
     int stream_code = resolve_stream_code_by_name(argument->value);
     if (stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_UNKNOWN) {
-        fprintf(
-                stderr,
-                "The unknown stream name \"%s\" for 'expectOutput' requirement!\n",
-                argument->value->value
+        jcunit_fatal_error(
+            "The unknown stream name \"%s\" for 'expectOutput' requirement!",
+            argument->value->value
         );
-        exit(1);
     }
     context->test->stream_code = stream_code;
     context->test->expected_output = context->requirement->content;
@@ -380,13 +347,11 @@ void should_be_skipped_requirement_compiler(struct test_requirement_compiler_con
 
 void unknown_test_requirement_compiler(struct test_requirement_compiler_context * context)
 {
-    fprintf(
-            stderr,
-            "An unknown '%s' requirement for the test '%s'!\n",
-            context->requirement->name->value,
-            context->test->base.name->value
+    jcunit_fatal_error(
+        "An unknown '%s' requirement for the test '%s'!",
+        context->requirement->name->value,
+        context->test->base.name->value
     );
-    exit(1);
 }
 
 int resolve_stream_code_by_name(struct string * name)
@@ -415,22 +380,18 @@ void test_arguments_compiler(struct abstract_test * test, struct ast_test * ast_
         }
         if (strcmp("name", argument->name->value) == 0) {
             if (name != NULL) {
-                fprintf(stderr, "Cannot be both definition of 'name' named and unnamed for the 'test' directive!\n");
-                exit(1);
+                jcunit_fatal_error("Cannot be both definition of 'name' named and unnamed for the 'test' directive!");
             }
             name = argument->value;
             continue;
         }
-        fprintf(stderr, "Unknown named argument '%s' for the 'test' directive!\n", argument->name->value);
-        exit(1);
+        jcunit_fatal_error("Unknown named argument '%s' for the 'test' directive!", argument->name->value);
     });
     if (name == NULL) {
-        fprintf(stderr, "Missing the 'name' named argument (can be unnamed) for the 'test' directive!\n");
-        exit(1);
+        jcunit_fatal_error("Missing the 'name' named argument (can be unnamed) for the 'test' directive!");
     }
     if (name->len == 0) {
-        fprintf(stderr, "The 'name' cannot be empty for the 'test' directive!\n");
-        exit(1);
+        jcunit_fatal_error("The 'name' cannot be empty for the 'test' directive!");
     }
     test->name = name;
 }

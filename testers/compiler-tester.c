@@ -22,18 +22,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <stdio.h>
-
 #include "../headers/token.h"
 #include "../headers/print.h"
 #include "../headers/compiler.h"
+#include "../headers/errors.h"
 
 
 int main(int argc, char * argv[])
 {
     if (argc <= 1) {
-        fprintf(stderr, "No specified args!\n");
-        return 1;
+        jcunit_fatal_error("No specified args!");
     }
 
     init_tokenizer();
