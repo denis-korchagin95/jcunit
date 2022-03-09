@@ -51,13 +51,26 @@ int main(int argc, char * argv[])
         exit(0);
     }
 
-    fetch_sources(argc, argv, &application_context);
+    struct slist sources;
+    slist_init(&sources);
+
+    fetch_sources(argc, argv, &sources);
+
+    /* TODO: FIXME - check on empty sources */
 
     init_tokenizer();
 
-    read_suites(&application_context);
+    struct test_suites test_suites;
 
-    run_suites(stdout, &application_context);
+    read_suites(&sources, &test_suites);
+
+    slist_protect(&sources);
+
+    struct tests_results * tests_results = NULL;
+
+    run_suites(&test_suites, &tests_results, &application_context, stdout);
+
+    /* TODO: FIXME - check on empty test suites */
 
     if (application_context.options & OPTION_SHOW_ALLOCATORS_STATS) {
         fprintf(stdout, "\n\n\n");
@@ -76,9 +89,11 @@ void show_help(const char * name, FILE * output)
 {
     fprintf(output, "Usage: %s [options] path [paths...]\n\n\n", name);
     fprintf(output, "OPTIONS\n");
-    fprintf(output, "\t--run-mode=(detail|passthrough) default: passthrough\n\t    The mode of showing the results of testing.\n\n");
+    fprintf(output, "\t--run-mode=(detail|passthrough) default: passthrough\n\t    "
+                    "The mode of showing the results of testing.\n\n");
     fprintf(output, "\t--help\n\t    Show this message.\n\n");
     fprintf(output, "\t--version\n\t    Show version of this program.\n\n");
     fprintf(output, "\t--show-allocators-stats\n\t    Show statistics of memory allocators (for developers).\n\n");
-    fprintf(output, "\t--show-allocators-stats-leak-only\n\t    Show statistics of memory allocators which has a memory leak (for developers).\n\n");
+    fprintf(output, "\t--show-allocators-stats-leak-only\n\t    "
+                    "Show statistics of memory allocators which has a memory leak (for developers).\n\n");
 }

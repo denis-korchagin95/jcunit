@@ -28,13 +28,6 @@ void test_iterator_init_by_suites(
     iterator->cursor = 0;
 }
 
-void test_iterator_init_by_suite(struct test_iterator * iterator, struct test_suite * suite)
-{
-    iterator->tests_count = suite->tests_count;
-    iterator->tests = suite->tests;
-    iterator->cursor = 0;
-}
-
 struct abstract_test_result * test_iterator_visit(
     struct test_iterator * iterator,
     test_iterator_visiter_func * visiter_func,

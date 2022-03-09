@@ -51,7 +51,7 @@ struct test_requirement_compiler_context
 typedef struct abstract_test * test_compiler_func(struct ast_test * ast_test);
 typedef void test_requirement_compiler_func(struct test_requirement_compiler_context * context);
 
-static struct test_suite * do_compile_test_suite(const char * filename, struct slist * ast_tests);
+static struct test_suite * do_compile_test_suite(struct source * source, struct slist * ast_tests);
 static struct abstract_test * compile_test(struct ast_test * ast_test);
 static struct abstract_test * program_runner_test_compiler(struct ast_test * ast_test);
 static void test_arguments_compiler(struct abstract_test * test, struct ast_test * ast_test);
@@ -65,7 +65,7 @@ static test_compiler_func * resolve_test_compiler_func(struct ast_test * ast_tes
 static test_requirement_compiler_func * resolve_test_requirement_compiler(struct ast_requirement * requirement);
 static int resolve_stream_code_by_name(struct string * name);
 
-static struct test_suite * make_test_suite(struct string * name, unsigned int tests_count);
+static struct test_suite * make_test_suite(struct source * source, const char * name, unsigned int tests_count);
 static struct program_runner_test * make_program_runner_test(void);
 
 
@@ -76,15 +76,17 @@ static void should_be_skipped_requirement_compiler(struct test_requirement_compi
 static void unknown_test_requirement_compiler(struct test_requirement_compiler_context * context);
 
 
-struct test_suite * compile_test_suite(const char * filename)
+struct test_suite * compile_test_suite(struct source * source)
 {
-    struct tokenizer_context * context = make_tokenizer_context(filename);
+    assert(source != NULL);
+
+    struct tokenizer_context * context = make_tokenizer_context(source->filename);
 
     struct slist * ast_tests = parse_test_suite(context);
 
     destroy_tokenizer_context(context);
 
-    struct test_suite * test_suite = do_compile_test_suite(filename, ast_tests);
+    struct test_suite * test_suite = do_compile_test_suite(source, ast_tests);
 
     release_ast_tests(ast_tests);
     free_slist(ast_tests);
@@ -92,20 +94,20 @@ struct test_suite * compile_test_suite(const char * filename)
     return test_suite;
 }
 
-struct test_suite * do_compile_test_suite(const char * filename, struct slist * ast_tests)
+struct test_suite * do_compile_test_suite(struct source * source, struct slist * ast_tests)
 {
-    const char * test_name = basename(filename);
-    if (test_name == NULL) {
-        test_name = "<unnamed>";
+    assert(source != NULL);
+    assert(ast_tests != NULL);
+
+    const char * name = basename(source->filename);
+    if (name == NULL) {
+        name = "<unnamed>";
     }
 
     struct abstract_test * test;
     struct ast_test * ast_test;
 
-    struct test_suite * test_suite = make_test_suite(
-        make_string(test_name, strlen(test_name)),
-        slist_count(ast_tests)
-    );
+    struct test_suite * test_suite = make_test_suite(source, name, slist_count(ast_tests));
 
     unsigned int i = 0;
 
@@ -119,11 +121,12 @@ struct test_suite * do_compile_test_suite(const char * filename, struct slist * 
     return test_suite;
 }
 
-struct test_suite * make_test_suite(struct string * name, unsigned int tests_count)
+struct test_suite * make_test_suite(struct source * source, const char * name, unsigned int tests_count)
 {
     struct test_suite * test_suite = alloc_test_suite();
     memset((void *)test_suite, 0, sizeof(struct test_suite));
     test_suite->name = name;
+    test_suite->source = source;
     test_suite->tests_count = tests_count;
     test_suite->tests = (struct abstract_test **) alloc_bytes(tests_count * sizeof(void *));
     return test_suite;

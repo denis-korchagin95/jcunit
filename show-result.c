@@ -30,7 +30,6 @@
 #include "headers/show-result.h"
 #include "headers/child-process.h"
 #include "headers/test-iterator.h"
-#include "headers/util.h"
 #include "headers/string.h"
 #include "headers/errors.h"
 
@@ -153,7 +152,7 @@ void show_error_test_result(FILE * output, struct abstract_test_result * test_re
         output,
         "%u) %s : %s\n",
         error_number,
-        test_result->test->test_suite->name->value,
+        test_result->test->test_suite->name,
         test_result->name->value
     );
     print_error(test_result, output);
@@ -168,7 +167,7 @@ void show_failure_test_result(FILE * output, struct abstract_test_result * test_
         output,
         "%u) %s : %s\n",
         failure_number,
-        test_result->test->test_suite->name->value,
+        test_result->test->test_suite->name,
         test_result->name->value
     );
     fprintf(output, "--- Expected\n%s$\n", test_result->expected == NULL ? "" : test_result->expected->value);

@@ -86,7 +86,7 @@ static struct allocator_stat stats[] = {
         { "slist", &max_slist_pool_size, &slist_pool_pos, &slist_freed, &slist_allocated },
         { "test_suite", &max_test_suite_pool_size, &test_suite_pool_pos, &test_suite_freed, &test_suite_allocated },
         {
-            "test_suite_result",
+            "tests_results",
             &max_tests_results_pool_size,
             &tests_results_pool_pos,
             &tests_results_freed,

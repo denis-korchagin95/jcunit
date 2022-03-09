@@ -37,19 +37,31 @@
 #define OPTION_SHOW_VERSION                     (4)
 #define OPTION_SHOW_HELP                        (8)
 
+struct tests_results;
+
 struct application_context
 {
-    struct slist sources;
-    struct slist ** end_sources;
-    struct test_suite ** parsed_suites;
-    unsigned int parsed_suites_count;
     unsigned int run_mode;
     unsigned int options;
 };
 
+struct test_suites
+{
+    struct test_suite ** suites;
+    unsigned int suites_count;
+};
+
 void init_application_context(struct application_context * application_context);
-void fetch_sources(int argc, char * argv[], struct application_context * context);
-void read_suites(struct application_context * application_context);
-void run_suites(FILE * output, struct application_context * application_context);
+void fetch_sources(int argc, char * argv[], struct slist * sources);
+void read_suites(
+    struct slist * sources,
+    struct test_suites * test_suites
+);
+void run_suites(
+    struct test_suites * test_suites,
+    struct tests_results ** tests_results,
+    struct application_context * application_context,
+    FILE * output
+);
 
 #endif /* JCUNIT_APPLICATION_H */

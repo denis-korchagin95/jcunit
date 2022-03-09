@@ -55,13 +55,11 @@ struct slist
     }                           \
     while(0)
 
-#define list_foreach(iterator_name, head, body)                                     \
-    do                                                                              \
-    {                                                                               \
-        struct list * ___begin = (head);                                            \
-        struct list * iterator_name = ___begin->next;                               \
-        for (; iterator_name != ___begin; iterator_name = iterator_name->next) body \
-    }                                                                               \
+#define slist_protect(ptr)      \
+    do                          \
+    {                           \
+        (ptr)->next = (ptr);    \
+    }                           \
     while(0)
 
 #define slist_foreach(iterator_name, head, body)                                        \
@@ -95,7 +93,6 @@ struct slist
     }                               \
     while(0)
 
-struct list * make_list(void);
 struct slist * make_slist(void);
 
 void list_append(struct list * head, struct list * new);

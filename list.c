@@ -33,13 +33,6 @@ static void do_list_add(struct list * new, struct list * prev, struct list * nex
     prev->next = new;
 }
 
-struct list * make_list(void)
-{
-    struct list * list = alloc_list();
-    list_init(list);
-    return list;
-}
-
 struct slist * make_slist(void)
 {
     struct slist * list = alloc_slist();
@@ -76,11 +69,9 @@ struct slist ** slist_get_end(struct slist * head)
 
 unsigned int slist_count(struct slist * head)
 {
-    struct slist * iterator = head;
     unsigned int count = 0;
-    while (iterator->next != head) {
+    slist_foreach(iterator, head, {
         ++count;
-        iterator = iterator->next;
-    }
+    });
     return count;
 }

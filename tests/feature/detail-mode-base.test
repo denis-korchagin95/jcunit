@@ -101,3 +101,40 @@ Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
 
 
 @endtest
+
+@test("It should show results for a couple of tests in the detail mode")
+@given("file", filename="some-test.test")
+
+@@test("An incomplete test")
+@@given("file")
+
+@@@@test("Some test")
+@@@@whenRun("./bin/jcunit")
+@@@@endtest()
+
+@@whenRun("./bin/jcunit")
+@@endtest
+
+@@test("A passed test")
+@@given("file")
+
+@@@@test()
+@@@@endtest()
+
+@@whenRun("./bin/jcunit")
+@@expectOutput("stderr")
+There is no any requirement provided for test!
+
+@@endtest
+
+@whenRun("./bin/jcunit", args="--run-mode=detail")
+@expectOutput("stdout")
+Test Suite: some-test.test
+    INCOMPLETE An incomplete test
+          PASS A passed test
+
+Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
+
+
+
+@endtest

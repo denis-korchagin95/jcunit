@@ -30,6 +30,7 @@
 #define test_iterator_finished(iterator) ((iterator)->cursor >= (iterator)->tests_count)
 #define test_iterator_current(iterator) ((iterator)->tests[(iterator)->cursor])
 #define test_iterator_next(iterator) (++(iterator)->cursor)
+#define test_iterator_current_safe(iterator) (test_iterator_finished(iterator) ? NULL : test_iterator_current(iterator))
 
 struct tests_results;
 
@@ -45,8 +46,6 @@ typedef struct abstract_test_result * test_iterator_visiter_func(
     struct tests_results * tests_results,
     unsigned int current_index
 );
-
-void test_iterator_init_by_suite(struct test_iterator * iterator, struct test_suite * test_suite);
 
 void test_iterator_init_by_suites(
     struct test_iterator * iterator,

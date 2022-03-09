@@ -44,25 +44,35 @@ static const char * sources_cache[SOURCES_CACHE_POS];
 static unsigned int sources_cache_pos = 0;
 static const char * default_tests_path = "./tests";
 
+typedef void test_mode_func(
+    struct test_iterator * test_iterator,
+    struct tests_results ** tests_results,
+    FILE * output
+);
 
-static bool fetch_directory_sources(const char * source_path, void * context);
-static void fetch_one_source(const char * source_path, struct application_context * application_context);
-static void run_suites_in_detail_mode(FILE * output, struct application_context * application_context);
-static void run_suites_in_passthrough_mode(FILE * output, struct application_context * application_context);
+static bool fetch_directory_sources(const char * source_path, void * data);
+static void fetch_one_source(const char * source_path, struct slist *** end_sources);
+static void run_suites_in_detail_mode(
+    struct test_iterator * test_iterator,
+    struct tests_results ** tests_results,
+    FILE * output
+);
+static void run_suites_in_passthrough_mode(
+    struct test_iterator * test_iterator,
+    struct tests_results ** tests_results,
+    FILE * output
+);
 
 void init_application_context(struct application_context * application_context)
 {
-    slist_init(&application_context->sources);
-    application_context->end_sources = &application_context->sources.next;
-    application_context->parsed_suites = NULL;
-    application_context->parsed_suites_count = 0;
     application_context->run_mode = RUN_MODE_PASSTHROUGH;
 }
 
-void fetch_sources(int argc, char * argv[], struct application_context * application_context)
+void fetch_sources(int argc, char * argv[], struct slist * sources)
 {
     const char * resolved_path;
     int i;
+    struct slist ** end_sources = &sources->next;
     for(i = 1; i < argc; ++i) {
         const char * arg = argv[i];
         if (strncmp("--", arg, 2) == 0) {
@@ -73,12 +83,12 @@ void fetch_sources(int argc, char * argv[], struct application_context * applica
             jcunit_fatal_error("Can't to resolve the path \"%s\"!", arg);
         }
         if (fs_is_dir(resolved_path)) {
-            fs_read_dir(resolved_path, fetch_directory_sources, (void *) application_context);
+            fs_read_dir(resolved_path, fetch_directory_sources, &end_sources);
             continue;
         }
-        fetch_one_source(resolved_path, (void *) application_context);
+        fetch_one_source(resolved_path, &end_sources);
     }
-    if (list_is_empty(&application_context->sources)) {
+    if (list_is_empty(sources)) {
         resolved_path = fs_resolve_path(default_tests_path);
         if (resolved_path == NULL) {
             jcunit_fatal_error("There are no files provided or default tests path \"%s\" not found!", default_tests_path);
@@ -86,20 +96,20 @@ void fetch_sources(int argc, char * argv[], struct application_context * applica
         if (!fs_is_dir(resolved_path)) {
             jcunit_fatal_error("Can't found the specified directory \"%s\"!", default_tests_path);
         }
-        fs_read_dir(resolved_path, fetch_directory_sources, (void *) application_context);
+        fs_read_dir(resolved_path, fetch_directory_sources, &end_sources);
     }
 }
 
-bool fetch_directory_sources(const char * source_path, void * context)
+bool fetch_directory_sources(const char * source_path, void * data)
 {
     if (!fs_check_extension(source_path, ".test")) {
         return true;
     }
-    fetch_one_source(source_path, (struct application_context *) context);
+    fetch_one_source(source_path, (struct slist ***) data);
     return true;
 }
 
-void fetch_one_source(const char * source_path, struct application_context * application_context)
+void fetch_one_source(const char * source_path, struct slist *** end_sources)
 {
     if (!fs_is_file_exists(source_path)) {
         jcunit_fatal_error("The file \"%s\" is not exists!", source_path);
@@ -112,92 +122,107 @@ void fetch_one_source(const char * source_path, struct application_context * app
         sources_cache[sources_cache_pos++] = source_path;
 
         struct source * source = make_source(source_path);
-        slist_append(application_context->end_sources, &source->list_entry);
+        slist_append(*end_sources, &source->list_entry);
     }
 }
 
-void read_suites(struct application_context * application_context)
-{
-    application_context->parsed_suites_count = 0;
-    slist_foreach(iterator, &application_context->sources, {
-        ++application_context->parsed_suites_count;
-    });
-    application_context->parsed_suites = (struct test_suite **) alloc_bytes(
-            sizeof(struct test_suite *) * application_context->parsed_suites_count
+void read_suites(
+    struct slist * sources,
+    struct test_suites * test_suites
+) {
+    test_suites->suites_count = slist_count(sources);
+    test_suites->suites = (struct test_suite **) alloc_bytes(
+        sizeof(struct test_suite *) * test_suites->suites_count
     );
-    struct source * source;
     unsigned int i = 0;
-    slist_foreach(iterator, &application_context->sources, {
-        source = list_get_owner(iterator, struct source, list_entry);
-        application_context->parsed_suites[i++] = compile_test_suite(source->filename);
+    slist_foreach_safe(iterator, sources, {
+        struct source * source = list_get_owner(iterator, struct source, list_entry);
+        test_suites->suites[i++] = compile_test_suite(source);
     });
 }
 
-void run_suites(FILE * output, struct application_context * application_context)
-{
+void run_suites(
+    struct test_suites * test_suites,
+    struct tests_results ** tests_results,
+    struct application_context * application_context,
+    FILE * output
+) {
+    test_mode_func * test_mode_runner = NULL;
     switch (application_context->run_mode) {
         case RUN_MODE_DETAIL:
-            run_suites_in_detail_mode(output, application_context);
+            test_mode_runner = (test_mode_func *) run_suites_in_detail_mode;
             break;
         case RUN_MODE_PASSTHROUGH:
-            run_suites_in_passthrough_mode(output, application_context);
+            test_mode_runner = (test_mode_func *) run_suites_in_passthrough_mode;
             break;
-        default:
-            jcunit_fatal_error("The unknown running mode '%u'!", application_context->run_mode);
     }
-}
-
-void run_suites_in_detail_mode(FILE * output, struct application_context * application_context)
-{
-    unsigned int test_suite_iterator = 0, suites_count = application_context->parsed_suites_count;
-    struct tests_results * tests_results;
-    struct test_iterator test_iterator;
-    for (; test_suite_iterator < suites_count; ++test_suite_iterator) {
-        struct test_suite * test_suite = application_context->parsed_suites[test_suite_iterator];
-        test_iterator_init_by_suite(&test_iterator, test_suite);
-        if (test_iterator_finished(&test_iterator)) {
-            continue;
-        }
-        fprintf(output, "Test Suite: %s\n", test_suite->name->value);
-        tests_results = make_tests_results(test_suite->tests_count);
-        for (;;) {
-            struct abstract_test_result * test_result = test_iterator_visit(
-                &test_iterator,
-                test_runner,
-                (void *) tests_results
-            );
-            if (test_result == NULL) {
-                break;
-            }
-            show_test_result_in_detail_mode(test_result, output);
-        }
-        fprintf(
-            output,
-            "\nPassed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n\n",
-            tests_results->passed_count,
-            tests_results->skipped_count,
-            tests_results->error_count,
-            tests_results->failure_count,
-            tests_results->incomplete_count
-        );
+    if (test_mode_runner == NULL) {
+        jcunit_fatal_error("The unknown running mode '%u'!", application_context->run_mode);
     }
-}
-
-void run_suites_in_passthrough_mode(FILE * output, struct application_context * application_context)
-{
     struct test_iterator test_iterator;
     test_iterator_init_by_suites(
         &test_iterator,
-        application_context->parsed_suites,
-        application_context->parsed_suites_count
+        test_suites->suites,
+        test_suites->suites_count
     );
-    struct tests_results * tests_results = make_tests_results(test_iterator.tests_count);
+    *tests_results = make_tests_results(test_iterator.tests_count);
+    test_mode_runner(&test_iterator, tests_results, output);
+}
+
+void run_suites_in_detail_mode(
+    struct test_iterator * test_iterator,
+    struct tests_results ** tests_results,
+    FILE * output
+) {
+    struct test_suite * previous_test_suite = NULL, * current_test_suite;
+    struct abstract_test * next_test;
+    for (;;) {
+        if (test_iterator_finished(test_iterator)) {
+            break;
+        }
+        current_test_suite = test_iterator_current(test_iterator)->test_suite;
+        if (previous_test_suite != current_test_suite) {
+            previous_test_suite = current_test_suite;
+
+            fprintf(output, "Test Suite: %s\n", current_test_suite->name);
+        }
+        struct abstract_test_result * test_result = test_iterator_visit(
+            test_iterator,
+            test_runner,
+            (void *) *tests_results
+        );
+        if (test_result == NULL) {
+            break;
+        }
+        show_test_result_in_detail_mode(test_result, output);
+        next_test = test_iterator_current_safe(test_iterator);
+        if (next_test == NULL || next_test->test_suite != current_test_suite)
+            fprintf(
+                output,
+                "\nPassed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n\n",
+                (*tests_results)->passed_count,
+                (*tests_results)->skipped_count,
+                (*tests_results)->error_count,
+                (*tests_results)->failure_count,
+                (*tests_results)->incomplete_count
+            );
+    }
+}
+
+void run_suites_in_passthrough_mode(
+    struct test_iterator * test_iterator,
+    struct tests_results ** tests_results,
+    FILE * output
+) {
     unsigned int test_result_in_line = 0;
     for (;;) {
+        if (test_iterator_finished(test_iterator)) {
+            break;
+        }
         struct abstract_test_result * test_result = test_iterator_visit(
-            &test_iterator,
+            test_iterator,
             test_runner,
-            (void *) tests_results
+            (void *) *tests_results
         );
         if (test_result == NULL) {
             break;
@@ -207,7 +232,7 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
         if (test_result_in_line == TEST_RESULT_PER_LINE) {
             test_result_in_line = 0;
 
-            fprintf(output, " (%3u%%)\n", test_iterator.cursor * 100 / test_iterator.tests_count);
+            fprintf(output, " (%3u%%)\n", test_iterator->cursor * 100 / test_iterator->tests_count);
         }
     }
     {
@@ -218,12 +243,12 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
         fprintf(output, " (100%%)");
     }
     fprintf(output, "\n\n");
-    if (tests_results->error_count > 0) {
-        fprintf(output, "There are %u errors:\n\n", tests_results->error_count);
+    if ((*tests_results)->error_count > 0) {
+        fprintf(output, "There are %u errors:\n\n", (*tests_results)->error_count);
         {
             unsigned int i, error_number = 0;
-            for (i = 0; i < tests_results->results_count; ++i) {
-                struct abstract_test_result * test_result = tests_results->results[i];
+            for (i = 0; i < (*tests_results)->results_count; ++i) {
+                struct abstract_test_result * test_result = (*tests_results)->results[i];
                 if (test_result->status == TEST_RESULT_STATUS_ERROR) {
                     ++error_number;
 
@@ -233,15 +258,15 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
         }
         fprintf(output, "\n");
     }
-    if (tests_results->error_count > 0  && tests_results->failure_count > 0) {
+    if ((*tests_results)->error_count > 0 && (*tests_results)->failure_count > 0) {
         fprintf(output, "---\n\n");
     }
-    if (tests_results->failure_count > 0) {
-        fprintf(output, "There are %u failures:\n\n", tests_results->failure_count);
+    if ((*tests_results)->failure_count > 0) {
+        fprintf(output, "There are %u failures:\n\n", (*tests_results)->failure_count);
         {
             unsigned int i, failure_number = 0;
-            for (i = 0; i < tests_results->results_count; ++i) {
-                struct abstract_test_result * test_result = tests_results->results[i];
+            for (i = 0; i < (*tests_results)->results_count; ++i) {
+                struct abstract_test_result * test_result = (*tests_results)->results[i];
                 if (test_result->status == TEST_RESULT_STATUS_FAILURE) {
                     ++failure_number;
 
@@ -254,10 +279,10 @@ void run_suites_in_passthrough_mode(FILE * output, struct application_context * 
     fprintf(
         output,
         "Passed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n",
-        tests_results->passed_count,
-        tests_results->skipped_count,
-        tests_results->error_count,
-        tests_results->failure_count,
-        tests_results->incomplete_count
+        (*tests_results)->passed_count,
+        (*tests_results)->skipped_count,
+        (*tests_results)->error_count,
+        (*tests_results)->failure_count,
+        (*tests_results)->incomplete_count
     );
 }

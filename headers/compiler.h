@@ -41,7 +41,8 @@
 
 struct test_suite
 {
-    struct string * name;
+    struct source * source;
+    const char * name;
     struct abstract_test ** tests;
     unsigned int tests_count;
 };
@@ -63,6 +64,6 @@ struct program_runner_test {
     unsigned int stream_code;
 };
 
-struct test_suite * compile_test_suite(const char * filename);
+struct test_suite * compile_test_suite(struct source * source);
 
 #endif /* JCUNIT_COMPILER_H */
