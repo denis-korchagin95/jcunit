@@ -26,7 +26,8 @@
 #include <stdlib.h>
 
 #include "headers/token.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
+#include "headers/bytes-allocator.h"
 #include "headers/version.h"
 #include "headers/options.h"
 #include "headers/application.h"
@@ -78,6 +79,7 @@ int main(int argc, char * argv[])
         bool show_leak_only = (application_context.options & OPTION_SHOW_ALLOCATORS_STATS_LEAK_ONLY) > 0 ? true : false;
 
         show_allocators_stats(stdout, show_leak_only);
+        show_bytes_allocator_stats(stdout);
     }
 
     fflush(stdout);

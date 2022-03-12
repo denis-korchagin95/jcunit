@@ -31,7 +31,8 @@ all: build
 
 OBJECTS+=main.o
 OBJECTS+=tokenizer.o
-OBJECTS+=allocate.o
+OBJECTS+=bytes-allocator.o
+OBJECTS+=object-allocator.o
 OBJECTS+=string.o
 OBJECTS+=list.o
 OBJECTS+=ast.o
@@ -53,13 +54,13 @@ ifeq ($(DEVELOPMENT), 1)
 	OBJECTS+=print.o
 endif
 
-OBJECTS_TOKENIZER_TESTER=$(TESTERS_PATH)tokenizer-tester.o print.o tokenizer.o allocate.o string.o util.o options.o \
+OBJECTS_TOKENIZER_TESTER=$(TESTERS_PATH)tokenizer-tester.o print.o tokenizer.o bytes-allocator.o object-allocator.o string.o util.o options.o \
 errors.o
-OBJECTS_TOKENIZER_SPECIAL_MODE_TESTER=$(TESTERS_PATH)tokenizer-special-mode-tester.o print.o tokenizer.o allocate.o \
-string.o util.o options.o errors.o
-OBJECTS_PARSER_TESTER=$(TESTERS_PATH)parser-tester.o print.o tokenizer.o allocate.o string.o util.o options.o parse.o \
+OBJECTS_TOKENIZER_SPECIAL_MODE_TESTER=$(TESTERS_PATH)tokenizer-special-mode-tester.o print.o tokenizer.o bytes-allocator.o \
+object-allocator.o string.o util.o options.o errors.o
+OBJECTS_PARSER_TESTER=$(TESTERS_PATH)parser-tester.o print.o tokenizer.o bytes-allocator.o object-allocator.o string.o util.o options.o parse.o \
 ast.o list.o errors.o
-OBJECTS_COMPILER_TESTER=$(TESTERS_PATH)compiler-tester.o print.o tokenizer.o allocate.o string.o util.o options.o \
+OBJECTS_COMPILER_TESTER=$(TESTERS_PATH)compiler-tester.o print.o tokenizer.o bytes-allocator.o object-allocator.o string.o util.o options.o \
 parse.o ast.o list.o compiler.o errors.o application.o fs.o source.o show-result.o test-iterator.o runner.o \
 child-process.o
 

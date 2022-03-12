@@ -2,7 +2,8 @@
 #include <assert.h>
 
 #include "headers/test-iterator.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
+#include "headers/bytes-allocator.h"
 
 static unsigned int get_total_tests_count(struct test_suite ** suites, unsigned int suites_count);
 

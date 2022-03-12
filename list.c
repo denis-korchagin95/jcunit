@@ -23,7 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include "headers/list.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
 
 static void do_list_add(struct list * new, struct list * prev, struct list * next)
 {

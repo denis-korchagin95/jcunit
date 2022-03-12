@@ -30,7 +30,8 @@
 #include <limits.h>
 
 #include "headers/fs.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
+#include "headers/bytes-allocator.h"
 #include "headers/errors.h"
 
 #define GET_ENTRY_PATH_ADD_PATH_SEPARATOR (1)
@@ -124,7 +125,8 @@ void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * con
         }
 
         if (current_path != &base_path) {
-            free_path_list(current_path);
+            release_path_list(current_path);
+            current_path = NULL;
         }
         (void) closedir(dir);
     }

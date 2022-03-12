@@ -33,8 +33,6 @@
 #include "source.h"
 #include "fs.h"
 
-#define MAX_BYTES_POOL_SIZE (8192 * 8)
-
 #define allocator(name, type, count)                                                                \
     void * name##_free_list = NULL;                                                                 \
     static unsigned int max_##name##_pool_size = (count);                                           \
@@ -94,8 +92,6 @@ declare_allocator(source, struct source);
 declare_allocator(path_list, struct path_list);
 declare_allocator(ast_requirement_argument, struct ast_requirement_argument);
 
-void * alloc_bytes(unsigned int len);
-
 void show_allocators_stats(FILE * output, bool show_leak_only);
 
 void release_ast_tests(struct slist * ast_tests);
@@ -104,5 +100,6 @@ void release_ast_requirement(struct ast_requirement * requirement);
 void release_ast_test(struct ast_test * ast_test);
 void release_ast_arguments(struct slist * arguments);
 void release_ast_argument(struct ast_requirement_argument * argument);
+void release_path_list(struct path_list * item);
 
 #endif /* JCUNIT_ALLOCATE_H */

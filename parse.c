@@ -27,7 +27,7 @@
 
 #include "headers/parse.h"
 #include "headers/ast.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
 #include "headers/errors.h"
 
 

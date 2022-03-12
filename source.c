@@ -25,7 +25,8 @@
 #include <string.h>
 
 #include "headers/source.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
+#include "headers/bytes-allocator.h"
 
 struct source * make_source(const char * filename)
 {

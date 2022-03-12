@@ -28,7 +28,8 @@
 #include "headers/compiler.h"
 #include "headers/token.h"
 #include "headers/parse.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
+#include "headers/bytes-allocator.h"
 #include "headers/util.h"
 #include "headers/errors.h"
 

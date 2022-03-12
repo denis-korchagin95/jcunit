@@ -29,7 +29,7 @@
 #include <ctype.h>
 
 #include "headers/token.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
 #include "headers/string.h"
 #include "headers/errors.h"
 

@@ -24,7 +24,8 @@
  */
 #include <assert.h>
 
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
+#include "headers/bytes-allocator.h"
 #include "headers/errors.h"
 
 /**
@@ -38,9 +39,6 @@ struct allocator_stat {
     unsigned int * freed;
     unsigned int * allocated;
 };
-
-static unsigned char bytes_pool[MAX_BYTES_POOL_SIZE] = {0};
-static unsigned int bytes_pool_pos = 0;
 
 allocator(token, struct token, 512)
 allocator(string, struct string, 2048)
@@ -136,17 +134,6 @@ static struct allocator_stat stats[] = {
         }
 };
 
-
-void * alloc_bytes(unsigned int len)
-{
-    if (bytes_pool_pos + len >= MAX_BYTES_POOL_SIZE) {
-        jcunit_fatal_error("Allocator bytes: out of memory!");
-    }
-    void * mem = bytes_pool + bytes_pool_pos;
-    bytes_pool_pos += len;
-    return mem;
-}
-
 void show_allocators_stats(FILE * output, bool show_leak_only)
 {
     unsigned int i, len;
@@ -172,8 +159,6 @@ void show_allocators_stats(FILE * output, bool show_leak_only)
             *stat->allocated < *stat->freed ? " [ALLOCATION MISMATCH]" : ""
         );
     }
-    unsigned int max_bytes_pool_size = MAX_BYTES_POOL_SIZE;
-    fprintf(output, "Allocator: bytes, total: %u, pool_usage: %u\n", max_bytes_pool_size, bytes_pool_pos);
     fflush(output);
 }
 
@@ -221,4 +206,14 @@ void release_ast_argument(struct ast_requirement_argument * argument)
     assert(argument != NULL);
     /* TODO: release string and data of 'name' and 'value' */
     free_ast_requirement_argument(argument);
+}
+
+void release_path_list(struct path_list * item)
+{
+    assert(item != NULL);
+    if (item->path != NULL) {
+        free_bytes((void *)item->path);
+        item->path = NULL;
+    }
+    free_path_list(item);
 }

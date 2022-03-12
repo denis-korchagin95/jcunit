@@ -30,7 +30,8 @@
 
 
 #include "headers/runner.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
+#include "headers/bytes-allocator.h"
 #include "headers/child-process.h"
 #include "headers/fs.h"
 #include "headers/errors.h"

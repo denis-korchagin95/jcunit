@@ -26,8 +26,8 @@
 
 
 #include "headers/string.h"
-#include "headers/allocate.h"
-
+#include "headers/object-allocator.h"
+#include "headers/bytes-allocator.h"
 
 struct string * make_string(const char * source, unsigned int len)
 {

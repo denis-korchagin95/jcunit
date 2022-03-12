@@ -32,7 +32,8 @@
 #include "headers/compiler.h"
 #include "headers/list.h"
 #include "headers/show-result.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
+#include "headers/bytes-allocator.h"
 #include "headers/test-iterator.h"
 #include "headers/errors.h"
 

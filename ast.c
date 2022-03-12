@@ -26,7 +26,7 @@
 
 
 #include "headers/ast.h"
-#include "headers/allocate.h"
+#include "headers/object-allocator.h"
 
 
 struct ast_test * make_ast_test(void)
