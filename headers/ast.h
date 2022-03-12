@@ -45,8 +45,8 @@ struct ast_requirement_argument
 struct ast_requirement
 {
     struct slist list_entry;
-    struct string * name;
     struct slist arguments;
+    struct string * name;
     struct string * content;
 };
 

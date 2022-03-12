@@ -38,6 +38,7 @@ struct string * make_string(const char * source, unsigned int len)
     struct string * string = alloc_string();
     string->len = len;
     string->value = storage;
+    string->flags = 0;
 
     return string;
 }

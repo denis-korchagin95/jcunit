@@ -27,10 +27,13 @@
 
 #include <stdbool.h>
 
+#define STRING_FLAG_DONT_RELEASE (1)
+
 struct string
 {
     char * value;
     unsigned int len;
+    unsigned int flags;
 };
 
 struct string * make_string(const char * source, unsigned int len);

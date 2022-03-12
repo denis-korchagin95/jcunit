@@ -198,13 +198,28 @@ void release_ast_requirement(struct ast_requirement * requirement)
 {
     assert(requirement != NULL);
     release_ast_arguments(&requirement->arguments);
+    if (requirement->name != NULL) {
+        release_string(requirement->name);
+        requirement->name = NULL;
+    }
+    if (requirement->content != NULL) {
+        release_string(requirement->content);
+        requirement->content = NULL;
+    }
     free_ast_requirement(requirement);
 }
 
 void release_ast_argument(struct ast_requirement_argument * argument)
 {
     assert(argument != NULL);
-    /* TODO: release string and data of 'name' and 'value' */
+    if (argument->name != NULL) {
+        release_string(argument->name);
+        argument->name = NULL;
+    }
+    if (argument->value != NULL) {
+        release_string(argument->value);
+        argument->value = NULL;
+    }
     free_ast_requirement_argument(argument);
 }
 
@@ -216,4 +231,18 @@ void release_path_list(struct path_list * item)
         item->path = NULL;
     }
     free_path_list(item);
+}
+
+void release_string(struct string * string)
+{
+    assert(string != NULL);
+    if ((string->flags & STRING_FLAG_DONT_RELEASE) > 0) {
+        string->flags &= ~STRING_FLAG_DONT_RELEASE;
+        return;
+    }
+    if (string->value != NULL) {
+        free_bytes((void *)string->value);
+        string->value = NULL;
+    }
+    free_string(string);
 }

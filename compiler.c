@@ -268,6 +268,10 @@ void given_test_requirement_compiler(struct test_requirement_compiler_context * 
     context->test->given_file_content = context->requirement->content;
     context->test->given_filename = given_filename;
     context->test->base.flags |= TEST_FLAG_HAS_GIVEN;
+    if (context->requirement->content != NULL)
+        context->requirement->content->flags |= STRING_FLAG_DONT_RELEASE;
+    if (given_filename != NULL)
+        given_filename->flags |= STRING_FLAG_DONT_RELEASE;
 }
 
 void when_run_requirement_compiler(struct test_requirement_compiler_context * context)
@@ -278,9 +282,9 @@ void when_run_requirement_compiler(struct test_requirement_compiler_context * co
     struct string * program = NULL, * args = NULL;
     slist_foreach(argument_iterator, &context->requirement->arguments, {
         struct ast_requirement_argument * argument = list_get_owner(
-                argument_iterator,
-        struct ast_requirement_argument,
-        list_entry
+            argument_iterator,
+            struct ast_requirement_argument,
+            list_entry
         );
         if (argument->name == NULL) {
             program = argument->value;
@@ -311,6 +315,9 @@ void when_run_requirement_compiler(struct test_requirement_compiler_context * co
     context->test->program_path = program;
     context->test->program_args = args;
     context->test->base.flags |= TEST_FLAG_HAS_WHEN;
+    program->flags |= STRING_FLAG_DONT_RELEASE;
+    if (args != NULL)
+        args->flags |= STRING_FLAG_DONT_RELEASE;
 }
 
 void expect_output_requirement_compiler(struct test_requirement_compiler_context * context)
@@ -320,9 +327,9 @@ void expect_output_requirement_compiler(struct test_requirement_compiler_context
         jcunit_fatal_error("No arguments are given for 'expectOutput' directive!");
     }
     struct ast_requirement_argument * argument = list_get_owner(
-            context->requirement->arguments.next,
-            struct ast_requirement_argument,
-            list_entry
+        context->requirement->arguments.next,
+        struct ast_requirement_argument,
+        list_entry
     );
     if (argument->name != NULL && strcmp("stream", argument->name->value) != 0) {
         jcunit_fatal_error("Unexpected named argument '%s' for the 'expectOutput' requirement!", argument->name->value);
@@ -340,6 +347,8 @@ void expect_output_requirement_compiler(struct test_requirement_compiler_context
     context->test->stream_code = stream_code;
     context->test->expected_output = context->requirement->content;
     context->test->base.flags |= TEST_FLAG_HAS_THEN;
+    if (context->requirement->content != NULL)
+        context->requirement->content->flags |= STRING_FLAG_DONT_RELEASE;
 }
 
 void should_be_skipped_requirement_compiler(struct test_requirement_compiler_context * context)
@@ -372,9 +381,9 @@ void test_arguments_compiler(struct abstract_test * test, struct ast_test * ast_
     struct string * name = NULL;
     slist_foreach(iterator, &ast_test->arguments, {
         struct ast_requirement_argument * argument = list_get_owner(
-                iterator,
-        struct ast_requirement_argument,
-        list_entry
+            iterator,
+            struct ast_requirement_argument,
+            list_entry
         );
         if (argument->name == NULL) {
             name = argument->value;
@@ -395,5 +404,6 @@ void test_arguments_compiler(struct abstract_test * test, struct ast_test * ast_
     if (name->len == 0) {
         jcunit_fatal_error("The 'name' cannot be empty for the 'test' directive!");
     }
+    name->flags |= STRING_FLAG_DONT_RELEASE;
     test->name = name;
 }
