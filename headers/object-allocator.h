@@ -102,5 +102,10 @@ void release_ast_arguments(struct slist * arguments);
 void release_ast_argument(struct ast_requirement_argument * argument);
 void release_path_list(struct path_list * item);
 void release_string(struct string * string);
+void release_tests_results(struct tests_results * tests_results);
+void release_test_result(struct abstract_test_result * test_result);
+void release_test(struct abstract_test * test);
+void release_test_suite(struct test_suite * test_suite);
+void release_source(struct source * source);
 
 #endif /* JCUNIT_ALLOCATE_H */

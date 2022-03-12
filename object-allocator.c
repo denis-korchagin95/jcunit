@@ -246,3 +246,118 @@ void release_string(struct string * string)
     }
     free_string(string);
 }
+
+void release_tests_results(struct tests_results * tests_results)
+{
+    assert(tests_results != NULL);
+    if (tests_results->results != NULL) {
+        unsigned int i, len;
+        for (i = 0, len = tests_results->results_count; i < len; ++i) {
+            release_test_result(tests_results->results[i]);
+            tests_results->results[i] = NULL;
+        }
+        free_bytes((void *)tests_results->results);
+        tests_results->results = NULL;
+    }
+    free_tests_results(tests_results);
+}
+
+void release_test_result(struct abstract_test_result * test_result)
+{
+    assert(test_result != NULL);
+    if (test_result->kind != TEST_RESULT_KIND_PROGRAM_RUNNER) {
+        jcunit_fatal_error("Unknown test result kind!\n");
+    }
+    struct program_runner_test_result * program_runner_test_result = (struct program_runner_test_result *) test_result;
+    if (program_runner_test_result->base.test != NULL) {
+        if (program_runner_test_result->base.test->test_suite != NULL)
+            release_test_suite(program_runner_test_result->base.test->test_suite);
+        program_runner_test_result->base.test = NULL;
+    }
+    if (program_runner_test_result->base.name != NULL) {
+        release_string(program_runner_test_result->base.name);
+        program_runner_test_result->base.name = NULL;
+    }
+    if (program_runner_test_result->base.expected != NULL) {
+        release_string(program_runner_test_result->base.expected);
+        program_runner_test_result->base.expected = NULL;
+    }
+    if (program_runner_test_result->base.actual != NULL) {
+        release_string(program_runner_test_result->base.actual);
+        program_runner_test_result->base.actual = NULL;
+    }
+    if (program_runner_test_result->given_filename != NULL) {
+        release_string(program_runner_test_result->given_filename);
+        program_runner_test_result->given_filename = NULL;
+    }
+    if (program_runner_test_result->executable != NULL) {
+        release_string(program_runner_test_result->executable);
+        program_runner_test_result->executable = NULL;
+    }
+    free_program_runner_test_result(program_runner_test_result);
+}
+
+void release_test(struct abstract_test * test)
+{
+    assert(test != NULL);
+    if (test->kind != TEST_KIND_PROGRAM_RUNNER) {
+        jcunit_fatal_error("Unknown test kind!\n");
+    }
+    struct program_runner_test * program_runner_test = (struct program_runner_test *) test;
+    if (program_runner_test->given_filename != NULL) {
+        release_string(program_runner_test->given_filename);
+        program_runner_test->given_filename = NULL;
+    }
+    if (program_runner_test->given_file_content != NULL) {
+        release_string(program_runner_test->given_file_content);
+        program_runner_test->given_file_content = NULL;
+    }
+    if (program_runner_test->program_args != NULL) {
+        release_string(program_runner_test->program_args);
+        program_runner_test->program_args = NULL;
+    }
+    if (program_runner_test->expected_output != NULL) {
+        release_string(program_runner_test->expected_output);
+        program_runner_test->expected_output = NULL;
+    }
+    if (program_runner_test->program_path != NULL) {
+        release_string(program_runner_test->program_path);
+        program_runner_test->program_path = NULL;
+    }
+    if (program_runner_test->base.name != NULL) {
+        release_string(program_runner_test->base.name);
+        program_runner_test->base.name = NULL;
+    }
+    test->test_suite = NULL;
+    free_program_runner_test(program_runner_test);
+}
+
+void release_test_suite(struct test_suite * test_suite)
+{
+    assert(test_suite != NULL);
+    if (test_suite->source != NULL) {
+        release_source(test_suite->source);
+        test_suite->source = NULL;
+    }
+    test_suite->name = NULL;
+    if (test_suite->tests != NULL) {
+        unsigned int i, len;
+        for (i = 0, len = test_suite->tests_count; i < len; ++i) {
+            release_test(test_suite->tests[i]);
+            test_suite->tests[i] = NULL;
+        }
+        free_bytes((void *)test_suite->tests);
+        test_suite->tests = NULL;
+    }
+    free_test_suite(test_suite);
+}
+
+void release_source(struct source * source)
+{
+    assert(source != NULL);
+    if (source->filename != NULL) {
+        free_bytes((void *)source->filename);
+        source->filename = NULL;
+    }
+    free_source(source);
+}

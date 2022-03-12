@@ -53,6 +53,8 @@ void test_iterator_init_by_suites(
     unsigned int suites_count
 );
 
+void test_iterator_destroy(struct test_iterator * iterator);
+
 struct abstract_test_result * test_iterator_visit(
     struct test_iterator * iterator,
     test_iterator_visiter_func * visiter_func,

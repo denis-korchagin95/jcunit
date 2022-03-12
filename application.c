@@ -167,6 +167,7 @@ void run_suites(
     );
     *tests_results = make_tests_results(test_iterator.tests_count);
     test_mode_runner(&test_iterator, tests_results, output);
+    test_iterator_destroy(&test_iterator);
 }
 
 void run_suites_in_detail_mode(

@@ -33,7 +33,7 @@
 
 
 #define bytes_chunk_data(bs)    ((void *)(bs) + BYTES_CHUNK_HEADER_SIZE)
-#define bytes_chunk_offset(bs)  ((unsigned int)((bs)->chunk_size + (bs)->alignment + BYTES_CHUNK_HEADER_SIZE))
+#define bytes_chunk_offset(bs)  ((unsigned int)((bs)->size + (bs)->alignment + BYTES_CHUNK_HEADER_SIZE))
 
 #define bytes_chunks_foreach(chunk_name, body)                                                                          \
     do                                                                                                                  \
@@ -54,7 +54,7 @@ struct bytes_chunk_header
 {
     unsigned int signature;
     unsigned int alignment:31, is_busy:1;
-    unsigned int chunk_size;
+    unsigned int size;
 };
 
 
@@ -71,7 +71,7 @@ struct bytes_chunk_header * find_free_chunk_of_size(unsigned int len)
     bytes_chunks_foreach(chunk, {
         if (chunk->is_busy == 1)
             continue;
-        if (chunk->chunk_size >= len)
+        if (chunk->size >= len)
             return chunk;
     });
     return NULL;
@@ -91,7 +91,7 @@ struct bytes_chunk_header * try_to_allocate_new_chunk(unsigned int len)
     struct bytes_chunk_header * chunk = (struct bytes_chunk_header *)(bytes_pool + bytes_pool_pos);
     chunk->signature = BYTES_CHUNK_HEADER_SIGNATURE;
     chunk->alignment = alignment;
-    chunk->chunk_size = len;
+    chunk->size = len;
     bytes_pool_pos += full_chunk_size;
     return chunk;
 }
@@ -104,7 +104,7 @@ void * alloc_bytes(unsigned int len)
         chunk = try_to_allocate_new_chunk(len);
     }
     chunk->is_busy = 1;
-    allocated_bytes += chunk->chunk_size;
+    allocated_bytes += chunk->size;
     return bytes_chunk_data(chunk);
 }
 
@@ -118,7 +118,7 @@ void free_bytes(void * mem)
     if (chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
         jcunit_fatal_error("Allocator bytes: try to free not managed memory!\n");
     chunk->is_busy = 0;
-    freed_bytes += chunk->chunk_size;
+    freed_bytes += chunk->size;
 }
 
 
@@ -137,7 +137,7 @@ void show_bytes_allocator_stats(FILE * output)
     unsigned int mem_size_in_chunks = 0;
     unsigned int mem_for_align_chunks = 0;
     bytes_chunks_foreach(chunk, {
-        mem_size_in_chunks += chunk->chunk_size;
+        mem_size_in_chunks += chunk->size;
         mem_for_align_chunks += chunk->alignment;
         ++chunk_count;
     });
@@ -151,10 +151,23 @@ void show_bytes_allocator_stats(FILE * output)
         mem_size_in_chunks,
         mem_for_align_chunks
     );
-    fprintf(output, "\tchunk map: [");
+    fprintf(output, "\tChunk Memory Map: [");
     bytes_chunks_foreach(chunk, {
         fprintf(output, "%c", chunk->is_busy ? 'C' : 'F');
     });
     fprintf(output, "]\n");
+    fprintf(output, "\tChunks:\n");
+    unsigned int chunk_index = 0;
+    bytes_chunks_foreach(chunk, {
+        ++chunk_index;
+        fprintf(
+            output,
+            "\t\t%u) %c size: %u, alignment: %u\n",
+            chunk_index,
+            chunk->is_busy ? 'C' : 'F',
+            chunk->size,
+            chunk->alignment
+        );
+    });
     fflush(output);
 }

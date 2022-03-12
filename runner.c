@@ -92,6 +92,7 @@ struct program_runner_test_result * make_program_runner_test_result(struct progr
     memset((void *)test_result, 0, sizeof(struct program_runner_test_result));
     test_result->base.test = (struct abstract_test *) test;
     test_result->base.name = test->base.name;
+    test->base.name->flags |= STRING_FLAG_DONT_RELEASE;
     test_result->base.kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     return test_result;
 }
@@ -243,6 +244,7 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
 
     struct program_runner_test_result * test_result = make_program_runner_test_result(this_test);
     test_result->executable = executable;
+    executable->flags |= STRING_FLAG_DONT_RELEASE;
 
     resolve_given_filename(this_test, test_result);
 
@@ -283,6 +285,7 @@ struct abstract_test_result * run_incomplete_test(struct abstract_test * test)
 {
     struct abstract_test_result * test_result = alloc_abstract_test_result();
     memset((void *)test_result, 0, sizeof(struct abstract_test_result));
+    test_result->kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     test_result->status = TEST_RESULT_STATUS_INCOMPLETE;
     test_result->name = test->name;
     return test_result;
@@ -292,6 +295,7 @@ struct abstract_test_result * run_skipped_test(struct abstract_test * test)
 {
     struct abstract_test_result * test_result = alloc_abstract_test_result();
     memset((void *)test_result, 0, sizeof(struct abstract_test_result));
+    test_result->kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     test_result->status = TEST_RESULT_STATUS_SKIPPED;
     test_result->name = test->name;
     return test_result;

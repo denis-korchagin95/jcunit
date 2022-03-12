@@ -29,6 +29,15 @@ void test_iterator_init_by_suites(
     iterator->cursor = 0;
 }
 
+void test_iterator_destroy(struct test_iterator * iterator)
+{
+    assert(iterator != NULL);
+    if (iterator->tests != NULL) {
+        free_bytes((void *)iterator->tests);
+        iterator->tests = NULL;
+    }
+}
+
 struct abstract_test_result * test_iterator_visit(
     struct test_iterator * iterator,
     test_iterator_visiter_func * visiter_func,

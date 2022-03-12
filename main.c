@@ -67,11 +67,14 @@ int main(int argc, char * argv[])
 
     slist_protect(&sources);
 
+    /* TODO: FIXME - check on empty test suites */
+
     struct tests_results * tests_results = NULL;
 
     run_suites(&test_suites, &tests_results, &application_context, stdout);
 
-    /* TODO: FIXME - check on empty test suites */
+    release_tests_results(tests_results);
+    tests_results = NULL;
 
     if (application_context.options & OPTION_SHOW_ALLOCATORS_STATS) {
         fprintf(stdout, "\n\n\n");
