@@ -62,8 +62,8 @@ static unsigned char bytes_pool[MAX_BYTES_POOL_SIZE] = {0};
 static unsigned int bytes_pool_pos = 0;
 static unsigned int allocated_bytes = 0;
 static unsigned int freed_bytes = 0;
-void * bytes_pool_low_bound = (void *)bytes_pool + BYTES_CHUNK_HEADER_SIZE;
-void * bytes_pool_high_bound = (void *)bytes_pool + MAX_BYTES_POOL_SIZE;
+static void * bytes_pool_low_bound = (void *)bytes_pool + BYTES_CHUNK_HEADER_SIZE;
+static void * bytes_pool_high_bound = (void *)bytes_pool + MAX_BYTES_POOL_SIZE - BYTES_CHUNK_HEADER_SIZE;
 
 
 struct bytes_chunk_header * find_free_chunk_of_size(unsigned int len)
