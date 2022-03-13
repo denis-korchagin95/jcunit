@@ -26,6 +26,7 @@
 #define BYTES_ALLOCATOR_H 1
 
 #include <stdint.h>
+#include <stdio.h>
 
 void * alloc_bytes(unsigned int len);
 void free_bytes(void * mem);

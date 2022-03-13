@@ -270,8 +270,6 @@ void release_test_result(struct abstract_test_result * test_result)
     }
     struct program_runner_test_result * program_runner_test_result = (struct program_runner_test_result *) test_result;
     if (program_runner_test_result->base.test != NULL) {
-        if (program_runner_test_result->base.test->test_suite != NULL)
-            release_test_suite(program_runner_test_result->base.test->test_suite);
         program_runner_test_result->base.test = NULL;
     }
     if (program_runner_test_result->base.name != NULL) {
@@ -365,8 +363,23 @@ void release_source(struct source * source)
 
 void release_token(struct token * token)
 {
+    assert(token != NULL);
     if (token == &newline_token || token == &eof_token) {
         return;
     }
     free_token(token);
+}
+
+void release_test_suites(struct test_suites * test_suites)
+{
+    assert(test_suites != NULL);
+    if (test_suites->suites != NULL) {
+        unsigned i, len;
+        for (i = 0, len = test_suites->suites_count; i < len; ++i) {
+            release_test_suite(test_suites->suites[i]);
+            test_suites->suites[i] = NULL;
+        }
+        free_bytes((void *)test_suites->suites);
+        test_suites->suites = NULL;
+    }
 }

@@ -33,6 +33,7 @@
 #include "headers/object-allocator.h"
 #include "headers/bytes-allocator.h"
 #include "headers/errors.h"
+#include "headers/util.h"
 
 #define GET_ENTRY_PATH_ADD_PATH_SEPARATOR (1)
 
@@ -120,8 +121,12 @@ void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * con
                 continue;
             }
             char * file_entry_path = get_entry_path(current_path->path, current_path_len, dirent, GET_ENTRY_PATH_ADD_PATH_SEPARATOR);
-            request_to_quit = !read_dir_func(file_entry_path, context);
-            /* TODO: free the static memory from bytes allocator */
+            unsigned int fs_flags = 0;
+            request_to_quit = !read_dir_func(file_entry_path, context, &fs_flags);
+            if ((fs_flags & FS_FLAG_USE_PATH) == 0) {
+                free_bytes((void *) file_entry_path);
+                file_entry_path = NULL;
+            }
         }
 
         if (current_path != &base_path) {
@@ -150,5 +155,9 @@ char * get_entry_path(const char * path, uint32_t path_len, struct dirent * dire
 
 const char * fs_resolve_path(const char * path)
 {
-    return realpath(path, (char *) path_buffer);
+    const char * resolved_path = realpath(path, (char *) path_buffer);
+    if (resolved_path == NULL) {
+        return NULL;
+    }
+    return duplicate_cstring(resolved_path);
 }

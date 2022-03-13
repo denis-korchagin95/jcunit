@@ -32,6 +32,7 @@
 #include "runner.h"
 #include "source.h"
 #include "fs.h"
+#include "application.h"
 
 #define allocator(name, type, count)                                                                \
     void * name##_free_list = NULL;                                                                 \
@@ -108,5 +109,6 @@ void release_test(struct abstract_test * test);
 void release_test_suite(struct test_suite * test_suite);
 void release_source(struct source * source);
 void release_token(struct token * token);
+void release_test_suites(struct test_suites * test_suites);
 
 #endif /* JCUNIT_ALLOCATE_H */

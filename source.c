@@ -27,15 +27,16 @@
 #include "headers/source.h"
 #include "headers/object-allocator.h"
 #include "headers/bytes-allocator.h"
+#include "headers/util.h"
 
-struct source * make_source(const char * filename)
+struct source * make_source(const char * filename, bool without_copying)
 {
     struct source * source = alloc_source();
-    unsigned int len = strlen(filename);
-    char * _filename = alloc_bytes(len + 1);
-    strcpy(_filename, filename);
-    _filename[len] = '\0';
-    source->filename = _filename;
+    if (without_copying) {
+        source->filename = filename;
+    } else {
+        source->filename = duplicate_cstring(filename);
+    }
     slist_init(&source->list_entry);
     return source;
 }

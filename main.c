@@ -73,6 +73,7 @@ int main(int argc, char * argv[])
 
     run_suites(&test_suites, &tests_results, &application_context, stdout);
 
+    release_test_suites(&test_suites);
     release_tests_results(tests_results);
     tests_results = NULL;
 

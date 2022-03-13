@@ -23,9 +23,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stddef.h>
+#include <string.h>
 
 
 #include "headers/util.h"
+#include "headers/bytes-allocator.h"
 
 
 const char * basename(const char * path)
@@ -45,4 +47,13 @@ const char * basename(const char * path)
         return path;
     }
     return last_slash_pos + 1;
+}
+
+const char * duplicate_cstring(const char * src)
+{
+    unsigned int len = strlen(src);
+    char * dest = alloc_bytes(len + 1);
+    strcpy(dest, src);
+    dest[len] = '\0';
+    return dest;
 }

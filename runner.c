@@ -268,6 +268,8 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
 
     if (!pass) {
         test_result->base.expected = this_test->expected_output;
+        if (this_test->expected_output != NULL)
+            this_test->expected_output->flags |= STRING_FLAG_DONT_RELEASE;
         test_result->base.actual = make_string(output.buffer, output.len);
     }
 
@@ -288,6 +290,7 @@ struct abstract_test_result * run_incomplete_test(struct abstract_test * test)
     test_result->kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     test_result->status = TEST_RESULT_STATUS_INCOMPLETE;
     test_result->name = test->name;
+    test->name->flags |= STRING_FLAG_DONT_RELEASE;
     return test_result;
 }
 
@@ -298,5 +301,6 @@ struct abstract_test_result * run_skipped_test(struct abstract_test * test)
     test_result->kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     test_result->status = TEST_RESULT_STATUS_SKIPPED;
     test_result->name = test->name;
+    test->name->flags |= STRING_FLAG_DONT_RELEASE;
     return test_result;
 }

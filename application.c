@@ -50,8 +50,8 @@ typedef void test_mode_func(
     FILE * output
 );
 
-static bool fetch_directory_sources(const char * source_path, void * data);
-static void fetch_one_source(const char * source_path, struct slist *** end_sources);
+static bool fetch_directory_sources(const char * source_path, void * data, unsigned int * flags);
+static void fetch_one_source(const char * source_path, struct slist *** end_sources, unsigned int * flags);
 static void run_suites_in_detail_mode(
     struct test_iterator * test_iterator,
     struct tests_results ** tests_results,
@@ -84,9 +84,11 @@ void fetch_sources(int argc, char * argv[], struct slist * sources)
         }
         if (fs_is_dir(resolved_path)) {
             fs_read_dir(resolved_path, fetch_directory_sources, &end_sources);
+            free_bytes((void *)resolved_path);
+            resolved_path = NULL;
             continue;
         }
-        fetch_one_source(resolved_path, &end_sources);
+        fetch_one_source(resolved_path, &end_sources, NULL);
     }
     if (list_is_empty(sources)) {
         resolved_path = fs_resolve_path(default_tests_path);
@@ -97,19 +99,21 @@ void fetch_sources(int argc, char * argv[], struct slist * sources)
             jcunit_fatal_error("Can't found the specified directory \"%s\"!", default_tests_path);
         }
         fs_read_dir(resolved_path, fetch_directory_sources, &end_sources);
+        free_bytes((void *)resolved_path);
+        resolved_path = NULL;
     }
 }
 
-bool fetch_directory_sources(const char * source_path, void * data)
+bool fetch_directory_sources(const char * source_path, void * data, unsigned int * flags)
 {
     if (!fs_check_extension(source_path, ".test")) {
         return true;
     }
-    fetch_one_source(source_path, (struct slist ***) data);
+    fetch_one_source(source_path, (struct slist ***) data, flags);
     return true;
 }
 
-void fetch_one_source(const char * source_path, struct slist *** end_sources)
+void fetch_one_source(const char * source_path, struct slist *** end_sources, unsigned int * flags)
 {
     if (!fs_is_file_exists(source_path)) {
         jcunit_fatal_error("The file \"%s\" is not exists!", source_path);
@@ -119,9 +123,10 @@ void fetch_one_source(const char * source_path, struct slist *** end_sources)
         ++i;
     }
     if (i == sources_cache_pos) {
+        if (flags != NULL)
+            *flags |= FS_FLAG_USE_PATH;
         sources_cache[sources_cache_pos++] = source_path;
-
-        struct source * source = make_source(source_path);
+        struct source * source = make_source(source_path, true);
         slist_append(*end_sources, &source->list_entry);
     }
 }
