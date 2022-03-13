@@ -361,3 +361,12 @@ void release_source(struct source * source)
     }
     free_source(source);
 }
+
+
+void release_token(struct token * token)
+{
+    if (token == &newline_token || token == &eof_token) {
+        return;
+    }
+    free_token(token);
+}

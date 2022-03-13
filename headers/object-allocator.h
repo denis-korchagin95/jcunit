@@ -107,5 +107,6 @@ void release_test_result(struct abstract_test_result * test_result);
 void release_test(struct abstract_test * test);
 void release_test_suite(struct test_suite * test_suite);
 void release_source(struct source * source);
+void release_token(struct token * token);
 
 #endif /* JCUNIT_ALLOCATE_H */

@@ -46,7 +46,6 @@ static void parse_requirement(struct tokenizer_context * context, struct ast_req
 static void parse_directive(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context);
 static void parse_directive_argument(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context);
 static void parse_named_directive_argument(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context);
-static void release_token(struct token * token);
 static void skip_whitespaces(struct tokenizer_context * context);
 
 
@@ -174,6 +173,8 @@ void parse_test_prolog(struct tokenizer_context * context, struct ast_test ** as
     if (!string_equals_with_cstring(directive, "test")) {
         jcunit_fatal_error("Expected test directive, but given '%.*s'!", directive->len, directive->value);
     }
+    release_string(directive);
+    directive = NULL;
 }
 
 void parse_test_epilog(struct tokenizer_context * context)
@@ -192,6 +193,8 @@ void parse_test_epilog(struct tokenizer_context * context)
     if (!list_is_empty(&arguments)) {
         jcunit_fatal_error("Unexpected arguments for the 'endtest' directive!");
     }
+    release_string(directive);
+    directive = NULL;
 }
 
 void parse_directive_arguments(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context)
@@ -294,14 +297,6 @@ void parse_directive(struct tokenizer_context * context, struct directive_parse_
     release_token(token);
 
     context->mode = oldmode;
-}
-
-void release_token(struct token * token)
-{
-    if (token == &newline_token || token == &eof_token) {
-        return;
-    }
-    free_token(token);
 }
 
 void skip_whitespaces(struct tokenizer_context * context)
