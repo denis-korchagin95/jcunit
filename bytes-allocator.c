@@ -122,16 +122,26 @@ void free_bytes(void * mem)
 }
 
 
-void show_bytes_allocator_stats(FILE * output)
+void show_bytes_allocator_stats(FILE * output, bool show_leak_only)
 {
+    if (show_leak_only && !(allocated_bytes > freed_bytes)) {
+        return;
+    }
     unsigned int max_bytes_pool_size = MAX_BYTES_POOL_SIZE;
+    const char * allocator_status = "OK";
+    if (allocated_bytes < freed_bytes) {
+        allocator_status = "ALLOCATION MISMATCH";
+    } else if (allocated_bytes > freed_bytes) {
+        allocator_status = "LEAK";
+    }
     fprintf(
         output,
-        "Allocator: bytes, total: %u, pool_usage: %u, allocated: %u, freed: %u\n",
+        "Allocator: bytes, total: %u, pool_usage: %u, allocated: %u, freed: %u [%s]\n",
         max_bytes_pool_size,
         bytes_pool_pos,
         allocated_bytes,
-        freed_bytes
+        freed_bytes,
+        allocator_status
     );
     unsigned int chunk_count = 0;
     unsigned int mem_size_in_chunks = 0;

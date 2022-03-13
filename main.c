@@ -83,7 +83,7 @@ int main(int argc, char * argv[])
         bool show_leak_only = (application_context.options & OPTION_SHOW_ALLOCATORS_STATS_LEAK_ONLY) > 0 ? true : false;
 
         show_allocators_stats(stdout, show_leak_only);
-        show_bytes_allocator_stats(stdout);
+        show_bytes_allocator_stats(stdout, show_leak_only);
     }
 
     fflush(stdout);
