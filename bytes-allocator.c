@@ -152,10 +152,23 @@ void show_bytes_allocator_stats(FILE * output)
         mem_for_align_chunks
     );
     fprintf(output, "\tChunk Memory Map: [");
+    unsigned int max_chunk_size = 0;
+    unsigned int min_chunk_size = UINT32_MAX;
+    unsigned int chunk_size_sum = 0;
     bytes_chunks_foreach(chunk, {
         fprintf(output, "%c", chunk->is_busy ? 'C' : 'F');
+        if (chunk->size < min_chunk_size) {
+            min_chunk_size = chunk->size;
+        }
+        if (chunk->size > max_chunk_size) {
+            max_chunk_size = chunk->size;
+        }
+        chunk_size_sum += chunk->size;
     });
     fprintf(output, "]\n");
+    fprintf(output, "\tMin Chunk Size: %u\n", min_chunk_size);
+    fprintf(output, "\tMax Chunk Size: %u\n", max_chunk_size);
+    fprintf(output, "\tAverage Chunk Size: %u\n", chunk_size_sum / chunk_count);
     fprintf(output, "\tChunks:\n");
     unsigned int chunk_index = 0;
     bytes_chunks_foreach(chunk, {
