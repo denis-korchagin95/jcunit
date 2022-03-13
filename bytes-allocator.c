@@ -22,6 +22,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#include <stdbool.h>
+
 #include "headers/object-allocator.h"
 #include "headers/errors.h"
 
@@ -32,8 +34,10 @@
 #define WORD_SIZE                       (sizeof(void *))
 
 
-#define bytes_chunk_data(bs)    ((void *)(bs) + BYTES_CHUNK_HEADER_SIZE)
-#define bytes_chunk_offset(bs)  ((unsigned int)((bs)->size + (bs)->alignment + BYTES_CHUNK_HEADER_SIZE))
+#define bytes_chunk_data(bs)            ((void *)(bs) + BYTES_CHUNK_HEADER_SIZE)
+#define bytes_chunk_offset(bs)          ((unsigned int)((bs)->size + (bs)->alignment + BYTES_CHUNK_HEADER_SIZE))
+#define bytes_chunk_get(pool, offset)   ((struct bytes_chunk_header *)((void *)(pool + offset)))
+
 
 #define bytes_chunks_foreach(chunk_name, body)                                                                          \
     do                                                                                                                  \
@@ -57,6 +61,12 @@ struct bytes_chunk_header
     unsigned int size;
 };
 
+struct defragmentation_info
+{
+    struct bytes_chunk_header * first_free_chunk_pair;
+    struct bytes_chunk_header * latest_free_chunk;
+};
+
 
 static unsigned char bytes_pool[MAX_BYTES_POOL_SIZE] = {0};
 static unsigned int bytes_pool_pos = 0;
@@ -64,6 +74,65 @@ static unsigned int allocated_bytes = 0;
 static unsigned int freed_bytes = 0;
 static void * bytes_pool_low_bound = (void *)bytes_pool + BYTES_CHUNK_HEADER_SIZE;
 static void * bytes_pool_high_bound = (void *)bytes_pool + MAX_BYTES_POOL_SIZE - BYTES_CHUNK_HEADER_SIZE;
+static struct defragmentation_info defragmentation_info;
+
+struct bytes_chunk_header * find_latest_free_chunk(unsigned int start_offset)
+{
+    unsigned int offset = start_offset;
+    struct bytes_chunk_header * last_chunk = NULL;
+    for (;;) {
+        if (offset >= bytes_pool_pos)
+            break;
+        struct bytes_chunk_header * chunk = bytes_chunk_get(bytes_pool, offset);
+        if (chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
+            break;
+        last_chunk = chunk;
+        offset += bytes_chunk_offset(chunk);
+    }
+    if (last_chunk != NULL && last_chunk->is_busy == 0) {
+        return last_chunk;
+    }
+    return NULL;
+}
+
+
+struct bytes_chunk_header * find_first_free_pair(unsigned int start_offset)
+{
+    unsigned int offset = start_offset;
+    for (;;) {
+        if (offset >= bytes_pool_pos)
+            break;
+        struct bytes_chunk_header * chunk = bytes_chunk_get(bytes_pool, offset);
+        if (chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
+            break;
+        unsigned int next_chunk_offset = offset + bytes_chunk_offset(chunk);
+        struct bytes_chunk_header * next_chunk = next_chunk_offset >= bytes_pool_pos
+                ? NULL
+                : bytes_chunk_get(bytes_pool, next_chunk_offset);
+        if (next_chunk == NULL || next_chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
+            break;
+        if (chunk->is_busy == 0 && next_chunk->is_busy == 0) {
+            return chunk;
+        }
+        offset = next_chunk_offset + bytes_chunk_offset(next_chunk);
+    }
+    return NULL;
+}
+
+
+bool needs_defragmentation(struct defragmentation_info * defragmentation_info)
+{
+    defragmentation_info->first_free_chunk_pair = find_first_free_pair(0);
+    defragmentation_info->latest_free_chunk = find_latest_free_chunk(0);
+    return defragmentation_info->first_free_chunk_pair != NULL
+        || defragmentation_info->latest_free_chunk != NULL;
+}
+
+
+void do_defragmentation(struct defragmentation_info * defragmentation_info)
+{
+    /* TODO: implement defragmentation of bytes chunks */
+}
 
 
 struct bytes_chunk_header * find_free_chunk_of_size(unsigned int len)
@@ -88,7 +157,7 @@ struct bytes_chunk_header * try_to_allocate_new_chunk(unsigned int len)
     if (bytes_pool_pos + full_chunk_size >= MAX_BYTES_POOL_SIZE) {
         jcunit_fatal_error("Allocator bytes: out of memory!");
     }
-    struct bytes_chunk_header * chunk = (struct bytes_chunk_header *)(bytes_pool + bytes_pool_pos);
+    struct bytes_chunk_header * chunk = bytes_chunk_get(bytes_pool, bytes_pool_pos);
     chunk->signature = BYTES_CHUNK_HEADER_SIGNATURE;
     chunk->alignment = alignment;
     chunk->size = len;
@@ -99,6 +168,11 @@ struct bytes_chunk_header * try_to_allocate_new_chunk(unsigned int len)
 
 void * alloc_bytes(unsigned int len)
 {
+    defragmentation_info.latest_free_chunk = NULL;
+    defragmentation_info.first_free_chunk_pair = NULL;
+    if (needs_defragmentation(&defragmentation_info)) {
+        do_defragmentation(&defragmentation_info);
+    }
     struct bytes_chunk_header * chunk = find_free_chunk_of_size(len);
     if (chunk == NULL) {
         chunk = try_to_allocate_new_chunk(len);
