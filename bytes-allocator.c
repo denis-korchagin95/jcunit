@@ -23,6 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 #include <stdbool.h>
+#include <assert.h>
 
 #include "headers/object-allocator.h"
 #include "headers/errors.h"
@@ -34,9 +35,10 @@
 #define WORD_SIZE                       (sizeof(void *))
 
 
-#define bytes_chunk_data(bs)            ((void *)(bs) + BYTES_CHUNK_HEADER_SIZE)
-#define bytes_chunk_offset(bs)          ((unsigned int)((bs)->size + (bs)->alignment + BYTES_CHUNK_HEADER_SIZE))
-#define bytes_chunk_get(pool, offset)   ((struct bytes_chunk_header *)((void *)(pool + offset)))
+#define bytes_chunk_data(bs)                        ((void *)(bs) + BYTES_CHUNK_HEADER_SIZE)
+#define bytes_chunk_offset(bs)                      ((unsigned int)((bs)->size + (bs)->alignment + BYTES_CHUNK_HEADER_SIZE))
+#define bytes_chunk_get_chunk(pool, offset)         ((struct bytes_chunk_header *)((void *)(pool + offset)))
+#define bytes_chunk_offset_from_pool(pointer, pool) ((unsigned int)((void *)(pointer) - (void *)(pool)))
 
 
 #define bytes_chunks_foreach(chunk_name, body)                                                                          \
@@ -74,102 +76,21 @@ static unsigned int allocated_bytes = 0;
 static unsigned int freed_bytes = 0;
 static void * bytes_pool_low_bound = (void *)bytes_pool + BYTES_CHUNK_HEADER_SIZE;
 static void * bytes_pool_high_bound = (void *)bytes_pool + MAX_BYTES_POOL_SIZE - BYTES_CHUNK_HEADER_SIZE;
-static struct defragmentation_info defragmentation_info;
-
-struct bytes_chunk_header * find_latest_free_chunk(unsigned int start_offset)
-{
-    unsigned int offset = start_offset;
-    struct bytes_chunk_header * last_chunk = NULL;
-    for (;;) {
-        if (offset >= bytes_pool_pos)
-            break;
-        struct bytes_chunk_header * chunk = bytes_chunk_get(bytes_pool, offset);
-        if (chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
-            break;
-        last_chunk = chunk;
-        offset += bytes_chunk_offset(chunk);
-    }
-    if (last_chunk != NULL && last_chunk->is_busy == 0) {
-        return last_chunk;
-    }
-    return NULL;
-}
 
 
-struct bytes_chunk_header * find_first_free_pair(unsigned int start_offset)
-{
-    unsigned int offset = start_offset;
-    for (;;) {
-        if (offset >= bytes_pool_pos)
-            break;
-        struct bytes_chunk_header * chunk = bytes_chunk_get(bytes_pool, offset);
-        if (chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
-            break;
-        unsigned int next_chunk_offset = offset + bytes_chunk_offset(chunk);
-        struct bytes_chunk_header * next_chunk = next_chunk_offset >= bytes_pool_pos
-                ? NULL
-                : bytes_chunk_get(bytes_pool, next_chunk_offset);
-        if (next_chunk == NULL || next_chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
-            break;
-        if (chunk->is_busy == 0 && next_chunk->is_busy == 0) {
-            return chunk;
-        }
-        offset = next_chunk_offset + bytes_chunk_offset(next_chunk);
-    }
-    return NULL;
-}
+static struct bytes_chunk_header * try_to_allocate_new_chunk(unsigned int len);
+static struct bytes_chunk_header * find_first_free_chunk_pair(unsigned int start_offset);
+static struct bytes_chunk_header * find_latest_free_chunk(unsigned int start_offset);
+static struct bytes_chunk_header * bytes_chunk_merge(struct bytes_chunk_header * onto, struct bytes_chunk_header * src);
+static struct bytes_chunk_header * find_free_chunk_of_size(unsigned int len);
 
-
-bool needs_defragmentation(struct defragmentation_info * defragmentation_info)
-{
-    defragmentation_info->first_free_chunk_pair = find_first_free_pair(0);
-    defragmentation_info->latest_free_chunk = find_latest_free_chunk(0);
-    return defragmentation_info->first_free_chunk_pair != NULL
-        || defragmentation_info->latest_free_chunk != NULL;
-}
-
-
-void do_defragmentation(struct defragmentation_info * defragmentation_info)
-{
-    /* TODO: implement defragmentation of bytes chunks */
-}
-
-
-struct bytes_chunk_header * find_free_chunk_of_size(unsigned int len)
-{
-    bytes_chunks_foreach(chunk, {
-        if (chunk->is_busy == 1)
-            continue;
-        if (chunk->size >= len)
-            return chunk;
-    });
-    return NULL;
-}
-
-
-struct bytes_chunk_header * try_to_allocate_new_chunk(unsigned int len)
-{
-    unsigned int full_chunk_size = len + BYTES_CHUNK_HEADER_SIZE;
-    unsigned int alignment = full_chunk_size % WORD_SIZE;
-    if (alignment != 0)
-        alignment = WORD_SIZE - alignment;
-    full_chunk_size += alignment;
-    if (bytes_pool_pos + full_chunk_size >= MAX_BYTES_POOL_SIZE) {
-        jcunit_fatal_error("Allocator bytes: out of memory!");
-    }
-    struct bytes_chunk_header * chunk = bytes_chunk_get(bytes_pool, bytes_pool_pos);
-    chunk->signature = BYTES_CHUNK_HEADER_SIGNATURE;
-    chunk->alignment = alignment;
-    chunk->size = len;
-    bytes_pool_pos += full_chunk_size;
-    return chunk;
-}
+static bool needs_defragmentation(struct defragmentation_info * defragmentation_info);
+static void do_defragmentation(struct defragmentation_info * defragmentation_info);
 
 
 void * alloc_bytes(unsigned int len)
 {
-    defragmentation_info.latest_free_chunk = NULL;
-    defragmentation_info.first_free_chunk_pair = NULL;
+    struct defragmentation_info defragmentation_info = {NULL, NULL};
     if (needs_defragmentation(&defragmentation_info)) {
         do_defragmentation(&defragmentation_info);
     }
@@ -259,12 +180,143 @@ void show_bytes_allocator_stats(FILE * output, bool show_leak_only)
         ++chunk_index;
         fprintf(
             output,
-            "\t\t%u) %c size: %u, alignment: %u\n",
+            "\t\t%u) %c size: %u, alignment: %u (%s)\n",
             chunk_index,
             chunk->is_busy ? 'C' : 'F',
             chunk->size,
-            chunk->alignment
+            chunk->alignment,
+            (BYTES_CHUNK_HEADER_SIZE + chunk->size + chunk->alignment) % WORD_SIZE == 0 ? "aligned" : "not aligned"
         );
     });
     fflush(output);
+}
+
+
+struct bytes_chunk_header * bytes_chunk_merge(struct bytes_chunk_header * onto, struct bytes_chunk_header * src)
+{
+    assert(onto != NULL);
+    assert(src != NULL);
+
+    if (onto->is_busy == 1 || src->is_busy == 1) {
+        jcunit_fatal_error("Cannot merge any busy chunks!");
+    }
+
+    unsigned int new_chunk_size = onto->size + onto->alignment + bytes_chunk_offset(src);
+
+    /* destroy chunk entry */
+    src->signature = 0;
+
+    onto->size = new_chunk_size;
+    onto->alignment = 0;
+
+    if ((onto->size + BYTES_CHUNK_HEADER_SIZE) % WORD_SIZE != 0) {
+        jcunit_fatal_error("One of chunks were not aligned!\n");
+    }
+
+    return onto;
+}
+
+
+struct bytes_chunk_header * find_latest_free_chunk(unsigned int start_offset)
+{
+    unsigned int offset = start_offset;
+    struct bytes_chunk_header * last_chunk = NULL;
+    for (;;) {
+        if (offset >= bytes_pool_pos)
+            break;
+        struct bytes_chunk_header * chunk = bytes_chunk_get_chunk(bytes_pool, offset);
+        if (chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
+            break;
+        last_chunk = chunk;
+        offset += bytes_chunk_offset(chunk);
+    }
+    if (last_chunk != NULL && last_chunk->is_busy == 0) {
+        return last_chunk;
+    }
+    return NULL;
+}
+
+
+struct bytes_chunk_header * find_first_free_chunk_pair(unsigned int start_offset)
+{
+    unsigned int offset = start_offset;
+    for (;;) {
+        if (offset >= bytes_pool_pos)
+            break;
+        struct bytes_chunk_header * chunk = bytes_chunk_get_chunk(bytes_pool, offset);
+        if (chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
+            break;
+        unsigned int next_chunk_offset = offset + bytes_chunk_offset(chunk);
+        struct bytes_chunk_header * next_chunk = next_chunk_offset >= bytes_pool_pos
+                                                 ? NULL
+                                                 : bytes_chunk_get_chunk(bytes_pool, next_chunk_offset);
+        if (next_chunk == NULL || next_chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
+            break;
+        if (chunk->is_busy == 0 && next_chunk->is_busy == 0) {
+            return chunk;
+        }
+        offset = next_chunk_offset + bytes_chunk_offset(next_chunk);
+    }
+    return NULL;
+}
+
+
+struct bytes_chunk_header * find_free_chunk_of_size(unsigned int len)
+{
+    bytes_chunks_foreach(chunk, {
+        if (chunk->is_busy == 1)
+            continue;
+        if (chunk->size >= len)
+            return chunk;
+    });
+    return NULL;
+}
+
+
+struct bytes_chunk_header * try_to_allocate_new_chunk(unsigned int len)
+{
+    unsigned int full_chunk_size = len + BYTES_CHUNK_HEADER_SIZE;
+    unsigned int alignment = full_chunk_size % WORD_SIZE;
+    if (alignment != 0)
+        alignment = WORD_SIZE - alignment;
+    full_chunk_size += alignment;
+    if (bytes_pool_pos + full_chunk_size >= MAX_BYTES_POOL_SIZE) {
+        jcunit_fatal_error("Allocator bytes: out of memory!");
+    }
+    struct bytes_chunk_header * chunk = bytes_chunk_get_chunk(bytes_pool, bytes_pool_pos);
+    chunk->signature = BYTES_CHUNK_HEADER_SIGNATURE;
+    chunk->alignment = alignment;
+    chunk->size = len;
+    bytes_pool_pos += full_chunk_size;
+    return chunk;
+}
+
+
+bool needs_defragmentation(struct defragmentation_info * defragmentation_info)
+{
+    defragmentation_info->first_free_chunk_pair = find_first_free_chunk_pair(0);
+    defragmentation_info->latest_free_chunk = find_latest_free_chunk(0);
+    return defragmentation_info->first_free_chunk_pair != NULL
+           || defragmentation_info->latest_free_chunk != NULL;
+}
+
+
+void do_defragmentation(struct defragmentation_info * defragmentation_info)
+{
+    if (defragmentation_info->first_free_chunk_pair != NULL) {
+        unsigned int offset;
+        struct bytes_chunk_header * first_chunk, * second_chunk;
+        for (;;) {
+            first_chunk = defragmentation_info->first_free_chunk_pair;
+            offset = bytes_chunk_offset_from_pool(defragmentation_info->first_free_chunk_pair, bytes_pool);
+            offset += bytes_chunk_offset(first_chunk);
+            second_chunk = bytes_chunk_get_chunk(bytes_pool, offset);
+            bytes_chunk_merge(first_chunk, second_chunk);
+            offset += bytes_chunk_offset(second_chunk);
+            defragmentation_info->first_free_chunk_pair = find_first_free_chunk_pair(offset);
+            if (defragmentation_info->first_free_chunk_pair == NULL) {
+                break;
+            }
+        }
+    }
 }
