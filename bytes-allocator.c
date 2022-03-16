@@ -66,7 +66,7 @@ struct bytes_chunk_header
 struct defragmentation_info
 {
     struct bytes_chunk_header * first_free_chunk_pair;
-    struct bytes_chunk_header * latest_free_chunk;
+    struct bytes_chunk_header * first_free_chunk_between_busy_chunks;
 };
 
 
@@ -80,7 +80,7 @@ static void * bytes_pool_high_bound = (void *)bytes_pool + MAX_BYTES_POOL_SIZE -
 
 static struct bytes_chunk_header * try_to_allocate_new_chunk(unsigned int len);
 static struct bytes_chunk_header * find_first_free_chunk_pair(unsigned int start_offset);
-static struct bytes_chunk_header * find_latest_free_chunk(unsigned int start_offset);
+/* static struct bytes_chunk_header * find_latest_free_chunk(unsigned int start_offset); */
 static struct bytes_chunk_header * bytes_chunk_merge(struct bytes_chunk_header * onto, struct bytes_chunk_header * src);
 static struct bytes_chunk_header * find_free_chunk_of_size(unsigned int len);
 
@@ -149,7 +149,8 @@ void show_bytes_allocator_stats(FILE * output, bool show_leak_only)
     unsigned int chunks_occupied_mem = chunk_count * (unsigned int)BYTES_CHUNK_HEADER_SIZE;
     fprintf(
         output,
-        "\tchunk descriptor size: %lu, chunk_count: %u, chunks occupied mem: %u, mem size in chunks: %u, mem for align chunks: %u\n",
+        "\tchunk descriptor size: %lu, chunk_count: %u, chunks occupied mem: %u, "
+        "mem size in chunks: %u, mem for align chunks: %u\n",
         BYTES_CHUNK_HEADER_SIZE,
         chunk_count,
         chunks_occupied_mem,
@@ -197,10 +198,6 @@ struct bytes_chunk_header * bytes_chunk_merge(struct bytes_chunk_header * onto, 
     assert(onto != NULL);
     assert(src != NULL);
 
-    if (onto->is_busy == 1 || src->is_busy == 1) {
-        jcunit_fatal_error("Cannot merge any busy chunks!");
-    }
-
     unsigned int new_chunk_size = onto->size + onto->alignment + bytes_chunk_offset(src);
 
     /* destroy chunk entry */
@@ -217,6 +214,7 @@ struct bytes_chunk_header * bytes_chunk_merge(struct bytes_chunk_header * onto, 
 }
 
 
+/* TODO: it needs to review */
 struct bytes_chunk_header * find_latest_free_chunk(unsigned int start_offset)
 {
     unsigned int offset = start_offset;
@@ -236,6 +234,35 @@ struct bytes_chunk_header * find_latest_free_chunk(unsigned int start_offset)
     return NULL;
 }
 
+struct bytes_chunk_header * find_first_free_chunk_between_busy_chunks(unsigned int start_offset)
+{
+    unsigned int offset = start_offset;
+    for (;;) {
+        if (offset >= bytes_pool_pos)
+            break;
+        struct bytes_chunk_header * chunk = bytes_chunk_get_chunk(bytes_pool, offset);
+        if (chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
+            break;
+        unsigned int next_chunk_offset = offset + bytes_chunk_offset(chunk);
+        struct bytes_chunk_header * next_chunk = next_chunk_offset >= bytes_pool_pos
+                ? NULL
+                : bytes_chunk_get_chunk(bytes_pool, next_chunk_offset);
+        if (next_chunk == NULL || next_chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
+            break;
+        unsigned int next_next_chunk_offset = next_chunk_offset + bytes_chunk_offset(next_chunk);
+        struct bytes_chunk_header * next_next_chunk = next_next_chunk_offset >= bytes_pool_pos
+                ? NULL
+                : bytes_chunk_get_chunk(bytes_pool, next_next_chunk_offset);
+        if (next_next_chunk == NULL || next_next_chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
+            break;
+        if (chunk->is_busy == 1 && next_chunk->is_busy == 0 && next_next_chunk->is_busy == 1) {
+            return chunk;
+        }
+        offset = next_next_chunk_offset + bytes_chunk_offset(next_next_chunk);
+    }
+    return NULL;
+}
+
 
 struct bytes_chunk_header * find_first_free_chunk_pair(unsigned int start_offset)
 {
@@ -248,8 +275,8 @@ struct bytes_chunk_header * find_first_free_chunk_pair(unsigned int start_offset
             break;
         unsigned int next_chunk_offset = offset + bytes_chunk_offset(chunk);
         struct bytes_chunk_header * next_chunk = next_chunk_offset >= bytes_pool_pos
-                                                 ? NULL
-                                                 : bytes_chunk_get_chunk(bytes_pool, next_chunk_offset);
+                ? NULL
+                : bytes_chunk_get_chunk(bytes_pool, next_chunk_offset);
         if (next_chunk == NULL || next_chunk->signature != BYTES_CHUNK_HEADER_SIGNATURE)
             break;
         if (chunk->is_busy == 0 && next_chunk->is_busy == 0) {
@@ -295,9 +322,9 @@ struct bytes_chunk_header * try_to_allocate_new_chunk(unsigned int len)
 bool needs_defragmentation(struct defragmentation_info * defragmentation_info)
 {
     defragmentation_info->first_free_chunk_pair = find_first_free_chunk_pair(0);
-    defragmentation_info->latest_free_chunk = find_latest_free_chunk(0);
+    defragmentation_info->first_free_chunk_between_busy_chunks = find_first_free_chunk_between_busy_chunks(0);
     return defragmentation_info->first_free_chunk_pair != NULL
-           || defragmentation_info->latest_free_chunk != NULL;
+        || defragmentation_info->first_free_chunk_between_busy_chunks != NULL;
 }
 
 
@@ -311,10 +338,39 @@ void do_defragmentation(struct defragmentation_info * defragmentation_info)
             offset = bytes_chunk_offset_from_pool(defragmentation_info->first_free_chunk_pair, bytes_pool);
             offset += bytes_chunk_offset(first_chunk);
             second_chunk = bytes_chunk_get_chunk(bytes_pool, offset);
+            if (first_chunk->is_busy == 1 || second_chunk->is_busy == 1) {
+                jcunit_fatal_error("Cannot merge any busy chunks!");
+            }
             bytes_chunk_merge(first_chunk, second_chunk);
             offset += bytes_chunk_offset(second_chunk);
             defragmentation_info->first_free_chunk_pair = find_first_free_chunk_pair(offset);
             if (defragmentation_info->first_free_chunk_pair == NULL) {
+                break;
+            }
+        }
+    }
+    if (defragmentation_info->first_free_chunk_between_busy_chunks != NULL) {
+        unsigned int offset;
+        struct bytes_chunk_header * first_chunk, * second_chunk;
+        for (;;) {
+            first_chunk = defragmentation_info->first_free_chunk_between_busy_chunks;
+            offset = bytes_chunk_offset_from_pool(
+                defragmentation_info->first_free_chunk_between_busy_chunks,
+                bytes_pool
+            );
+            offset += bytes_chunk_offset(first_chunk);
+            second_chunk = bytes_chunk_get_chunk(bytes_pool, offset);
+            if (second_chunk->is_busy != 0) {
+                jcunit_fatal_error("Cannot merge a chunk with another busy chunk!");
+            }
+            allocated_bytes -= first_chunk->size;
+            bytes_chunk_merge(first_chunk, second_chunk);
+            allocated_bytes += first_chunk->size;
+            offset += bytes_chunk_offset(second_chunk);
+            defragmentation_info->first_free_chunk_between_busy_chunks = find_first_free_chunk_between_busy_chunks(
+                offset
+            );
+            if (defragmentation_info->first_free_chunk_between_busy_chunks == NULL) {
                 break;
             }
         }
