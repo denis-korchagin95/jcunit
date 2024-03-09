@@ -43,15 +43,17 @@ int main(int argc, char * argv[])
     memset(&application_context, 0, sizeof(struct application_context));
     init_application_context(&application_context);
 
+    int exit_code = 0;
+
     parse_options(argc, argv, &application_context);
 
     if (application_context.options & OPTION_SHOW_HELP) {
         show_help(PROGRAM_NAME, stdout);
-        exit(0);
+        exit(exit_code);
     }
     if (application_context.options & OPTION_SHOW_VERSION) {
         fprintf(stdout, "%s version %s\n", PROGRAM_NAME, JCUNIT_VERSION);
-        exit(0);
+        exit(exit_code);
     }
 
     struct slist sources;
@@ -75,6 +77,10 @@ int main(int argc, char * argv[])
 
     run_suites(&test_suites, &tests_results, &application_context, stdout);
 
+    if (tests_results->error_count > 0 || tests_results->failure_count > 0) {
+        exit_code = 2;
+    }
+
     release_test_suites(&test_suites);
     release_tests_results(tests_results);
     tests_results = NULL;
@@ -90,7 +96,7 @@ int main(int argc, char * argv[])
 
     fflush(stdout);
 
-    return 0;
+    exit(exit_code);
 }
 
 void show_help(const char * name, FILE * output)
