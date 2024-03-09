@@ -24,6 +24,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory.h>
 
 #include "headers/token.h"
 #include "headers/object-allocator.h"
@@ -39,6 +40,7 @@ void show_help(const char * name, FILE * output);
 int main(int argc, char * argv[])
 {
     struct application_context application_context;
+    memset(&application_context, 0, sizeof(struct application_context));
     init_application_context(&application_context);
 
     parse_options(argc, argv, &application_context);
