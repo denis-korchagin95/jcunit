@@ -6,20 +6,19 @@
 
 
 #include "headers/runner.h"
-#include "headers/object-allocator.h"
-#include "headers/bytes-allocator.h"
 #include "headers/child-process.h"
 #include "headers/fs.h"
 #include "headers/errors.h"
+#include "headers/allocator.h"
 
 
 #define MAX_PROCESS_OUTPUT_BUFFER_LEN (8192)
 #define MAX_TEST_GIVEN_FILENAME_LEN (255)
 
 
-static void fill_file_from_string(FILE * file, struct string * content);
+static void fill_file_from_string(FILE * file, const struct string * content);
 static struct program_runner_test_result * make_program_runner_test_result(struct program_runner_test * test);
-static void make_given_file(struct string * filename, struct string * content);
+static void make_given_file(const struct string * filename, const struct string * content);
 static void resolve_given_filename(struct program_runner_test * test, struct program_runner_test_result * test_result);
 static void try_to_run_program(
     const char * program,
@@ -57,15 +56,14 @@ struct abstract_test_result * test_run(struct abstract_test * test)
     return runner(test);
 }
 
-void fill_file_from_string(FILE * file, struct string * content)
+void fill_file_from_string(FILE * file, const struct string * content)
 {
-    fwrite((const void *)content->value, sizeof(char), content->len, file);
+    fwrite(content->value, sizeof(char), content->len, file);
 }
 
 struct program_runner_test_result * make_program_runner_test_result(struct program_runner_test * test)
 {
-    struct program_runner_test_result * test_result = alloc_program_runner_test_result();
-    memset((void *)test_result, 0, sizeof(struct program_runner_test_result));
+    main_pool_alloc(struct program_runner_test_result, test_result)
     test_result->base.test = (struct abstract_test *) test;
     test_result->base.name = test->base.name;
     test->base.name->flags |= STRING_FLAG_DONT_RELEASE;
@@ -73,7 +71,7 @@ struct program_runner_test_result * make_program_runner_test_result(struct progr
     return test_result;
 }
 
-void make_given_file(struct string * filename, struct string * content)
+void make_given_file(const struct string * filename, const struct string * content)
 {
     FILE * file = fopen(filename->value, "w");
     if (file == NULL) {
@@ -164,10 +162,9 @@ bool is_test_passes(struct string * expected, struct process_output * output)
 
 struct tests_results * make_tests_results(unsigned int total_tests_count)
 {
-    struct tests_results * tests_results = alloc_tests_results();
-    memset((void *)tests_results, 0, sizeof(struct tests_results));
+    main_pool_alloc(struct tests_results, tests_results)
     tests_results->results_count = total_tests_count;
-    tests_results->results = (struct abstract_test_result **) alloc_bytes(total_tests_count * sizeof(void *));
+    tests_results->results = (struct abstract_test_result **) memory_blob_pool_alloc(&temporary_pool, total_tests_count * sizeof(void *));
     return tests_results;
 }
 
@@ -261,8 +258,7 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
 
 struct abstract_test_result * run_incomplete_test(struct abstract_test * test)
 {
-    struct abstract_test_result * test_result = alloc_abstract_test_result();
-    memset((void *)test_result, 0, sizeof(struct abstract_test_result));
+    main_pool_alloc(struct abstract_test_result, test_result)
     test_result->kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     test_result->status = TEST_RESULT_STATUS_INCOMPLETE;
     test_result->name = test->name;
@@ -272,8 +268,7 @@ struct abstract_test_result * run_incomplete_test(struct abstract_test * test)
 
 struct abstract_test_result * run_skipped_test(struct abstract_test * test)
 {
-    struct abstract_test_result * test_result = alloc_abstract_test_result();
-    memset((void *)test_result, 0, sizeof(struct abstract_test_result));
+    main_pool_alloc(struct abstract_test_result, test_result)
     test_result->kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     test_result->status = TEST_RESULT_STATUS_SKIPPED;
     test_result->name = test->name;

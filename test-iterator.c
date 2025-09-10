@@ -2,8 +2,7 @@
 #include <assert.h>
 
 #include "headers/test-iterator.h"
-#include "headers/object-allocator.h"
-#include "headers/bytes-allocator.h"
+#include "headers/allocator.h"
 
 static unsigned int get_total_tests_count(struct test_suite ** suites, unsigned int suites_count);
 
@@ -13,7 +12,7 @@ void test_iterator_init_by_suites(
     unsigned int suites_count
 ) {
     unsigned int total_tests_count = get_total_tests_count(suites, suites_count);
-    iterator->tests = (struct abstract_test **) alloc_bytes(total_tests_count * sizeof(void *));
+    iterator->tests = (struct abstract_test **) memory_blob_pool_alloc(&temporary_pool, total_tests_count * sizeof(void *));
     /* iterator initialization */
     {
         unsigned int suite_iterator, test_iterator, tests_count;
@@ -33,7 +32,6 @@ void test_iterator_destroy(struct test_iterator * iterator)
 {
     assert(iterator != NULL);
     if (iterator->tests != NULL) {
-        free_bytes((void *)iterator->tests);
         iterator->tests = NULL;
     }
 }
@@ -59,9 +57,12 @@ unsigned int get_total_tests_count(struct test_suite ** suites, unsigned int sui
 {
     unsigned int tests_count = 0;
     unsigned int i;
+
     for (i = 0; i < suites_count; ++i) {
-        struct test_suite * suite = suites[i];
+        const struct test_suite * suite = suites[i];
+
         tests_count += suite->tests_count;
     }
+
     return tests_count;
 }
