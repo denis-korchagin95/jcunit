@@ -1,10 +1,9 @@
 #include "../headers/token.h"
-#include "../headers/print.h"
 #include "../headers/compiler.h"
 #include "../headers/errors.h"
 #include "../headers/application.h"
 #include "../headers/source.h"
-
+#include "../headers/allocator.h"
 
 int main(int argc, char * argv[])
 {
@@ -12,12 +11,16 @@ int main(int argc, char * argv[])
         jcunit_fatal_error("No specified args!");
     }
 
+    memory_blob_pool_init_pools();
+
     struct slist sources;
 
     fetch_sources(argc, argv, &sources);
 
     init_tokenizer();
     (void)compile_test_suite(list_get_owner(sources.next, struct source, list_entry));
+
+    memory_blob_pool_destroy_pools();
 
     return 0;
 }

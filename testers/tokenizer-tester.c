@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "../headers/allocator.h"
 #include "../headers/token.h"
 #include "../headers/print.h"
 #include "../headers/errors.h"
@@ -10,6 +11,8 @@ int main(int argc, char * argv[])
     if (argc <= 1) {
         jcunit_fatal_error("No specified args!");
     }
+
+    memory_blob_pool_init_pools();
 
     init_tokenizer();
 
@@ -25,7 +28,7 @@ int main(int argc, char * argv[])
         }
     }
 
-    destroy_tokenizer_context(context);
+    memory_blob_pool_destroy_pools();
 
     return 0;
 }

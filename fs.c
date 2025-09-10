@@ -10,10 +10,9 @@
 #include <limits.h>
 
 #include "headers/fs.h"
-#include "headers/object-allocator.h"
-#include "headers/bytes-allocator.h"
 #include "headers/errors.h"
 #include "headers/util.h"
+#include "headers/allocator.h"
 
 #define GET_ENTRY_PATH_ADD_PATH_SEPARATOR (1)
 
@@ -100,7 +99,7 @@ void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * con
                 ) {
                     continue;
                 }
-                struct path_list * new_directory = alloc_path_list();
+                main_pool_alloc(struct path_list, new_directory);
                 list_init(&new_directory->list_entry);
                 new_directory->path = get_entry_path(current_path->path, current_path_len, dirent, GET_ENTRY_PATH_ADD_PATH_SEPARATOR);
                 list_append(&queue, &new_directory->list_entry);
@@ -113,13 +112,11 @@ void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * con
             unsigned int fs_flags = 0;
             request_to_quit = !read_dir_func(file_entry_path, context, &fs_flags);
             if ((fs_flags & FS_FLAG_USE_PATH) == 0) {
-                free_bytes((void *) file_entry_path);
                 file_entry_path = NULL;
             }
         }
 
         if (current_path != &base_path) {
-            release_path_list(current_path);
             current_path = NULL;
         }
         (void) closedir(dir);

@@ -3,11 +3,12 @@
 #include <memory.h>
 
 #include "headers/token.h"
-#include "headers/object-allocator.h"
-#include "headers/bytes-allocator.h"
 #include "headers/version.h"
 #include "headers/options.h"
 #include "headers/application.h"
+#include "headers/runner.h"
+#include "headers/allocator.h"
+#include "headers/source.h"
 
 #define PROGRAM_NAME "jcunit"
 
@@ -18,6 +19,7 @@ int main(int argc, char * argv[])
     struct application_context application_context;
     memset(&application_context, 0, sizeof(struct application_context));
     init_application_context(&application_context);
+    init_tokenizer();
 
     int exit_code = 0;
 
@@ -32,14 +34,14 @@ int main(int argc, char * argv[])
         exit(exit_code);
     }
 
+    memory_blob_pool_init_pools();
+
     struct slist sources;
     slist_init(&sources);
 
     fetch_sources(argc, argv, &sources);
 
     /* TODO: FIXME - check on empty sources */
-
-    init_tokenizer();
 
     struct test_suites test_suites;
 
@@ -57,18 +59,8 @@ int main(int argc, char * argv[])
         exit_code = 2;
     }
 
-    release_test_suites(&test_suites);
-    release_tests_results(tests_results);
-    tests_results = NULL;
-
-    if (application_context.options & OPTION_SHOW_ALLOCATORS_STATS) {
-        fprintf(stdout, "\n\n\n");
-
-        bool show_leak_only = (application_context.options & OPTION_SHOW_ALLOCATORS_STATS_LEAK_ONLY) > 0 ? true : false;
-
-        show_allocators_stats(stdout, show_leak_only);
-        show_bytes_allocator_stats(stdout, show_leak_only);
-    }
+    /** TODO: register function at exit for free this pools */
+    memory_blob_pool_destroy_pools();
 
     fflush(stdout);
 
@@ -83,7 +75,4 @@ void show_help(const char * name, FILE * output)
                     "The mode of showing the results of testing.\n\n");
     fprintf(output, "\t--help\n\t    Show this message.\n\n");
     fprintf(output, "\t--version\n\t    Show version of this program.\n\n");
-    fprintf(output, "\t--show-allocators-stats\n\t    Show statistics of memory allocators (for developers).\n\n");
-    fprintf(output, "\t--show-allocators-stats-leak-only\n\t    "
-                    "Show statistics of memory allocators which has a memory leak (for developers).\n\n");
 }

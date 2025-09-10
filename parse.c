@@ -3,8 +3,8 @@
 
 #include "headers/parse.h"
 #include "headers/ast.h"
-#include "headers/object-allocator.h"
 #include "headers/errors.h"
+#include "headers/allocator.h"
 
 
 struct directive_parse_context
@@ -42,7 +42,6 @@ struct slist * parse_test_suite(struct tokenizer_context * context)
                     unget_one_token(context, token);
                     break;
                 }
-                release_token(token);
             }
             continue;
         }
@@ -126,7 +125,6 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
         last_ch = token->content.ch;
         *w++ = (char)last_ch;
         ++len;
-        release_token(token);
     }
     if (!is_token_directive(token)) { /* TODO: test it, make configurable 'max_requirement_content_size' */
         jcunit_fatal_error("The requirement's content of the test too long!");
@@ -149,7 +147,6 @@ void parse_test_prolog(struct tokenizer_context * context, struct ast_test ** as
     if (!string_equals_with_cstring(directive, "test")) {
         jcunit_fatal_error("Expected test directive, but given '%.*s'!", directive->len, directive->value);
     }
-    release_string(directive);
     directive = NULL;
 }
 
@@ -169,7 +166,6 @@ void parse_test_epilog(struct tokenizer_context * context)
     if (!list_is_empty(&arguments)) {
         jcunit_fatal_error("Unexpected arguments for the 'endtest' directive!");
     }
-    release_string(directive);
     directive = NULL;
 }
 
@@ -188,13 +184,11 @@ void parse_directive_arguments(struct tokenizer_context * context, struct direct
             unget_one_token(context, token);
             break;
         }
-        release_token(token);
     }
     token = get_one_token(context);
     if (!is_token_punctuator(token, ')')) {
         jcunit_fatal_error("Expected ')' at end of directive argument!");
     }
-    release_token(token);
 }
 
 void parse_directive_argument(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context)
@@ -210,12 +204,11 @@ void parse_directive_argument(struct tokenizer_context * context, struct directi
     if (directive_parse_context->has_unnamed_argument) {
         jcunit_fatal_error("A directive cannot have two unnamed arguments!");
     }
-    struct ast_requirement_argument * argument = alloc_ast_requirement_argument();
+    main_pool_alloc(struct ast_requirement_argument, argument)
     argument->name = NULL;
     argument->value = token->content.string;
     slist_append(directive_parse_context->arguments_end, &argument->list_entry);
     directive_parse_context->has_unnamed_argument = true;
-    release_token(token);
 }
 
 void parse_named_directive_argument(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context)
@@ -223,21 +216,18 @@ void parse_named_directive_argument(struct tokenizer_context * context, struct d
     struct token * token = get_one_token(context);
     struct string * name = NULL;
     name = token->content.string;
-    release_token(token);
     token = get_one_token(context);
     if (!is_token_punctuator(token, '=')) {
         jcunit_fatal_error("Expected '=' after name of argument!");
     }
-    release_token(token);
     token = get_one_token(context);
     if (!is_token_string(token)) {
         jcunit_fatal_error("Expected value of the named argument as a string!");
     }
-    struct ast_requirement_argument * argument = alloc_ast_requirement_argument();
+    main_pool_alloc(struct ast_requirement_argument, argument)
     argument->name = name;
     argument->value = token->content.string;
     slist_append(directive_parse_context->arguments_end, &argument->list_entry);
-    release_token(token);
 }
 
 void parse_directive(struct tokenizer_context * context, struct directive_parse_context * directive_parse_context)
@@ -250,8 +240,6 @@ void parse_directive(struct tokenizer_context * context, struct directive_parse_
 
     *directive_parse_context->directive = token->content.string;
 
-    release_token(token);
-
     unsigned int oldmode = context->mode;
     context->mode = TOKENIZER_MODE_NONE;
 
@@ -259,7 +247,6 @@ void parse_directive(struct tokenizer_context * context, struct directive_parse_
 
     if (ch == '(') {
         token = get_one_token(context);
-        release_token(token);
 
         parse_directive_arguments(context, directive_parse_context);
     }
@@ -269,8 +256,6 @@ void parse_directive(struct tokenizer_context * context, struct directive_parse_
     if (!is_token_newline(token)) {
         jcunit_fatal_error("Expected newline character after directive!");
     }
-
-    release_token(token);
 
     context->mode = oldmode;
 }
