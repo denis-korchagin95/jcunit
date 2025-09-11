@@ -10,6 +10,7 @@
 #include "headers/allocator.h"
 #include "headers/errors.h"
 #include "headers/source.h"
+#include "headers/test-iterator.h"
 #include "headers/util.h"
 
 #define PROGRAM_NAME "jcunit"
@@ -47,7 +48,10 @@ int main(int argc, char * argv[])
 
     fetch_sources(argc, argv, &sources);
 
-    /* TODO: FIXME - check on empty sources */
+    if (slist_count(&sources) == 0) {
+        fprintf(stdout, "No sources found!\n");
+        exit(exit_code);
+    }
 
     struct test_suites test_suites;
 
@@ -55,7 +59,10 @@ int main(int argc, char * argv[])
 
     slist_protect(&sources);
 
-    /* TODO: FIXME - check on empty test suites */
+    if (get_total_tests_count(test_suites.suites, test_suites.suites_count) == 0) {
+        fprintf(stdout, "No tests executed!\n");
+        exit(exit_code);
+    }
 
     struct tests_results * tests_results = NULL;
 

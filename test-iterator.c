@@ -4,8 +4,6 @@
 #include "headers/test-iterator.h"
 #include "headers/allocator.h"
 
-static unsigned int get_total_tests_count(struct test_suite ** suites, unsigned int suites_count);
-
 void test_iterator_init_by_suites(
     struct test_iterator * iterator,
     struct test_suite ** suites,
