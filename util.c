@@ -38,3 +38,8 @@ const char * duplicate_cstring(const char * src)
     dest[len] = '\0';
     return dest;
 }
+
+void cleanup(void)
+{
+    memory_blob_pool_destroy_pools();
+}
