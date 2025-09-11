@@ -40,9 +40,7 @@ There are 1 failures:
 --- Expected
 Some output$
 +++ Actual
-                                                   (100%)
-
-Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+No tests executed!
 $
 
 Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
@@ -82,9 +80,7 @@ There are 1 failures:
 --- Expected
 Some output$
 +++ Actual
-                                                   (100%)
-
-Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+No tests executed!
 $
 
 Passed: 0, Skipped: 0, Errors: 1, Failed: 1, Incomplete: 0

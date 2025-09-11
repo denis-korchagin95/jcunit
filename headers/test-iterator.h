@@ -37,4 +37,6 @@ struct abstract_test_result * test_iterator_visit(
     struct tests_results * tests_results
 );
 
+unsigned int get_total_tests_count(struct test_suite ** suites, unsigned int suites_count);
+
 #endif /* JCUNIT_TEST_ITERATOR_H */

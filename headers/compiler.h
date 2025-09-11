@@ -31,7 +31,7 @@ struct abstract_test {
 };
 
 struct program_runner_test {
-    struct abstract_test base;         /* this must be a first member */
+    struct abstract_test base;         /* this must be the first member */
     struct string * given_filename;
     struct string * given_file_content;
     struct string * program_path;

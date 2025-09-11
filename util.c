@@ -3,8 +3,13 @@
 
 
 #include "headers/util.h"
-#include "headers/bytes-allocator.h"
+#include "headers/allocator.h"
 
+
+size_t align_up(const size_t size, const size_t alignment)
+{
+    return (size + alignment - 1) & ~(alignment - 1);
+}
 
 const char * basename(const char * path)
 {
@@ -27,9 +32,14 @@ const char * basename(const char * path)
 
 const char * duplicate_cstring(const char * src)
 {
-    unsigned int len = strlen(src);
-    char * dest = alloc_bytes(len + 1);
+    const unsigned int len = strlen(src);
+    char * dest = memory_blob_pool_alloc(&temporary_pool, len + 1);
     strcpy(dest, src);
     dest[len] = '\0';
     return dest;
+}
+
+void cleanup(void)
+{
+    memory_blob_pool_destroy_pools();
 }

@@ -1,5 +1,5 @@
 #include "headers/list.h"
-#include "headers/object-allocator.h"
+#include "headers/allocator.h"
 
 static void do_list_add(struct list * new, struct list * prev, struct list * next)
 {
@@ -11,7 +11,7 @@ static void do_list_add(struct list * new, struct list * prev, struct list * nex
 
 struct slist * make_slist(void)
 {
-    struct slist * list = alloc_slist();
+    main_pool_alloc(struct slist, list)
     list->next = list;
     return list;
 }

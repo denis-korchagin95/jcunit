@@ -31,8 +31,6 @@ all: build
 
 OBJECTS+=main.o
 OBJECTS+=tokenizer.o
-OBJECTS+=bytes-allocator.o
-OBJECTS+=object-allocator.o
 OBJECTS+=string.o
 OBJECTS+=list.o
 OBJECTS+=ast.o
@@ -49,20 +47,20 @@ OBJECTS+=source.o
 OBJECTS+=options.o
 OBJECTS+=application.o
 OBJECTS+=errors.o
+OBJECTS+=allocator.o
 
 ifeq ($(DEVELOPMENT), 1)
 	OBJECTS+=print.o
 endif
 
-OBJECTS_TOKENIZER_TESTER=$(TESTERS_PATH)tokenizer-tester.o print.o tokenizer.o bytes-allocator.o object-allocator.o string.o util.o options.o \
-errors.o
-OBJECTS_TOKENIZER_SPECIAL_MODE_TESTER=$(TESTERS_PATH)tokenizer-special-mode-tester.o print.o tokenizer.o bytes-allocator.o \
-object-allocator.o string.o util.o options.o errors.o
-OBJECTS_PARSER_TESTER=$(TESTERS_PATH)parser-tester.o print.o tokenizer.o bytes-allocator.o object-allocator.o string.o util.o options.o parse.o \
-ast.o list.o errors.o
-OBJECTS_COMPILER_TESTER=$(TESTERS_PATH)compiler-tester.o print.o tokenizer.o bytes-allocator.o object-allocator.o string.o util.o options.o \
+OBJECTS_TOKENIZER_TESTER=$(TESTERS_PATH)tokenizer-tester.o print.o tokenizer.o string.o util.o options.o errors.o allocator.o
+OBJECTS_TOKENIZER_SPECIAL_MODE_TESTER=$(TESTERS_PATH)tokenizer-special-mode-tester.o print.o tokenizer.o \
+string.o util.o options.o errors.o allocator.o
+OBJECTS_PARSER_TESTER=$(TESTERS_PATH)parser-tester.o print.o tokenizer.o string.o util.o options.o parse.o \
+ast.o list.o errors.o allocator.o
+OBJECTS_COMPILER_TESTER=$(TESTERS_PATH)compiler-tester.o print.o tokenizer.o string.o util.o options.o \
 parse.o ast.o list.o compiler.o errors.o application.o fs.o source.o show-result.o test-iterator.o runner.o \
-child-process.o
+child-process.o allocator.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
@@ -83,7 +81,7 @@ dependencies:
 	@rm -rf $(DEPENDENCIES_FILE)
 	@$(foreach file, $(OBJECTS), $(CC) -MT $(OBJ)$(file) -MM $(patsubst %.o, %.c, $(file)) >> $(DEPENDENCIES_FILE);)
 
-testers: $(TESTERS)
+build-testers: $(TESTERS)
 
 install: build
 	cp $(BIN)$(PROGRAM) $(INSTALL_PATH)$(PROGRAM)

@@ -4,10 +4,11 @@
 #include "headers/compiler.h"
 #include "headers/token.h"
 #include "headers/parse.h"
-#include "headers/object-allocator.h"
-#include "headers/bytes-allocator.h"
 #include "headers/util.h"
 #include "headers/errors.h"
+#include "headers/allocator.h"
+#include "headers/ast.h"
+#include "headers/source.h"
 
 
 #define WHEN_RUN_REQUIREMENT_NAME           "whenRun"
@@ -61,12 +62,7 @@ struct test_suite * compile_test_suite(struct source * source)
 
     struct slist * ast_tests = parse_test_suite(context);
 
-    destroy_tokenizer_context(context);
-
     struct test_suite * test_suite = do_compile_test_suite(source, ast_tests);
-
-    release_ast_tests(ast_tests);
-    free_slist(ast_tests);
 
     return test_suite;
 }
@@ -100,12 +96,11 @@ struct test_suite * do_compile_test_suite(struct source * source, struct slist *
 
 struct test_suite * make_test_suite(struct source * source, const char * name, unsigned int tests_count)
 {
-    struct test_suite * test_suite = alloc_test_suite();
-    memset((void *)test_suite, 0, sizeof(struct test_suite));
+    main_pool_alloc(struct test_suite, test_suite)
     test_suite->name = name;
     test_suite->source = source;
     test_suite->tests_count = tests_count;
-    test_suite->tests = (struct abstract_test **) alloc_bytes(tests_count * sizeof(void *));
+    test_suite->tests = (struct abstract_test **) memory_blob_pool_alloc(&temporary_pool, tests_count * sizeof(void *));
     return test_suite;
 }
 
@@ -171,8 +166,7 @@ struct abstract_test * program_runner_test_compiler(struct ast_test * ast_test)
 
 struct program_runner_test * make_program_runner_test(void)
 {
-    struct program_runner_test * test = alloc_program_runner_test();
-    memset((void *)test, 0, sizeof(struct program_runner_test));
+    main_pool_alloc(struct program_runner_test, test)
     test->base.kind = TEST_KIND_PROGRAM_RUNNER;
     return test;
 }

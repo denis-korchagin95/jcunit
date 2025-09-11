@@ -8,9 +8,9 @@
 #include "headers/compiler.h"
 #include "headers/list.h"
 #include "headers/show-result.h"
-#include "headers/bytes-allocator.h"
 #include "headers/test-iterator.h"
 #include "headers/errors.h"
+#include "headers/allocator.h"
 
 
 #define SOURCES_CACHE_POS 1024
@@ -60,7 +60,6 @@ void fetch_sources(int argc, char * argv[], struct slist * sources)
         }
         if (fs_is_dir(resolved_path)) {
             fs_read_dir(resolved_path, fetch_directory_sources, &end_sources);
-            free_bytes((void *)resolved_path);
             resolved_path = NULL;
             continue;
         }
@@ -75,7 +74,6 @@ void fetch_sources(int argc, char * argv[], struct slist * sources)
             jcunit_fatal_error("Can't found the specified directory \"%s\"!", default_tests_path);
         }
         fs_read_dir(resolved_path, fetch_directory_sources, &end_sources);
-        free_bytes((void *)resolved_path);
         resolved_path = NULL;
     }
 }
@@ -85,7 +83,7 @@ bool fetch_directory_sources(const char * source_path, void * data, unsigned int
     if (!fs_check_extension(source_path, ".test")) {
         return true;
     }
-    fetch_one_source(source_path, (struct slist ***) data, flags);
+    fetch_one_source(source_path, data, flags);
     return true;
 }
 
@@ -112,7 +110,8 @@ void read_suites(
     struct test_suites * test_suites
 ) {
     test_suites->suites_count = slist_count(sources);
-    test_suites->suites = (struct test_suite **) alloc_bytes(
+    test_suites->suites = (struct test_suite **) memory_blob_pool_alloc(
+        &temporary_pool,
         sizeof(struct test_suite *) * test_suites->suites_count
     );
     unsigned int i = 0;
@@ -171,7 +170,7 @@ void run_suites_in_detail_mode(
         struct abstract_test_result * test_result = test_iterator_visit(
             test_iterator,
             test_runner,
-            (void *) *tests_results
+            *tests_results
         );
         if (test_result == NULL) {
             break;
@@ -204,7 +203,7 @@ void run_suites_in_passthrough_mode(
         struct abstract_test_result * test_result = test_iterator_visit(
             test_iterator,
             test_runner,
-            (void *) *tests_results
+            *tests_results
         );
         if (test_result == NULL) {
             break;
