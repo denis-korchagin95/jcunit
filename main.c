@@ -8,7 +8,9 @@
 #include "headers/application.h"
 #include "headers/runner.h"
 #include "headers/allocator.h"
+#include "headers/errors.h"
 #include "headers/source.h"
+#include "headers/util.h"
 
 #define PROGRAM_NAME "jcunit"
 
@@ -32,6 +34,10 @@ int main(int argc, char * argv[])
     if (application_context.options & OPTION_SHOW_VERSION) {
         fprintf(stdout, "%s version %s\n", PROGRAM_NAME, JCUNIT_VERSION);
         exit(exit_code);
+    }
+
+    if (atexit(cleanup) != 0) {
+        jcunit_fatal_error("Can't register atexit handler!");
     }
 
     memory_blob_pool_init_pools();
@@ -58,9 +64,6 @@ int main(int argc, char * argv[])
     if (tests_results->error_count > 0 || tests_results->failure_count > 0) {
         exit_code = 2;
     }
-
-    /** TODO: register function at exit for free this pools */
-    memory_blob_pool_destroy_pools();
 
     fflush(stdout);
 

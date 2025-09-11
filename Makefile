@@ -81,7 +81,7 @@ dependencies:
 	@rm -rf $(DEPENDENCIES_FILE)
 	@$(foreach file, $(OBJECTS), $(CC) -MT $(OBJ)$(file) -MM $(patsubst %.o, %.c, $(file)) >> $(DEPENDENCIES_FILE);)
 
-testers: $(TESTERS)
+build-testers: $(TESTERS)
 
 install: build
 	cp $(BIN)$(PROGRAM) $(INSTALL_PATH)$(PROGRAM)
