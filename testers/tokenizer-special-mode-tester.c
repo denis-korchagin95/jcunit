@@ -37,16 +37,16 @@ int main(int argc, char * argv[])
 
     init_tokenizer();
 
-    struct tokenizer_context * context = make_tokenizer_context(argv[1]);
+    struct tokenizer_context context;
+    init_tokenizer_context(&context, argv[1]);
 
     int token_counter = 0;
 
-    struct token * token;
     for(;;) {
-        token = get_one_token(context);
+        struct token * token = get_one_token(&context);
         ++token_counter;
         if (token_number != -1 && token_counter > token_number) {
-            context->mode = TOKENIZER_MODE_DIRECTIVE_AND_TEXT;
+            context.mode = TOKENIZER_MODE_DIRECTIVE_AND_TEXT;
         }
         print_token(token, stdout);
         puts("");
@@ -54,6 +54,8 @@ int main(int argc, char * argv[])
             break;
         }
     }
+
+    free_tokenizer_context(&context);
 
     return 0;
 }

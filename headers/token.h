@@ -60,8 +60,8 @@ extern struct token newline_token, eof_token;
 
 void init_tokenizer(void);
 
-struct tokenizer_context * make_tokenizer_context(const char * filename);
-void destroy_tokenizer_context(struct tokenizer_context * context);
+void init_tokenizer_context(struct tokenizer_context * context, const char * filename);
+void free_tokenizer_context(struct tokenizer_context * context);
 
 int get_one_char(struct tokenizer_context * context);
 void unget_one_char(struct tokenizer_context * context, int ch);

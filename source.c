@@ -6,7 +6,7 @@
 
 struct source * make_source(const char * filename, bool without_copying)
 {
-    main_pool_alloc(struct source, source)
+    struct source * source = memory_blob_pool_alloc(&permanent_pool, sizeof(struct source));
     if (without_copying) {
         source->filename = filename;
     } else {

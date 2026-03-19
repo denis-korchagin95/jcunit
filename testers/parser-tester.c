@@ -23,12 +23,16 @@ int main(int argc, char * argv[])
 
     init_tokenizer();
 
-    struct tokenizer_context * context = make_tokenizer_context(argv[1]);
-    struct slist * list = parse_test_suite(context);
+    struct tokenizer_context context;
+    init_tokenizer_context(&context, argv[1]);
+
+    struct slist * list = parse_test_suite(&context);
 
     struct ast_test * test = list_get_owner(list->next, struct ast_test, list_entry);
 
     print_ast_test(test, stdout);
+
+    free_tokenizer_context(&context);
 
     return 0;
 }

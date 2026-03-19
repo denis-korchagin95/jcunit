@@ -58,9 +58,13 @@ struct test_suite * compile_test_suite(struct source * source)
 {
     assert(source != NULL);
 
-    struct tokenizer_context * context = make_tokenizer_context(source->filename);
+    struct tokenizer_context context;
 
-    struct slist * ast_tests = parse_test_suite(context);
+    init_tokenizer_context(&context, source->filename);
+
+    struct slist * ast_tests = parse_test_suite(&context);
+
+    free_tokenizer_context(&context);
 
     struct test_suite * test_suite = do_compile_test_suite(source, ast_tests);
 
@@ -96,7 +100,8 @@ struct test_suite * do_compile_test_suite(struct source * source, struct slist *
 
 struct test_suite * make_test_suite(struct source * source, const char * name, unsigned int tests_count)
 {
-    main_pool_alloc(struct test_suite, test_suite)
+    struct test_suite * test_suite = memory_blob_pool_alloc(&temporary_pool, sizeof(struct test_suite));
+    memset(test_suite, 0, sizeof(struct test_suite));
     test_suite->name = name;
     test_suite->source = source;
     test_suite->tests_count = tests_count;
@@ -166,7 +171,8 @@ struct abstract_test * program_runner_test_compiler(struct ast_test * ast_test)
 
 struct program_runner_test * make_program_runner_test(void)
 {
-    main_pool_alloc(struct program_runner_test, test)
+    struct program_runner_test * test = memory_blob_pool_alloc(&temporary_pool, sizeof(struct program_runner_test));
+    memset(test, 0, sizeof(struct program_runner_test));
     test->base.kind = TEST_KIND_PROGRAM_RUNNER;
     return test;
 }

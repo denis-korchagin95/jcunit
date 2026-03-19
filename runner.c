@@ -1,4 +1,9 @@
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
+#endif
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -63,7 +68,8 @@ void fill_file_from_string(FILE * file, const struct string * content)
 
 struct program_runner_test_result * make_program_runner_test_result(struct program_runner_test * test)
 {
-    main_pool_alloc(struct program_runner_test_result, test_result)
+    struct program_runner_test_result * test_result = memory_blob_pool_alloc(&permanent_pool, sizeof(struct program_runner_test_result));
+    memset(test_result, 0, sizeof(struct program_runner_test_result));
     test_result->base.test = (struct abstract_test *) test;
     test_result->base.name = test->base.name;
     test->base.name->flags |= STRING_FLAG_DONT_RELEASE;
@@ -87,13 +93,19 @@ void resolve_given_filename(struct program_runner_test * test, struct program_ru
 {
     if (test->given_filename != NULL) {
         const char * given_filename_prefix = "/tmp/";
-        if (test->given_filename->len - sizeof(given_filename_prefix) - 1 >= MAX_TEST_GIVEN_FILENAME_LEN) {
+        if (test->given_filename->len - strlen(given_filename_prefix) - 1 >= MAX_TEST_GIVEN_FILENAME_LEN) {
             jcunit_fatal_error("Too long 'filename' of the 'given' requirement!");
         }
         sprintf(given_filename, "%s%s", given_filename_prefix, test->given_filename->value);
     } else {
         strncpy(given_filename, (const char *)jcunit_given_file_template, MAX_TEST_GIVEN_FILENAME_LEN);
-        (void)mktemp(given_filename);
+        {
+            int fd = mkstemp(given_filename);
+            if (fd < 0) {
+                jcunit_fatal_error("Cannot create temporary file: \"%s\"!", strerror(errno));
+            }
+            close(fd);
+        }
     }
     test_result->given_filename = make_string(given_filename, strlen(given_filename));
 }
@@ -141,16 +153,15 @@ void try_to_run_program(
 
 int resolve_run_mode_by_stream_code(unsigned int stream_code)
 {
-    int mode = -1;
-    switch (stream_code) {
-        case TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT:
-            mode = RUN_MODE_CAPTURE_STDOUT;
-            break;
-        case TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR:
-            mode = RUN_MODE_CAPTURE_STDERR;
-            break;
+    if (stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT) {
+        return RUN_MODE_CAPTURE_STDOUT;
     }
-    return mode;
+
+    if (stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR) {
+        return RUN_MODE_CAPTURE_STDERR;
+    }
+
+    return -1;
 }
 
 bool is_test_passes(struct string * expected, struct process_output * output)
@@ -162,9 +173,10 @@ bool is_test_passes(struct string * expected, struct process_output * output)
 
 struct tests_results * make_tests_results(unsigned int total_tests_count)
 {
-    main_pool_alloc(struct tests_results, tests_results)
+    struct tests_results * tests_results = memory_blob_pool_alloc(&permanent_pool, sizeof(struct tests_results));
+    memset(tests_results, 0, sizeof(struct tests_results));
     tests_results->results_count = total_tests_count;
-    tests_results->results = (struct abstract_test_result **) memory_blob_pool_alloc(&temporary_pool, total_tests_count * sizeof(void *));
+    tests_results->results = (struct abstract_test_result **) memory_blob_pool_alloc(&permanent_pool, total_tests_count * sizeof(void *));
     return tests_results;
 }
 
@@ -258,7 +270,8 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
 
 struct abstract_test_result * run_incomplete_test(struct abstract_test * test)
 {
-    main_pool_alloc(struct abstract_test_result, test_result)
+    struct abstract_test_result * test_result = memory_blob_pool_alloc(&permanent_pool, sizeof(struct abstract_test_result));
+    memset(test_result, 0, sizeof(struct abstract_test_result));
     test_result->kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     test_result->status = TEST_RESULT_STATUS_INCOMPLETE;
     test_result->name = test->name;
@@ -268,7 +281,8 @@ struct abstract_test_result * run_incomplete_test(struct abstract_test * test)
 
 struct abstract_test_result * run_skipped_test(struct abstract_test * test)
 {
-    main_pool_alloc(struct abstract_test_result, test_result)
+    struct abstract_test_result * test_result = memory_blob_pool_alloc(&permanent_pool, sizeof(struct abstract_test_result));
+    memset(test_result, 0, sizeof(struct abstract_test_result));
     test_result->kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     test_result->status = TEST_RESULT_STATUS_SKIPPED;
     test_result->name = test->name;

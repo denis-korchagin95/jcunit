@@ -22,17 +22,19 @@ int main(int argc, char * argv[])
 
     init_tokenizer();
 
-    struct tokenizer_context * context = make_tokenizer_context(argv[1]);
+    struct tokenizer_context context;
+    init_tokenizer_context(&context, argv[1]);
 
-    struct token * token;
     for(;;) {
-        token = get_one_token(context);
+        struct token * token = get_one_token(&context);
         print_token(token, stdout);
         puts("");
         if (token->kind == TOKEN_KIND_EOF) {
             break;
         }
     }
+
+    free_tokenizer_context(&context);
 
     return 0;
 }

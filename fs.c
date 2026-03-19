@@ -99,7 +99,7 @@ void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * con
                 ) {
                     continue;
                 }
-                main_pool_alloc(struct path_list, new_directory);
+                struct path_list * new_directory = memory_blob_pool_alloc(&permanent_pool, sizeof(struct path_list));
                 list_init(&new_directory->list_entry);
                 new_directory->path = get_entry_path(current_path->path, current_path_len, dirent, GET_ENTRY_PATH_ADD_PATH_SEPARATOR);
                 list_append(&queue, &new_directory->list_entry);
@@ -126,7 +126,7 @@ void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * con
 char * get_entry_path(const char * path, uint32_t path_len, struct dirent * dirent, unsigned int flags)
 {
     uint32_t entry_len = path_len + dirent_namlen(dirent) + ((flags & GET_ENTRY_PATH_ADD_PATH_SEPARATOR) > 0 ? 1 : 0);
-    char * entry_path = alloc_bytes(entry_len + 1);
+    char * entry_path = memory_blob_pool_alloc(&permanent_pool, entry_len + 1);
     memcpy((void *) entry_path, (const void *) path, path_len);
     if ((flags & GET_ENTRY_PATH_ADD_PATH_SEPARATOR) > 0) {
         entry_path[path_len] = PATH_SEPARATOR;

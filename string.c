@@ -11,7 +11,8 @@ struct string * make_string(const char * source, unsigned int len)
     memcpy((void *)storage, source, len * sizeof(char));
     storage[len] = '\0';
 
-    main_pool_alloc(struct string, string)
+    struct string * string = memory_blob_pool_alloc(&permanent_pool, sizeof(struct string));
+    memset(string, 0, sizeof(struct string));
     string->len = len;
     string->value = storage;
     string->flags = 0;

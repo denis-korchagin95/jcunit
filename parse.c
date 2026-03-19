@@ -14,6 +14,8 @@ struct directive_parse_context
     bool has_unnamed_argument;
 };
 
+static struct ast_requirement_argument * ast_requirement_argument_alloc(void);
+
 static struct ast_test * parse_test(struct tokenizer_context * context);
 static void parse_test_prolog(struct tokenizer_context * context, struct ast_test ** ast_test);
 static void parse_test_epilog(struct tokenizer_context * context);
@@ -204,7 +206,7 @@ void parse_directive_argument(struct tokenizer_context * context, struct directi
     if (directive_parse_context->has_unnamed_argument) {
         jcunit_fatal_error("A directive cannot have two unnamed arguments!");
     }
-    main_pool_alloc(struct ast_requirement_argument, argument)
+    struct ast_requirement_argument * argument = ast_requirement_argument_alloc();
     argument->name = NULL;
     argument->value = token->content.string;
     slist_append(directive_parse_context->arguments_end, &argument->list_entry);
@@ -224,7 +226,7 @@ void parse_named_directive_argument(struct tokenizer_context * context, struct d
     if (!is_token_string(token)) {
         jcunit_fatal_error("Expected value of the named argument as a string!");
     }
-    main_pool_alloc(struct ast_requirement_argument, argument)
+    struct ast_requirement_argument * argument = ast_requirement_argument_alloc();
     argument->name = name;
     argument->value = token->content.string;
     slist_append(directive_parse_context->arguments_end, &argument->list_entry);
@@ -267,4 +269,11 @@ void skip_whitespaces(struct tokenizer_context * context)
         ch = get_one_char(context);
     }
     unget_one_char(context, ch);
+}
+
+struct ast_requirement_argument * ast_requirement_argument_alloc(void)
+{
+    struct ast_requirement_argument * argument = memory_blob_pool_alloc(&permanent_pool, sizeof(struct ast_requirement_argument));
+    memset(argument, 0, sizeof(struct ast_requirement_argument));
+    return argument;
 }

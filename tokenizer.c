@@ -12,10 +12,16 @@
 
 struct token newline_token = {0}, eof_token = {0};
 
-
-struct token * make_punctuator_token(int ch)
+struct token * token_alloc(void)
 {
-    main_pool_alloc(struct token, token)
+    struct token * token = memory_blob_pool_alloc(&temporary_pool, sizeof(struct token));
+    memset(token, 0, sizeof(struct token));
+    return token;
+}
+
+struct token * make_punctuator_token(const int ch)
+{
+    struct token * token = token_alloc();
     token->kind = TOKEN_KIND_PUNCTUATOR;
     token->content.ch = ch;
     return token;
@@ -41,35 +47,42 @@ struct token * get_one_string(struct tokenizer_context * context, int ch)
     if (len >= MAX_STRING_LEN) {
         jcunit_fatal_error("Too long string!");
     }
-    main_pool_alloc(struct token, token)
+    struct token * token = token_alloc();
     token->kind = TOKEN_KIND_STRING;
     token->content.string = make_string(buffer, len);
     return token;
 }
 
-struct tokenizer_context * make_tokenizer_context(const char * filename)
+
+void init_tokenizer_context(struct tokenizer_context * context, const char * filename)
 {
-    FILE * source = fopen(filename, "r");
-    if (source == NULL) {
+    assert(context != NULL);
+
+    memset(context, 0, sizeof(struct tokenizer_context));
+    context->filename = filename;
+
+    context->source = fopen(filename, "r");
+
+    if (context->source == NULL) {
         jcunit_fatal_error("Can't read file \"%s\": %s", filename, strerror(errno));
     }
-    main_pool_alloc(struct tokenizer_context, context)
-    context->filename = filename;
-    context->source = source;
-    return context;
+}
+
+void free_tokenizer_context(struct tokenizer_context * context)
+{
+    assert(context != NULL);
+
+    context->filename = NULL;
+    fclose(context->source);
 }
 
 void init_tokenizer(void)
 {
-    struct token * token;
+    eof_token.kind = TOKEN_KIND_EOF;
+    eof_token.content.ch = EOF;
 
-    token = &eof_token;
-    token->kind = TOKEN_KIND_EOF;
-    token->content.ch = EOF;
-
-    token = &newline_token;
-    token->kind = TOKEN_KIND_NEWLINE;
-    token->content.ch = '\n';
+    newline_token.kind = TOKEN_KIND_NEWLINE;
+    newline_token.content.ch = '\n';
 }
 
 int get_one_char(struct tokenizer_context * context)
@@ -117,7 +130,7 @@ struct token * get_one_name(struct tokenizer_context * context, int ch, unsigned
     }
     unget_one_char(context, ch);
 
-    main_pool_alloc(struct token, token)
+    struct token * token = token_alloc();
     token->kind = token_kind;
     token->content.string = make_string(buffer, len);
     return token;
@@ -178,10 +191,10 @@ struct token * get_one_token(struct tokenizer_context * context)
         return get_one_name(context, ch, TOKEN_KIND_NAME);
     }
 
-    struct token * token;
+    struct token * token = NULL;
 
 character:
-    token = memory_blob_pool_alloc(&permanent_pool, sizeof(struct token));
+    token = memory_blob_pool_alloc(&temporary_pool, sizeof(struct token));
     memset(token, 0, sizeof(struct token));
     token->kind = TOKEN_KIND_CHARACTER;
     token->content.ch = ch;
