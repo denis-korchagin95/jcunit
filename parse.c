@@ -128,7 +128,7 @@ void parse_requirement(struct tokenizer_context * context, struct ast_requiremen
         *w++ = (char)last_ch;
         ++len;
     }
-    if (!is_token_directive(token)) { /* TODO: test it, make configurable 'max_requirement_content_size' */
+    if (!is_token_directive(token)) {
         jcunit_fatal_error("The requirement's content of the test too long!");
     }
     if (last_ch == '\n') {
