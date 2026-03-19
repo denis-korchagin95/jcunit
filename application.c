@@ -12,6 +12,7 @@
 #include "headers/errors.h"
 #include "headers/allocator.h"
 #include "headers/diff.h"
+#include "headers/cache.h"
 
 
 #define SOURCES_CACHE_POS 1024
@@ -109,18 +110,55 @@ void fetch_one_source(const char * source_path, struct slist *** end_sources, un
 
 void read_suites(
     struct slist * sources,
-    struct test_suites * test_suites
+    struct test_suites * test_suites,
+    struct application_context * application_context,
+    struct cache_store ** out_cache_store
 ) {
+    int use_cache = !(application_context->options & OPTION_NO_CACHE);
+    struct cache_store * store = NULL;
+    struct cache_store * save_store = NULL;
+    unsigned int i = 0;
+
+    *out_cache_store = NULL;
+
+    if (use_cache) {
+        cache_init();
+        cache_set_owner_pid();
+        store = cache_load(CACHE_FILENAME);
+        save_store = cache_alloc(sizeof(struct cache_store));
+        memset(save_store, 0, sizeof(struct cache_store));
+    }
+
     test_suites->suites_count = slist_count(sources);
     test_suites->suites = (struct test_suite **) memory_blob_pool_alloc(
         &memory_pool,
         sizeof(struct test_suite *) * test_suites->suites_count
     );
-    unsigned int i = 0;
     slist_foreach_safe(iterator, sources, {
         struct source * source = list_get_owner(iterator, struct source, list_entry);
-        test_suites->suites[i++] = compile_test_suite(source);
+        struct test_suite * suite = NULL;
+        if (use_cache && store != NULL) {
+            suite = cache_lookup(store, source);
+        }
+        if (suite == NULL) {
+            suite = compile_test_suite(source);
+        }
+        if (use_cache && save_store != NULL) {
+            cache_update(save_store, source->filename, suite);
+        }
+        test_suites->suites[i++] = suite;
     });
+
+    *out_cache_store = save_store;
+}
+
+void save_and_free_cache(struct cache_store * store)
+{
+    if (store == NULL) return;
+    if (cache_is_owner()) {
+        cache_save(store, CACHE_FILENAME);
+    }
+    cache_destroy();
 }
 
 void run_suites(

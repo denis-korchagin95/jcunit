@@ -1,0 +1,99 @@
+@test("It should produce the same output with --no-cache as without it")
+@given("file", filename="some-test.test")
+
+@@test("A passed test")
+@@given("file")
+
+@@@@test()
+@@@@endtest()
+
+@@whenRun("./bin/jcunit")
+@@expectOutput("stderr")
+There is no any requirement provided for test!
+
+@@endtest
+
+@whenRun("./bin/jcunit", args="--no-cache")
+@expectOutput("stdout")
+.                                                  (100%)
+
+Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+
+@endtest
+
+@test("It should work correctly with --clear-cache")
+@given("file", filename="some-test.test")
+
+@@test("A passed test")
+@@given("file")
+
+@@@@test()
+@@@@endtest()
+
+@@whenRun("./bin/jcunit")
+@@expectOutput("stderr")
+There is no any requirement provided for test!
+
+@@endtest
+
+@whenRun("./bin/jcunit", args="--clear-cache")
+@expectOutput("stdout")
+.                                                  (100%)
+
+Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+
+@endtest
+
+@test("It should produce same results in detail mode with --no-cache")
+@given("file", filename="some-test.test")
+
+@@test("A passed test")
+@@given("file")
+
+@@@@test()
+@@@@endtest()
+
+@@whenRun("./bin/jcunit")
+@@expectOutput("stderr")
+There is no any requirement provided for test!
+
+@@endtest
+
+@@test("An error test")
+@@given("file")
+@@whenRun("./bin/some-program")
+@@expectOutput("stdout")
+@@endtest
+
+@whenRun("./bin/jcunit", args="--no-cache")
+@expectOutput("stdout")
+.E                                                 (100%)
+
+There are 1 errors:
+
+1) some-test.test : An error test
+The file "./bin/some-program" was not found!
+
+Passed: 1, Skipped: 0, Errors: 1, Failed: 0, Incomplete: 0
+
+@endtest
+
+@test("It should handle --no-cache with skipped tests")
+@given("file", filename="some-test.test")
+
+@@test("A skipped test")
+@@shouldBeSkipped
+@@given("file")
+@@whenRun("./bin/testers/tokenizer-tester")
+@@expectOutput("stdout")
+<TOKEN_EOF>
+
+@@endtest
+
+@whenRun("./bin/jcunit", args="--no-cache")
+@expectOutput("stdout")
+S                                                  (100%)
+
+Passed: 0, Skipped: 1, Errors: 0, Failed: 0, Incomplete: 0
+
+@endtest
