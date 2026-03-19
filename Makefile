@@ -67,6 +67,9 @@ child-process.o allocator.o diff.o cache.o
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
 
+production: clean
+	$(MAKE) DEVELOPMENT=0
+
 tokenizer-tester: $(addprefix $(OBJ), $(OBJECTS_TOKENIZER_TESTER))
 	$(CC) $(LFLAGS) $^ -o $(BIN_TESTERS)tokenizer-tester
 
@@ -90,7 +93,7 @@ dependencies:
 
 build-testers: $(TESTERS)
 
-install: build
+install: production
 	cp $(BIN)$(PROGRAM) $(INSTALL_PATH)$(PROGRAM)
 
 uninstall:
