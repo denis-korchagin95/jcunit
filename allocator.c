@@ -61,7 +61,7 @@ void * memory_blob_pool_alloc(struct memory_blob_pool * pool, size_t size)
 
         if (aligned_offset + aligned_size <= blob->capacity) {
             void * ptr = blob->memory + aligned_offset;
-            blob->used += aligned_offset + aligned_size;
+            blob->used = aligned_offset + aligned_size;
             return ptr;
         }
     }
@@ -76,7 +76,7 @@ void * memory_blob_pool_alloc(struct memory_blob_pool * pool, size_t size)
 
     size_t aligned_offset = align_up(new_blob->used, pool->alignment);
     void * ptr = new_blob->memory + aligned_offset;
-    new_blob->used += aligned_offset + aligned_size;
+    new_blob->used = aligned_offset + aligned_size;
 
     return ptr;
 }
