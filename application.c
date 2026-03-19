@@ -11,6 +11,7 @@
 #include "headers/test-iterator.h"
 #include "headers/errors.h"
 #include "headers/allocator.h"
+#include "headers/diff.h"
 
 
 #define SOURCES_CACHE_POS 1024
@@ -38,6 +39,7 @@ static void run_suites_in_passthrough_mode(
     struct tests_results ** tests_results,
     FILE * output
 );
+static void print_summary_line(FILE * output, struct tests_results * results);
 
 void init_application_context(struct application_context * application_context)
 {
@@ -177,16 +179,11 @@ void run_suites_in_detail_mode(
         }
         show_test_result_in_detail_mode(test_result, output);
         next_test = test_iterator_current_safe(test_iterator);
-        if (next_test == NULL || next_test->test_suite != current_test_suite)
-            fprintf(
-                output,
-                "\nPassed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n\n\n",
-                (*tests_results)->passed_count,
-                (*tests_results)->skipped_count,
-                (*tests_results)->error_count,
-                (*tests_results)->failure_count,
-                (*tests_results)->incomplete_count
-            );
+        if (next_test == NULL || next_test->test_suite != current_test_suite) {
+            fprintf(output, "\n");
+            print_summary_line(output, *tests_results);
+            fprintf(output, "\n\n\n");
+        }
     }
 }
 
@@ -257,13 +254,59 @@ void run_suites_in_passthrough_mode(
         }
         fprintf(output, "\n");
     }
-    fprintf(
-        output,
-        "Passed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u\n",
-        (*tests_results)->passed_count,
-        (*tests_results)->skipped_count,
-        (*tests_results)->error_count,
-        (*tests_results)->failure_count,
-        (*tests_results)->incomplete_count
-    );
+    print_summary_line(output, *tests_results);
+    fprintf(output, "\n");
+}
+
+void print_summary_line(FILE * output, struct tests_results * results)
+{
+    if (diff_use_colors) {
+        if (results->passed_count > 0) {
+            fprintf(output, "\033[32mPassed: %u\033[0m", results->passed_count);
+        } else {
+            fprintf(output, "Passed: %u", results->passed_count);
+        }
+
+        fprintf(output, ", ");
+
+        if (results->skipped_count > 0) {
+            fprintf(output, "\033[33mSkipped: %u\033[0m", results->skipped_count);
+        } else {
+            fprintf(output, "Skipped: %u", results->skipped_count);
+        }
+
+        fprintf(output, ", ");
+
+        if (results->error_count > 0) {
+            fprintf(output, "\033[31mErrors: %u\033[0m", results->error_count);
+        } else {
+            fprintf(output, "Errors: %u", results->error_count);
+        }
+
+        fprintf(output, ", ");
+
+        if (results->failure_count > 0) {
+            fprintf(output, "\033[31mFailed: %u\033[0m", results->failure_count);
+        } else {
+            fprintf(output, "Failed: %u", results->failure_count);
+        }
+
+        fprintf(output, ", ");
+
+        if (results->incomplete_count > 0) {
+            fprintf(output, "\033[33mIncomplete: %u\033[0m", results->incomplete_count);
+        } else {
+            fprintf(output, "Incomplete: %u", results->incomplete_count);
+        }
+    } else {
+        fprintf(
+            output,
+            "Passed: %u, Skipped: %u, Errors: %u, Failed: %u, Incomplete: %u",
+            results->passed_count,
+            results->skipped_count,
+            results->error_count,
+            results->failure_count,
+            results->incomplete_count
+        );
+    }
 }
