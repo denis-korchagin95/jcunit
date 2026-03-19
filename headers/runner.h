@@ -35,7 +35,9 @@ struct program_runner_test_result {
     struct abstract_test_result base;  /* this must be a first member */
     struct string * given_filename;
     struct string * executable;
+    struct string * stderr_output;
     unsigned int error_code;
+    int exit_code;
 };
 
 struct abstract_test_result * test_run(struct abstract_test * test);

@@ -1,0 +1,94 @@
+@test("It should pass when program exits non-zero but expected stderr matches")
+@given("file", filename="some-test.test")
+
+@@test()
+
+@whenRun("./bin/jcunit")
+@expectOutput("stderr")
+Expected a directive!
+
+@endtest
+
+@test("It should fail when program exits non-zero with unexpected stderr")
+@given("file", filename="some-test.test")
+
+@@test("A test with unexpected stderr")
+@@given("file")
+
+@@@@test()
+
+@@whenRun("./bin/jcunit")
+@@expectOutput("stdout")
+No sources found!
+
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+F                                                  (100%)
+
+There are 1 failures:
+
+1) some-test.test : A test with unexpected stderr
+--- Expected
++++ Actual
+-No sources found!
+[exit code] 1
+[stderr] Expected a directive!
+
+Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
+
+@endtest
+
+@test("It should pass when program exits non-zero with no stderr and stdout matches")
+@given("file")
+
+@@test("A passed test")
+@@given("file")
+
+@@@@test()
+@@@@endtest()
+
+@@whenRun("./bin/jcunit")
+@@expectOutput("stderr")
+There is no any requirement provided for test!
+
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+.                                                  (100%)
+
+Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+
+@endtest
+
+@test("It should show exit code and stderr in detail mode failure report")
+@given("file", filename="some-test.test")
+
+@@test("A test with unexpected stderr")
+@@given("file")
+
+@@@@test()
+
+@@whenRun("./bin/jcunit")
+@@expectOutput("stdout")
+No sources found!
+
+@@endtest
+
+@whenRun("./bin/jcunit", args="--run-mode=detail")
+@expectOutput("stdout")
+Test Suite: some-test.test
+          FAIL A test with unexpected stderr
+--- Expected
++++ Actual
+-No sources found!
+[exit code] 1
+[stderr] Expected a directive!
+
+Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
+
+
+
+@endtest

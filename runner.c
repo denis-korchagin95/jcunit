@@ -29,11 +29,11 @@ static void try_to_run_program(
     const char * program,
     const char * given_filename,
     const char * extra_args,
-    int run_mode,
-    struct process_output * output
+    struct process_output * stdout_output,
+    struct process_output * stderr_output,
+    int * exit_code
 );
 static bool is_test_passes(struct string * expected, struct process_output * output);
-static int resolve_run_mode_by_stream_code(unsigned int stream_code);
 static struct abstract_test_result * run_incomplete_test(struct abstract_test * test);
 static struct abstract_test_result * run_skipped_test(struct abstract_test * test);
 
@@ -42,7 +42,8 @@ static test_runner_func * resolve_test_runner(struct abstract_test * test);
 static struct abstract_test_result * program_runner_test_runner(struct abstract_test * test);
 
 static char jcunit_given_file_template[] = "/tmp/jcunit_gf_XXXXXXXXXXXX";
-static char process_output_buffer[MAX_PROCESS_OUTPUT_BUFFER_LEN];
+static char stdout_output_buffer[MAX_PROCESS_OUTPUT_BUFFER_LEN];
+static char stderr_output_buffer[MAX_PROCESS_OUTPUT_BUFFER_LEN];
 static char given_filename[MAX_TEST_GIVEN_FILENAME_LEN];
 
 
@@ -54,11 +55,13 @@ struct abstract_test_result * test_run(struct abstract_test * test)
     if (test->flags & TEST_FLAG_SKIPPED) {
         return run_skipped_test(test);
     }
-    test_runner_func * runner = resolve_test_runner(test);
-    if (runner == NULL) {
-        jcunit_fatal_error("There is no any runner to run the test \"%s\"!", test->name->value);
+    {
+        test_runner_func * runner = resolve_test_runner(test);
+        if (runner == NULL) {
+            jcunit_fatal_error("There is no any runner to run the test \"%s\"!", test->name->value);
+        }
+        return runner(test);
     }
-    return runner(test);
 }
 
 void fill_file_from_string(FILE * file, const struct string * content)
@@ -113,15 +116,23 @@ void try_to_run_program(
     const char * program,
     const char * filename,
     const char * extra_args,
-    int run_mode,
-    struct process_output * output
+    struct process_output * stdout_output,
+    struct process_output * stderr_output,
+    int * exit_code
 ) {
     static char * args[4] = {0};
 
-    output->buffer = process_output_buffer;
-    output->size = MAX_PROCESS_OUTPUT_BUFFER_LEN;
-    output->error_code = ERROR_CODE_NONE;
-    output->len = 0;
+    stdout_output->buffer = stdout_output_buffer;
+    stdout_output->size = MAX_PROCESS_OUTPUT_BUFFER_LEN;
+    stdout_output->error_code = ERROR_CODE_NONE;
+    stdout_output->len = 0;
+
+    stderr_output->buffer = stderr_output_buffer;
+    stderr_output->size = MAX_PROCESS_OUTPUT_BUFFER_LEN;
+    stderr_output->error_code = ERROR_CODE_NONE;
+    stderr_output->len = 0;
+
+    *exit_code = 0;
 
     args[0] = (char *)program;
     args[1] = (char *)filename;
@@ -133,34 +144,23 @@ void try_to_run_program(
         args[2] = NULL;
     }
 
-    bool try_to_run = true;
+    {
+        bool try_to_run = true;
 
-    if (!fs_is_file_exists(program)) {
-        output->error_code = ERROR_CODE_FILE_NOT_FOUND;
-        try_to_run = false;
+        if (!fs_is_file_exists(program)) {
+            stdout_output->error_code = ERROR_CODE_FILE_NOT_FOUND;
+            try_to_run = false;
+        }
+
+        if (try_to_run && !fs_is_file_executable(program)) {
+            stdout_output->error_code = ERROR_CODE_NOT_EXECUTABLE;
+            try_to_run = false;
+        }
+
+        if (try_to_run) {
+            *exit_code = child_process_run(args[0], args, stdout_output, stderr_output);
+        }
     }
-
-    if (try_to_run && !fs_is_file_executable(program)) {
-        output->error_code = ERROR_CODE_NOT_EXECUTABLE;
-        try_to_run = false;
-    }
-
-    if (try_to_run) {
-        child_process_run(args[0], args, output, run_mode);
-    }
-}
-
-int resolve_run_mode_by_stream_code(unsigned int stream_code)
-{
-    if (stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT) {
-        return RUN_MODE_CAPTURE_STDOUT;
-    }
-
-    if (stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR) {
-        return RUN_MODE_CAPTURE_STDERR;
-    }
-
-    return -1;
 }
 
 bool is_test_passes(struct string * expected, struct process_output * output)
@@ -220,49 +220,67 @@ test_runner_func * resolve_test_runner(struct abstract_test * test)
 struct abstract_test_result * program_runner_test_runner(struct abstract_test * test)
 {
     struct program_runner_test * this_test = (struct program_runner_test *)test;
-
-    struct process_output output;
-
+    struct process_output stdout_output, stderr_output;
     struct string * executable = this_test->program_path;
+    struct program_runner_test_result * test_result;
+    struct process_output * expected_stream_output;
+    int child_exit_code;
+    bool pass;
 
-    struct program_runner_test_result * test_result = make_program_runner_test_result(this_test);
+    test_result = make_program_runner_test_result(this_test);
     test_result->executable = executable;
     string_protect(executable);
 
     resolve_given_filename(this_test, test_result);
-
     make_given_file(test_result->given_filename, this_test->given_file_content);
-
-    int run_mode = resolve_run_mode_by_stream_code(this_test->stream_code);
-
-    if (run_mode == -1) {
-        jcunit_fatal_error("The unknown stream code %d!", this_test->stream_code);
-    }
 
     try_to_run_program(
         executable->value,
         test_result->given_filename->value,
         this_test->program_args != NULL ? this_test->program_args->value : NULL,
-        run_mode,
-        &output
+        &stdout_output,
+        &stderr_output,
+        &child_exit_code
     );
 
     unlink(test_result->given_filename->value);
 
-    bool pass = is_test_passes(this_test->expected_output, &output);
+    test_result->exit_code = child_exit_code;
+    test_result->error_code = stdout_output.error_code;
+
+    /* store stderr for debugging display */
+    if (stderr_output.len > 0) {
+        test_result->stderr_output = make_string(stderr_output.buffer, stderr_output.len);
+    }
+
+    if (test_result->error_code != ERROR_CODE_NONE) {
+        test_result->base.status = TEST_RESULT_STATUS_ERROR;
+        return (struct abstract_test_result *)test_result;
+    }
+
+    /* pick the stream that was expected */
+    if (this_test->stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR) {
+        expected_stream_output = &stderr_output;
+    } else {
+        expected_stream_output = &stdout_output;
+    }
+
+    pass = is_test_passes(this_test->expected_output, expected_stream_output);
+
+    /* non-zero exit code with unexpected stderr is a failure */
+    if (pass && child_exit_code != 0 && stderr_output.len > 0) {
+        if (this_test->stream_code != TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR) {
+            pass = false;
+        }
+    }
 
     if (!pass) {
         test_result->base.expected = this_test->expected_output;
         string_protect(this_test->expected_output);
-        test_result->base.actual = make_string(output.buffer, output.len);
+        test_result->base.actual = make_string(expected_stream_output->buffer, expected_stream_output->len);
     }
 
     test_result->base.status = pass ? TEST_RESULT_STATUS_PASS : TEST_RESULT_STATUS_FAILURE;
-    test_result->error_code = output.error_code;
-
-    if (test_result->error_code != ERROR_CODE_NONE) {
-        test_result->base.status = TEST_RESULT_STATUS_ERROR;
-    }
 
     return (struct abstract_test_result *)test_result;
 }

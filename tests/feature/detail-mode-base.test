@@ -41,6 +41,8 @@ Test Suite: some-test.test
 +++ Actual
 -Some output
 +Expected a directive!
+[exit code] 1
+[stderr] Expected a directive!
 
 Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 

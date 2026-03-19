@@ -14,6 +14,8 @@
 static const char * stringify_test_status(struct abstract_test_result * test_result, bool use_short_version);
 static void print_error(struct abstract_test_result * test_result, FILE * output);
 static void print_program_runner_error(struct program_runner_test_result * test_result, FILE * output);
+static void print_stderr_output(struct program_runner_test_result * test_result, FILE * output);
+static void print_exit_code(struct program_runner_test_result * test_result, FILE * output);
 
 void show_test_result_in_detail_mode(struct abstract_test_result * test_result, FILE * output)
 {
@@ -41,7 +43,10 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
     }
 
     if (test_result->status == TEST_RESULT_STATUS_FAILURE) {
+        struct program_runner_test_result * prt = (struct program_runner_test_result *)test_result;
         print_diff(output, test_result->expected, test_result->actual);
+        print_exit_code(prt, output);
+        print_stderr_output(prt, output);
         return;
     }
 
@@ -121,9 +126,11 @@ struct abstract_test_result * test_runner(
 
 void show_error_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int error_number)
 {
+    struct program_runner_test_result * prt;
     if (test_result->kind != TEST_RESULT_KIND_PROGRAM_RUNNER) {
         jcunit_fatal_error("An unknown test result!");
     }
+    prt = (struct program_runner_test_result *)test_result;
     fprintf(
         output,
         "%u) %s : %s\n",
@@ -132,13 +139,16 @@ void show_error_test_result(FILE * output, struct abstract_test_result * test_re
         test_result->name->value
     );
     print_error(test_result, output);
+    print_stderr_output(prt, output);
 }
 
 void show_failure_test_result(FILE * output, struct abstract_test_result * test_result, unsigned int failure_number)
 {
+    struct program_runner_test_result * prt;
     if (test_result->kind != TEST_RESULT_KIND_PROGRAM_RUNNER) {
         jcunit_fatal_error("An unknown test result!");
     }
+    prt = (struct program_runner_test_result *)test_result;
     fprintf(
         output,
         "%u) %s : %s\n",
@@ -147,4 +157,33 @@ void show_failure_test_result(FILE * output, struct abstract_test_result * test_
         test_result->name->value
     );
     print_diff(output, test_result->expected, test_result->actual);
+    print_exit_code(prt, output);
+    print_stderr_output(prt, output);
+}
+
+void print_exit_code(struct program_runner_test_result * test_result, FILE * output)
+{
+    if (test_result->exit_code != 0) {
+        fprintf(output, "[exit code] %d\n", test_result->exit_code);
+    }
+}
+
+void print_stderr_output(struct program_runner_test_result * test_result, FILE * output)
+{
+    const char * start;
+    const char * end;
+    const char * p;
+    if (test_result->stderr_output == NULL || test_result->stderr_output->len == 0) {
+        return;
+    }
+    start = test_result->stderr_output->value;
+    end = start + test_result->stderr_output->len;
+    for (p = start; p < end; ) {
+        const char * nl = p;
+        while (nl < end && *nl != '\n') {
+            ++nl;
+        }
+        fprintf(output, "[stderr] %.*s\n", (int)(nl - p), p);
+        p = (nl < end) ? nl + 1 : nl;
+    }
 }
