@@ -12,6 +12,7 @@
 #include "headers/source.h"
 #include "headers/test-iterator.h"
 #include "headers/util.h"
+#include "headers/diff.h"
 
 #define PROGRAM_NAME "jcunit"
 
@@ -27,6 +28,10 @@ int main(int argc, char * argv[])
     int exit_code = 0;
 
     parse_options(argc, argv, &application_context);
+
+    if (application_context.options & OPTION_USE_COLORS) {
+        diff_use_colors = 1;
+    }
 
     if (application_context.options & OPTION_SHOW_HELP) {
         show_help(PROGRAM_NAME, stdout);
@@ -84,5 +89,6 @@ void show_help(const char * name, FILE * output)
     fprintf(output, "\t--run-mode=(detail|passthrough) default: passthrough\n\t    "
                     "The mode of showing the results of testing.\n\n");
     fprintf(output, "\t--help\n\t    Show this message.\n\n");
+    fprintf(output, "\t--colors\n\t    Enable colored diff output.\n\n");
     fprintf(output, "\t--version\n\t    Show version of this program.\n\n");
 }

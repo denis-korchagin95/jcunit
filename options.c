@@ -31,6 +31,10 @@ void parse_options(int argc, char * argv[], struct application_context * applica
             application_context->options |= OPTION_SHOW_HELP;
             continue;
         }
+        if (strncmp("--colors", arg, sizeof("--colors") - 1) == 0) {
+            application_context->options |= OPTION_USE_COLORS;
+            continue;
+        }
         if (strncmp("--", arg, 2) == 0) {
             jcunit_fatal_error("The unknown option: %s!", arg);
         }

@@ -6,6 +6,12 @@
 #include "headers/allocator.h"
 
 
+#define ANSI_COLOR_RED     "\033[31m"
+#define ANSI_COLOR_GREEN   "\033[32m"
+#define ANSI_COLOR_RESET   "\033[0m"
+
+int diff_use_colors = 0;
+
 struct diff_line {
     const char * start;
     unsigned int len;
@@ -185,7 +191,26 @@ int lines_equal(struct diff_line * a, struct diff_line * b)
 
 void print_line_with_prefix(FILE * output, char prefix, struct diff_line * line)
 {
+    const char * color = NULL;
+
+    if (diff_use_colors) {
+        if (prefix == '-') {
+            color = ANSI_COLOR_RED;
+        } else if (prefix == '+') {
+            color = ANSI_COLOR_GREEN;
+        }
+    }
+
+    if (color != NULL) {
+        fprintf(output, "%s", color);
+    }
+
     fprintf(output, "%c", prefix);
     fwrite(line->start, sizeof(char), line->len, output);
+
+    if (color != NULL) {
+        fprintf(output, "%s", ANSI_COLOR_RESET);
+    }
+
     fprintf(output, "\n");
 }

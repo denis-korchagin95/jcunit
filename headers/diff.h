@@ -5,6 +5,8 @@
 
 #include "string.h"
 
+extern int diff_use_colors;
+
 void print_diff(FILE * output, struct string * expected, struct string * actual);
 
 #endif /* JCUNIT_DIFF_H */
