@@ -14,8 +14,7 @@ struct token newline_token = {0}, eof_token = {0};
 
 struct token * token_alloc(void)
 {
-    struct token * token = memory_blob_pool_alloc(&memory_pool, sizeof(struct token));
-    memset(token, 0, sizeof(struct token));
+    struct token * token = memory_blob_pool_alloc_zeroed(&memory_pool, sizeof(struct token));
     return token;
 }
 
@@ -194,8 +193,7 @@ struct token * get_one_token(struct tokenizer_context * context)
     struct token * token = NULL;
 
 character:
-    token = memory_blob_pool_alloc(&memory_pool, sizeof(struct token));
-    memset(token, 0, sizeof(struct token));
+    token = memory_blob_pool_alloc_zeroed(&memory_pool, sizeof(struct token));
     token->kind = TOKEN_KIND_CHARACTER;
     token->content.ch = ch;
     return token;

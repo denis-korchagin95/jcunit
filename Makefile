@@ -49,6 +49,7 @@ OBJECTS+=application.o
 OBJECTS+=errors.o
 OBJECTS+=allocator.o
 OBJECTS+=diff.o
+OBJECTS+=cache.o
 
 ifeq ($(DEVELOPMENT), 1)
 	OBJECTS+=print.o
@@ -61,10 +62,13 @@ OBJECTS_PARSER_TESTER=$(TESTERS_PATH)parser-tester.o print.o tokenizer.o string.
 ast.o list.o errors.o allocator.o
 OBJECTS_COMPILER_TESTER=$(TESTERS_PATH)compiler-tester.o print.o tokenizer.o string.o util.o options.o \
 parse.o ast.o list.o compiler.o errors.o application.o fs.o source.o show-result.o test-iterator.o runner.o \
-child-process.o allocator.o diff.o
+child-process.o allocator.o diff.o cache.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
+
+production: clean
+	$(MAKE) DEVELOPMENT=0
 
 tokenizer-tester: $(addprefix $(OBJ), $(OBJECTS_TOKENIZER_TESTER))
 	$(CC) $(LFLAGS) $^ -o $(BIN_TESTERS)tokenizer-tester
@@ -89,7 +93,7 @@ dependencies:
 
 build-testers: $(TESTERS)
 
-install: build
+install: production
 	cp $(BIN)$(PROGRAM) $(INSTALL_PATH)$(PROGRAM)
 
 uninstall:

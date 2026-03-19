@@ -11,8 +11,7 @@ struct string * make_string(const char * source, unsigned int len)
     memcpy((void *)storage, source, len * sizeof(char));
     storage[len] = '\0';
 
-    struct string * string = memory_blob_pool_alloc(&memory_pool, sizeof(struct string));
-    memset(string, 0, sizeof(struct string));
+    struct string * string = memory_blob_pool_alloc_zeroed(&memory_pool, sizeof(struct string));
     string->len = len;
     string->value = storage;
     string->flags = 0;
@@ -25,4 +24,11 @@ bool string_equals_with_cstring(struct string * source, const char * dest)
 {
     unsigned int len = strlen(dest);
     return source->len == len && strncmp(source->value, dest, len) == 0;
+}
+
+void string_protect(struct string * str)
+{
+    if (str != NULL) {
+        str->flags |= STRING_FLAG_DONT_RELEASE;
+    }
 }

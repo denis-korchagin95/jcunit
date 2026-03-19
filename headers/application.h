@@ -11,6 +11,8 @@
 #define OPTION_SHOW_VERSION                     (1)
 #define OPTION_SHOW_HELP                        (2)
 #define OPTION_USE_COLORS                       (4)
+#define OPTION_NO_CACHE                         (8)
+#define OPTION_CLEAR_CACHE                      (16)
 
 struct tests_results;
 
@@ -28,10 +30,15 @@ struct test_suites
 
 void init_application_context(struct application_context * application_context);
 void fetch_sources(int argc, char * argv[], struct slist * sources);
+struct cache_store;
+
 void read_suites(
     struct slist * sources,
-    struct test_suites * test_suites
+    struct test_suites * test_suites,
+    struct application_context * application_context,
+    struct cache_store ** out_cache_store
 );
+void save_and_free_cache(struct cache_store * store);
 void run_suites(
     struct test_suites * test_suites,
     struct tests_results ** tests_results,
