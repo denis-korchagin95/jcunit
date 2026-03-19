@@ -8,10 +8,8 @@
 #define RUN_MODE_PASSTHROUGH    (1)
 #define RUN_MODE_DETAIL         (2)
 
-#define OPTION_SHOW_ALLOCATORS_STATS            (1)
-#define OPTION_SHOW_ALLOCATORS_STATS_LEAK_ONLY  (2)
-#define OPTION_SHOW_VERSION                     (4)
-#define OPTION_SHOW_HELP                        (8)
+#define OPTION_SHOW_VERSION                     (1)
+#define OPTION_SHOW_HELP                        (2)
 
 struct tests_results;
 

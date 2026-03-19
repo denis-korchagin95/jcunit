@@ -6,6 +6,8 @@
 #include "../headers/token.h"
 #include "../headers/print.h"
 #include "../headers/errors.h"
+#include "../headers/allocator.h"
+#include "../headers/util.h"
 
 
 int main(int argc, char * argv[])
@@ -13,6 +15,13 @@ int main(int argc, char * argv[])
     if (argc <= 1) {
         jcunit_fatal_error("No specified args!");
     }
+
+    if (atexit(cleanup) != 0) {
+        jcunit_fatal_error("Can't register atexit handler!");
+    }
+
+    memory_blob_pool_init_pools();
+
     int token_number = -1;
     int i;
     for (i = 1; i < argc; ++i) {
@@ -28,16 +37,16 @@ int main(int argc, char * argv[])
 
     init_tokenizer();
 
-    struct tokenizer_context * context = make_tokenizer_context(argv[1]);
+    struct tokenizer_context context;
+    init_tokenizer_context(&context, argv[1]);
 
     int token_counter = 0;
 
-    struct token * token;
     for(;;) {
-        token = get_one_token(context);
+        struct token * token = get_one_token(&context);
         ++token_counter;
         if (token_number != -1 && token_counter > token_number) {
-            context->mode = TOKENIZER_MODE_DIRECTIVE_AND_TEXT;
+            context.mode = TOKENIZER_MODE_DIRECTIVE_AND_TEXT;
         }
         print_token(token, stdout);
         puts("");
@@ -46,7 +55,7 @@ int main(int argc, char * argv[])
         }
     }
 
-    destroy_tokenizer_context(context);
+    free_tokenizer_context(&context);
 
     return 0;
 }

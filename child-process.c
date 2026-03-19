@@ -19,8 +19,12 @@ static int pipes[PIPE_COUNT][2] = {0};
 
 void child_process_run(const char * path, char * argv[], struct process_output * output, unsigned int mode)
 {
-    pipe(pipes[PIPE_STDOUT]);
-    pipe(pipes[PIPE_STDERR]);
+    if (pipe(pipes[PIPE_STDOUT]) < 0) {
+        jcunit_fatal_error("Cannot create stdout pipe: \"%s\"!", strerror(errno));
+    }
+    if (pipe(pipes[PIPE_STDERR]) < 0) {
+        jcunit_fatal_error("Cannot create stderr pipe: \"%s\"!", strerror(errno));
+    }
 
     pid_t pid = fork();
 

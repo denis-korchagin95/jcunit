@@ -11,14 +11,6 @@ void parse_options(int argc, char * argv[], struct application_context * applica
     char * arg;
     for(i = 1; i < argc; ++i) {
         arg = argv[i];
-        if (strncmp("--show-allocators-stats-leak-only", arg, sizeof("--show-allocators-stats-leak-only") - 1) == 0) {
-            application_context->options |= (OPTION_SHOW_ALLOCATORS_STATS | OPTION_SHOW_ALLOCATORS_STATS_LEAK_ONLY);
-            continue;
-        }
-        if (strncmp("--show-allocators-stats", arg, sizeof("--show-allocators-stats") - 1) == 0) {
-            application_context->options |= OPTION_SHOW_ALLOCATORS_STATS;
-            continue;
-        }
         if (strncmp("--version", arg, sizeof("--version") - 1) == 0) {
             application_context->options |= OPTION_SHOW_VERSION;
             continue;
