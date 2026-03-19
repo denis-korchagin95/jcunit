@@ -70,7 +70,6 @@ Passed: 1, Failed: 1, Incomplete: 1
 
 ## About
 
-JCUnit is an Open Source project covered by the GNU General Public
-License version 2.
+JCUnit is an Open Source project covered by the MIT License.
 
 The name "JCUnit" it's just an abbreviation from the phrase "Just C Unit".
