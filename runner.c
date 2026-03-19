@@ -249,6 +249,8 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
         &output
     );
 
+    unlink(test_result->given_filename->value);
+
     bool pass = is_test_passes(this_test->expected_output, &output);
 
     if (!pass) {
