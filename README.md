@@ -3,73 +3,90 @@ JCUnit - a very simple unit testing framework for C
 
 ## Installation
 
-By default, you need only run the "make install" command and "make" do for you all installation routines.
+Build and install to `/usr/local/bin`:
 
-If you want only to build it without installation on your computer just run "make build" command.
+```sh
+make install
+```
 
+To build without installing:
+
+```sh
+make
+```
 
 ## Getting Started
 
-Write a test in the following format:
+Write a test file (e.g. `example.test`):
 
 ```text
-@test("Test #1")
+@test("echo prints hello")
 @given("file")
-@@test
+hello
 
-@whenRun("./bin/test-tokenizer")
+@whenRun("/bin/echo", args="hello")
 @expectOutput("stdout")
-<TOKEN_DIRECTIVE 'test'>
-<TOKEN_NEWLINE '\n'>
-<TOKEN_EOF>
+hello
 
-@endtest
-
-@test("Test #2")
-@given("file")
-@@test
-
-@whenRun("./bin/test-tokenizer")
-@expectOutput("stdout")
-<TOKEN_DIRECTIVE 'test'>
-<TOKEN_EOF>
-
-@endtest
-
-@test("Test #3")
-@given("file")
-@@test
-
-@whenRun("./bin/test-tokenizer")
 @endtest
 ```
 
-You can get the full test's language grammar by link [JCUnit Test's Language Grammar](./test-grammar) and some examples in directory `./examples/`
+Run it:
 
-After that, run the JCUnit with that test file `jcunit ./test.test`
+```sh
+jcunit example.test
+```
 
-It will show you the results of test execution:
+You can also pass a directory to run all `.test` files in it:
+
+```sh
+jcunit ./tests
+```
+
+Output:
 
 ```text
-Test: test.test
-	PASS       Test #1
-	FAIL       Test #2
---- Expected
-<TOKEN_DIRECTIVE 'test'>
-<TOKEN_EOF>
-$
-+++ Actual
-<TOKEN_DIRECTIVE 'test'>
-<TOKEN_NEWLINE '\n'>
-<TOKEN_EOF>
-$
-	INCOMPLETE Test #3
+Test: example.test
+	PASS       echo prints hello
 
-Passed: 1, Failed: 1, Incomplete: 1
+Passed: 1, Failed: 0
 ```
+
+## Usage
+
+```
+jcunit [options] path [paths...]
+```
+
+### Options
+
+| Option | Description |
+|---|---|
+| `--run-mode=(detail\|passthrough)` | Output mode (default: `passthrough`) |
+| `--colors` | Enable colored diff output |
+| `--no-cache` | Disable cache for parsing and assembling phases |
+| `--clear-cache` | Clear the cache file before running |
+| `--version` | Show version |
+| `--help` | Show help message |
+
+Caching can also be disabled by setting the environment variable `JCUNIT_NO_CACHE=1`.
+
+## Test Language
+
+A test file contains one or more tests. Each test has:
+
+- `@test("name")` — test declaration
+- `@given("file")` — input file content (follows on next lines)
+- `@whenRun("./program")` — program to execute with the given file as argument
+- `@expectOutput("stdout")` or `@expectOutput("stderr")` — expected output (follows on next lines)
+- `@endtest` — end of test
+
+A test without `@expectOutput` is marked as **incomplete**. A test with `@shouldBeSkipped` is **skipped**.
+
+See the full grammar in [test-grammar](./test-grammar) and examples in the [examples/](./examples/) directory.
 
 ## About
 
-JCUnit is an Open Source project covered by the MIT License.
+JCUnit is an Open Source project covered by the [MIT License](./LICENSE).
 
-The name "JCUnit" it's just an abbreviation from the phrase "Just C Unit".
+The name "JCUnit" is just an abbreviation of "Just C Unit".
