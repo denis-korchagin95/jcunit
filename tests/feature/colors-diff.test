@@ -1,26 +1,30 @@
-@test("It should show an error test in the passthrough mode")
+@test("It should show colored diff in passthrough mode with --colors")
 @given("file", filename="some-test.test")
 
-@@test("An error test")
+@@test("A failure test")
 @@given("file")
-@@whenRun("./bin/some-program")
+@@whenRun("./bin/jcunit")
 @@expectOutput("stdout")
+Some output
 @@endtest
 
-@whenRun("./bin/jcunit")
+@whenRun("./bin/jcunit", args="--colors")
 @expectOutput("stdout")
-E                                                  (100%)
+F                                                  (100%)
 
-There are 1 errors:
+There are 1 failures:
 
-1) some-test.test : An error test
-The file "./bin/some-program" was not found!
+1) some-test.test : A failure test
+--- Expected
++++ Actual
+[31m-Some output[0m
+[32m+No tests executed![0m
 
-Passed: 0, Skipped: 0, Errors: 1, Failed: 0, Incomplete: 0
+Passed: 0, Skipped: 0, Errors: 0, [31mFailed: 1[0m, Incomplete: 0
 
 @endtest
 
-@test("It should show a failure test in the passthrough mode")
+@test("It should show no colors in diff without --colors flag")
 @given("file", filename="some-test.test")
 
 @@test("A failure test")
@@ -46,7 +50,7 @@ Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 
 @endtest
 
-@test("It should show an error & a failure tests in the passthrough mode")
+@test("It should show colored diff with multiple failures and errors")
 @given("file", filename="some-test.test")
 
 @@test("An error test")
@@ -62,7 +66,7 @@ Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 Some output
 @@endtest
 
-@whenRun("./bin/jcunit")
+@whenRun("./bin/jcunit", args="--colors")
 @expectOutput("stdout")
 EF                                                 (100%)
 
@@ -78,9 +82,9 @@ There are 1 failures:
 1) some-test.test : A failure test
 --- Expected
 +++ Actual
--Some output
-+No tests executed!
+[31m-Some output[0m
+[32m+No tests executed![0m
 
-Passed: 0, Skipped: 0, Errors: 1, Failed: 1, Incomplete: 0
+Passed: 0, Skipped: 0, [31mErrors: 1[0m, [31mFailed: 1[0m, Incomplete: 0
 
 @endtest

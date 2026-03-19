@@ -10,6 +10,7 @@
 
 #define OPTION_SHOW_VERSION                     (1)
 #define OPTION_SHOW_HELP                        (2)
+#define OPTION_USE_COLORS                       (4)
 
 struct tests_results;
 

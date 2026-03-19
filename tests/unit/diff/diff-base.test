@@ -1,0 +1,178 @@
+@test("It should show no changes for identical single line")
+@given("file")
+hello world
+---
+hello world
+@whenRun("./bin/testers/diff-tester")
+@expectOutput("stdout")
+--- Expected
++++ Actual
+ hello world
+
+@endtest
+
+@test("It should show no changes for identical multi-line")
+@given("file")
+line one
+line two
+line three
+---
+line one
+line two
+line three
+@whenRun("./bin/testers/diff-tester")
+@expectOutput("stdout")
+--- Expected
++++ Actual
+ line one
+ line two
+ line three
+
+@endtest
+
+@test("It should show all removed when actual is empty")
+@given("file")
+line one
+line two
+---
+
+@whenRun("./bin/testers/diff-tester")
+@expectOutput("stdout")
+--- Expected
++++ Actual
+-line one
+-line two
+
+@endtest
+
+@test("It should show all added when expected is empty")
+@given("file")
+
+---
+line one
+line two
+@whenRun("./bin/testers/diff-tester")
+@expectOutput("stdout")
+--- Expected
++++ Actual
++line one
++line two
+
+@endtest
+
+@test("It should show a single line change")
+@given("file")
+hello
+---
+world
+@whenRun("./bin/testers/diff-tester")
+@expectOutput("stdout")
+--- Expected
++++ Actual
+-hello
++world
+
+@endtest
+
+@test("It should show added lines at the end")
+@given("file")
+line one
+---
+line one
+line two
+line three
+@whenRun("./bin/testers/diff-tester")
+@expectOutput("stdout")
+--- Expected
++++ Actual
+ line one
++line two
++line three
+
+@endtest
+
+@test("It should show removed lines at the end")
+@given("file")
+line one
+line two
+line three
+---
+line one
+@whenRun("./bin/testers/diff-tester")
+@expectOutput("stdout")
+--- Expected
++++ Actual
+ line one
+-line two
+-line three
+
+@endtest
+
+@test("It should show mixed changes")
+@given("file")
+line one
+line two
+line three
+line four
+---
+line one
+changed two
+line three
+added five
+@whenRun("./bin/testers/diff-tester")
+@expectOutput("stdout")
+--- Expected
++++ Actual
+ line one
+-line two
++changed two
+ line three
+-line four
++added five
+
+@endtest
+
+@test("It should show completely different content")
+@given("file")
+aaa
+bbb
+---
+ccc
+ddd
+@whenRun("./bin/testers/diff-tester")
+@expectOutput("stdout")
+--- Expected
++++ Actual
+-aaa
+-bbb
++ccc
++ddd
+
+@endtest
+
+@test("It should show changes scattered throughout")
+@given("file")
+header
+old line 1
+middle
+old line 2
+footer
+---
+header
+new line 1
+middle
+new line 2
+footer
+@whenRun("./bin/testers/diff-tester")
+@expectOutput("stdout")
+--- Expected
++++ Actual
+ header
+-old line 1
++new line 1
+ middle
+-old line 2
++new line 2
+ footer
+
+@endtest
