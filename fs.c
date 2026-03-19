@@ -1,3 +1,7 @@
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
+#endif
+
 #include <sys/stat.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -13,14 +17,23 @@
 
 #define GET_ENTRY_PATH_ADD_PATH_SEPARATOR (1)
 
-static char * path_buffer[PATH_MAX] = {0};
+static char path_buffer[PATH_MAX] = {0};
+
+static uint32_t dirent_namlen(struct dirent * entry)
+{
+#ifdef _DIRENT_HAVE_D_NAMLEN
+    return entry->d_namlen;
+#else
+    return (uint32_t)strlen(entry->d_name);
+#endif
+}
 
 static struct stat st_buf;
 static char * get_entry_path(const char * path, uint32_t path_len, struct dirent * dirent, unsigned int flags);
 
 bool fs_is_dir(const char * pathname)
 {
-    return stat(pathname, &st_buf) == 0 && (st_buf.st_mode & S_IFDIR) > 0;
+    return stat(pathname, &st_buf) == 0 && S_ISDIR(st_buf.st_mode);
 }
 
 bool fs_is_file_exists(const char * pathname)
@@ -30,7 +43,7 @@ bool fs_is_file_exists(const char * pathname)
 
 bool fs_is_file_executable(const char * pathname)
 {
-    return stat(pathname, &st_buf) == 0 && (st_buf.st_mode & S_IEXEC) > 0;
+    return stat(pathname, &st_buf) == 0 && (st_buf.st_mode & S_IXUSR) != 0;
 }
 
 bool fs_check_extension(const char * path, const char * extension)
@@ -82,8 +95,8 @@ void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * con
                 break;
             if (dirent->d_type == DT_DIR) {
                 if (
-                    strncmp(".", dirent->d_name, dirent->d_namlen) == 0
-                    || strncmp("..", dirent->d_name, dirent->d_namlen) == 0
+                    strncmp(".", dirent->d_name, dirent_namlen(dirent)) == 0
+                    || strncmp("..", dirent->d_name, dirent_namlen(dirent)) == 0
                 ) {
                     continue;
                 }
@@ -115,15 +128,15 @@ void fs_read_dir(const char * path, fs_read_dir_func * read_dir_func, void * con
 
 char * get_entry_path(const char * path, uint32_t path_len, struct dirent * dirent, unsigned int flags)
 {
-    uint32_t entry_len = path_len + dirent->d_namlen + ((flags & GET_ENTRY_PATH_ADD_PATH_SEPARATOR) > 0 ? 1 : 0);
+    uint32_t entry_len = path_len + dirent_namlen(dirent) + ((flags & GET_ENTRY_PATH_ADD_PATH_SEPARATOR) > 0 ? 1 : 0);
     char * entry_path = alloc_bytes(entry_len + 1);
     memcpy((void *) entry_path, (const void *) path, path_len);
     if ((flags & GET_ENTRY_PATH_ADD_PATH_SEPARATOR) > 0) {
         entry_path[path_len] = PATH_SEPARATOR;
-        memcpy((void *) (entry_path + path_len + 1), (const void *) dirent->d_name, dirent->d_namlen);
+        memcpy((void *) (entry_path + path_len + 1), (const void *) dirent->d_name, dirent_namlen(dirent));
     }
     else {
-        memcpy((void *) (entry_path + path_len), (const void *) dirent->d_name, dirent->d_namlen);
+        memcpy((void *) (entry_path + path_len), (const void *) dirent->d_name, dirent_namlen(dirent));
     }
     entry_path[entry_len] = '\0';
     return entry_path;
@@ -131,7 +144,7 @@ char * get_entry_path(const char * path, uint32_t path_len, struct dirent * dire
 
 const char * fs_resolve_path(const char * path)
 {
-    const char * resolved_path = realpath(path, (char *) path_buffer);
+    const char * resolved_path = realpath(path, path_buffer);
     if (resolved_path == NULL) {
         return NULL;
     }
