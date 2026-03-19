@@ -26,16 +26,6 @@ struct memory_blob * alloc_new_blob(size_t size)
     return blob;
 }
 
-struct memory_blob_pool * memory_blob_pool_create(size_t blob_size, size_t alignment)
-{
-    struct memory_blob_pool * pool = malloc(sizeof(struct memory_blob_pool));
-    memset(pool, 0, sizeof(struct memory_blob_pool));
-    pool->blob_size = blob_size;
-    pool->alignment = alignment;
-    pool->blob_capacity = DEFAULT_MEMORY_BLOB_CAPACITY;
-    pool->blobs = malloc(sizeof(struct memory_blob *) * pool->blob_capacity);
-    return pool;
-}
 
 void memory_blob_pool_init(struct memory_blob_pool * pool, size_t blob_size, size_t alignment)
 {

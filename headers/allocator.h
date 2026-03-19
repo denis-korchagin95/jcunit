@@ -25,8 +25,6 @@ struct memory_blob_pool {
 extern struct memory_blob_pool permanent_pool;
 extern struct memory_blob_pool temporary_pool;
 
-struct memory_blob_pool * memory_blob_pool_create(size_t blob_size, size_t alignment);
-
 void memory_blob_pool_init(struct memory_blob_pool * pool, size_t blob_size, size_t alignment);
 void * memory_blob_pool_alloc(struct memory_blob_pool * pool, size_t size);
 void memory_blob_pool_free(struct memory_blob_pool * pool, bool free_pool);
