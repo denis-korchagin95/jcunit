@@ -22,8 +22,7 @@ struct memory_blob_pool {
     size_t alignment;
 };
 
-extern struct memory_blob_pool permanent_pool;
-extern struct memory_blob_pool temporary_pool;
+extern struct memory_blob_pool memory_pool;
 
 void memory_blob_pool_init(struct memory_blob_pool * pool, size_t blob_size, size_t alignment);
 void * memory_blob_pool_alloc(struct memory_blob_pool * pool, size_t size);

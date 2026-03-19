@@ -10,7 +10,7 @@ void test_iterator_init_by_suites(
     unsigned int suites_count
 ) {
     unsigned int total_tests_count = get_total_tests_count(suites, suites_count);
-    iterator->tests = (struct abstract_test **) memory_blob_pool_alloc(&temporary_pool, total_tests_count * sizeof(void *));
+    iterator->tests = (struct abstract_test **) memory_blob_pool_alloc(&memory_pool, total_tests_count * sizeof(void *));
     /* iterator initialization */
     {
         unsigned int suite_iterator, test_iterator, tests_count;

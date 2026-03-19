@@ -273,7 +273,7 @@ void skip_whitespaces(struct tokenizer_context * context)
 
 struct ast_requirement_argument * ast_requirement_argument_alloc(void)
 {
-    struct ast_requirement_argument * argument = memory_blob_pool_alloc(&permanent_pool, sizeof(struct ast_requirement_argument));
+    struct ast_requirement_argument * argument = memory_blob_pool_alloc(&memory_pool, sizeof(struct ast_requirement_argument));
     memset(argument, 0, sizeof(struct ast_requirement_argument));
     return argument;
 }

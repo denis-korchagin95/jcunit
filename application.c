@@ -111,7 +111,7 @@ void read_suites(
 ) {
     test_suites->suites_count = slist_count(sources);
     test_suites->suites = (struct test_suite **) memory_blob_pool_alloc(
-        &temporary_pool,
+        &memory_pool,
         sizeof(struct test_suite *) * test_suites->suites_count
     );
     unsigned int i = 0;

@@ -100,12 +100,12 @@ struct test_suite * do_compile_test_suite(struct source * source, struct slist *
 
 struct test_suite * make_test_suite(struct source * source, const char * name, unsigned int tests_count)
 {
-    struct test_suite * test_suite = memory_blob_pool_alloc(&temporary_pool, sizeof(struct test_suite));
+    struct test_suite * test_suite = memory_blob_pool_alloc(&memory_pool, sizeof(struct test_suite));
     memset(test_suite, 0, sizeof(struct test_suite));
     test_suite->name = name;
     test_suite->source = source;
     test_suite->tests_count = tests_count;
-    test_suite->tests = (struct abstract_test **) memory_blob_pool_alloc(&temporary_pool, tests_count * sizeof(void *));
+    test_suite->tests = (struct abstract_test **) memory_blob_pool_alloc(&memory_pool, tests_count * sizeof(void *));
     return test_suite;
 }
 
@@ -171,7 +171,7 @@ struct abstract_test * program_runner_test_compiler(struct ast_test * ast_test)
 
 struct program_runner_test * make_program_runner_test(void)
 {
-    struct program_runner_test * test = memory_blob_pool_alloc(&temporary_pool, sizeof(struct program_runner_test));
+    struct program_runner_test * test = memory_blob_pool_alloc(&memory_pool, sizeof(struct program_runner_test));
     memset(test, 0, sizeof(struct program_runner_test));
     test->base.kind = TEST_KIND_PROGRAM_RUNNER;
     return test;

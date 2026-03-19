@@ -68,7 +68,7 @@ void fill_file_from_string(FILE * file, const struct string * content)
 
 struct program_runner_test_result * make_program_runner_test_result(struct program_runner_test * test)
 {
-    struct program_runner_test_result * test_result = memory_blob_pool_alloc(&permanent_pool, sizeof(struct program_runner_test_result));
+    struct program_runner_test_result * test_result = memory_blob_pool_alloc(&memory_pool, sizeof(struct program_runner_test_result));
     memset(test_result, 0, sizeof(struct program_runner_test_result));
     test_result->base.test = (struct abstract_test *) test;
     test_result->base.name = test->base.name;
@@ -173,10 +173,10 @@ bool is_test_passes(struct string * expected, struct process_output * output)
 
 struct tests_results * make_tests_results(unsigned int total_tests_count)
 {
-    struct tests_results * tests_results = memory_blob_pool_alloc(&permanent_pool, sizeof(struct tests_results));
+    struct tests_results * tests_results = memory_blob_pool_alloc(&memory_pool, sizeof(struct tests_results));
     memset(tests_results, 0, sizeof(struct tests_results));
     tests_results->results_count = total_tests_count;
-    tests_results->results = (struct abstract_test_result **) memory_blob_pool_alloc(&permanent_pool, total_tests_count * sizeof(void *));
+    tests_results->results = (struct abstract_test_result **) memory_blob_pool_alloc(&memory_pool, total_tests_count * sizeof(void *));
     return tests_results;
 }
 
@@ -272,7 +272,7 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
 
 struct abstract_test_result * run_incomplete_test(struct abstract_test * test)
 {
-    struct abstract_test_result * test_result = memory_blob_pool_alloc(&permanent_pool, sizeof(struct abstract_test_result));
+    struct abstract_test_result * test_result = memory_blob_pool_alloc(&memory_pool, sizeof(struct abstract_test_result));
     memset(test_result, 0, sizeof(struct abstract_test_result));
     test_result->kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     test_result->status = TEST_RESULT_STATUS_INCOMPLETE;
@@ -283,7 +283,7 @@ struct abstract_test_result * run_incomplete_test(struct abstract_test * test)
 
 struct abstract_test_result * run_skipped_test(struct abstract_test * test)
 {
-    struct abstract_test_result * test_result = memory_blob_pool_alloc(&permanent_pool, sizeof(struct abstract_test_result));
+    struct abstract_test_result * test_result = memory_blob_pool_alloc(&memory_pool, sizeof(struct abstract_test_result));
     memset(test_result, 0, sizeof(struct abstract_test_result));
     test_result->kind = TEST_RESULT_KIND_PROGRAM_RUNNER;
     test_result->status = TEST_RESULT_STATUS_SKIPPED;

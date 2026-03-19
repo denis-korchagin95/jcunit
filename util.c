@@ -33,7 +33,7 @@ const char * basename(const char * path)
 const char * duplicate_cstring(const char * src)
 {
     const unsigned int len = strlen(src);
-    char * dest = memory_blob_pool_alloc(&temporary_pool, len + 1);
+    char * dest = memory_blob_pool_alloc(&memory_pool, len + 1);
     strcpy(dest, src);
     dest[len] = '\0';
     return dest;

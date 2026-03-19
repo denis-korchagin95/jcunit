@@ -6,15 +6,7 @@
 #include "headers/util.h"
 
 
-/**
- * This pool will be used for the entire lifetime of the program.
- */
-struct memory_blob_pool permanent_pool = {0};
-
-/**
- * This pool will be used for temporary objects that may be copied to the main pool if needed.
- */
-struct memory_blob_pool temporary_pool = {0};
+struct memory_blob_pool memory_pool = {0};
 
 
 struct memory_blob * alloc_new_blob(size_t size)
@@ -89,12 +81,10 @@ void memory_blob_pool_free(struct memory_blob_pool * pool, bool free_pool)
 
 void memory_blob_pool_init_pools(void)
 {
-    memory_blob_pool_init(&permanent_pool, DEFAULT_MEMORY_BLOB_SIZE * 2, DEFAULT_MEMORY_BLOB_ALIGNMENT);
-    memory_blob_pool_init(&temporary_pool, DEFAULT_MEMORY_BLOB_SIZE, DEFAULT_MEMORY_BLOB_ALIGNMENT);
+    memory_blob_pool_init(&memory_pool, DEFAULT_MEMORY_BLOB_SIZE, DEFAULT_MEMORY_BLOB_ALIGNMENT);
 }
 
 void memory_blob_pool_destroy_pools(void)
 {
-    memory_blob_pool_free(&permanent_pool, false);
-    memory_blob_pool_free(&temporary_pool, false);
+    memory_blob_pool_free(&memory_pool, false);
 }
