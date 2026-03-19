@@ -11,8 +11,7 @@ static void do_list_add(struct list * new, struct list * prev, struct list * nex
 
 struct slist * make_slist(void)
 {
-    struct slist * list = memory_blob_pool_alloc(&memory_pool, sizeof(struct slist));
-    memset(list, 0, sizeof(struct slist));
+    struct slist * list = memory_blob_pool_alloc_zeroed(&memory_pool, sizeof(struct slist));
     list->next = list;
     return list;
 }

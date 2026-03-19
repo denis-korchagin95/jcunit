@@ -63,6 +63,13 @@ void * memory_blob_pool_alloc(struct memory_blob_pool * pool, size_t size)
     return ptr;
 }
 
+void * memory_blob_pool_alloc_zeroed(struct memory_blob_pool * pool, size_t size)
+{
+    void * ptr = memory_blob_pool_alloc(pool, size);
+    memset(ptr, 0, size);
+    return ptr;
+}
+
 void memory_blob_pool_free(struct memory_blob_pool * pool, bool free_pool)
 {
     assert(pool != NULL);

@@ -100,8 +100,7 @@ struct test_suite * do_compile_test_suite(struct source * source, struct slist *
 
 struct test_suite * make_test_suite(struct source * source, const char * name, unsigned int tests_count)
 {
-    struct test_suite * test_suite = memory_blob_pool_alloc(&memory_pool, sizeof(struct test_suite));
-    memset(test_suite, 0, sizeof(struct test_suite));
+    struct test_suite * test_suite = memory_blob_pool_alloc_zeroed(&memory_pool, sizeof(struct test_suite));
     test_suite->name = name;
     test_suite->source = source;
     test_suite->tests_count = tests_count;
@@ -171,8 +170,7 @@ struct abstract_test * program_runner_test_compiler(struct ast_test * ast_test)
 
 struct program_runner_test * make_program_runner_test(void)
 {
-    struct program_runner_test * test = memory_blob_pool_alloc(&memory_pool, sizeof(struct program_runner_test));
-    memset(test, 0, sizeof(struct program_runner_test));
+    struct program_runner_test * test = memory_blob_pool_alloc_zeroed(&memory_pool, sizeof(struct program_runner_test));
     test->base.kind = TEST_KIND_PROGRAM_RUNNER;
     return test;
 }
@@ -244,10 +242,8 @@ void given_test_requirement_compiler(struct test_requirement_compiler_context * 
     context->test->given_file_content = context->requirement->content;
     context->test->given_filename = given_filename;
     context->test->base.flags |= TEST_FLAG_HAS_GIVEN;
-    if (context->requirement->content != NULL)
-        context->requirement->content->flags |= STRING_FLAG_DONT_RELEASE;
-    if (given_filename != NULL)
-        given_filename->flags |= STRING_FLAG_DONT_RELEASE;
+    string_protect(context->requirement->content);
+    string_protect(given_filename);
 }
 
 void when_run_requirement_compiler(struct test_requirement_compiler_context * context)
@@ -291,9 +287,8 @@ void when_run_requirement_compiler(struct test_requirement_compiler_context * co
     context->test->program_path = program;
     context->test->program_args = args;
     context->test->base.flags |= TEST_FLAG_HAS_WHEN;
-    program->flags |= STRING_FLAG_DONT_RELEASE;
-    if (args != NULL)
-        args->flags |= STRING_FLAG_DONT_RELEASE;
+    string_protect(program);
+    string_protect(args);
 }
 
 void expect_output_requirement_compiler(struct test_requirement_compiler_context * context)
@@ -323,8 +318,7 @@ void expect_output_requirement_compiler(struct test_requirement_compiler_context
     context->test->stream_code = stream_code;
     context->test->expected_output = context->requirement->content;
     context->test->base.flags |= TEST_FLAG_HAS_THEN;
-    if (context->requirement->content != NULL)
-        context->requirement->content->flags |= STRING_FLAG_DONT_RELEASE;
+    string_protect(context->requirement->content);
 }
 
 void should_be_skipped_requirement_compiler(struct test_requirement_compiler_context * context)
@@ -380,6 +374,6 @@ void test_arguments_compiler(struct abstract_test * test, struct ast_test * ast_
     if (name->len == 0) {
         jcunit_fatal_error("The 'name' cannot be empty for the 'test' directive!");
     }
-    name->flags |= STRING_FLAG_DONT_RELEASE;
+    string_protect(name);
     test->name = name;
 }

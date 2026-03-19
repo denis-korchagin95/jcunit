@@ -15,5 +15,6 @@ struct string
 struct string * make_string(const char * source, unsigned int len);
 
 bool string_equals_with_cstring(struct string * source, const char * dest);
+void string_protect(struct string * str);
 
 #endif /* JCUNIT_STRING_H */

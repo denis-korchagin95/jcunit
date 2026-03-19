@@ -180,8 +180,7 @@ static struct test_suite * deserialize_test_suite(
 
     if (!buf_read_uint32(buf, &tests_count)) return NULL;
 
-    suite = memory_blob_pool_alloc(&memory_pool, sizeof(struct test_suite));
-    memset(suite, 0, sizeof(struct test_suite));
+    suite = memory_blob_pool_alloc_zeroed(&memory_pool, sizeof(struct test_suite));
     suite->source = source;
     suite->name = name;
     suite->tests_count = tests_count;
@@ -196,18 +195,16 @@ static struct test_suite * deserialize_test_suite(
         if (!buf_read_uint32(buf, &flags)) return NULL;
 
         if (kind == TEST_KIND_PROGRAM_RUNNER) {
-            struct program_runner_test * prt = memory_blob_pool_alloc(
+            struct program_runner_test * prt = memory_blob_pool_alloc_zeroed(
                 &memory_pool, sizeof(struct program_runner_test)
             );
             uint32_t stream_code;
 
-            memset(prt, 0, sizeof(struct program_runner_test));
             prt->base.kind = kind;
             prt->base.flags = flags;
             prt->base.test_suite = suite;
             prt->base.name = buf_read_string_field(buf);
-            if (prt->base.name != NULL)
-                prt->base.name->flags |= STRING_FLAG_DONT_RELEASE;
+            string_protect(prt->base.name);
 
             prt->given_filename = buf_read_string_field(buf);
             prt->given_file_content = buf_read_string_field(buf);
@@ -218,16 +215,11 @@ static struct test_suite * deserialize_test_suite(
             if (!buf_read_uint32(buf, &stream_code)) return NULL;
             prt->stream_code = stream_code;
 
-            if (prt->given_filename != NULL)
-                prt->given_filename->flags |= STRING_FLAG_DONT_RELEASE;
-            if (prt->given_file_content != NULL)
-                prt->given_file_content->flags |= STRING_FLAG_DONT_RELEASE;
-            if (prt->program_path != NULL)
-                prt->program_path->flags |= STRING_FLAG_DONT_RELEASE;
-            if (prt->program_args != NULL)
-                prt->program_args->flags |= STRING_FLAG_DONT_RELEASE;
-            if (prt->expected_output != NULL)
-                prt->expected_output->flags |= STRING_FLAG_DONT_RELEASE;
+            string_protect(prt->given_filename);
+            string_protect(prt->given_file_content);
+            string_protect(prt->program_path);
+            string_protect(prt->program_args);
+            string_protect(prt->expected_output);
 
             suite->tests[i] = (struct abstract_test *)prt;
         } else {
@@ -247,8 +239,7 @@ struct cache_store * cache_load(const char * path)
     uint32_t version, entry_count, i;
     struct cache_store * store;
 
-    store = memory_blob_pool_alloc(&cache_pool, sizeof(struct cache_store));
-    memset(store, 0, sizeof(struct cache_store));
+    store = memory_blob_pool_alloc_zeroed(&cache_pool, sizeof(struct cache_store));
 
     f = fopen(path, "rb");
     if (f == NULL) {
