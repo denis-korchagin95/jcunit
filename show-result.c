@@ -8,6 +8,7 @@
 #include "headers/test-iterator.h"
 #include "headers/string.h"
 #include "headers/errors.h"
+#include "headers/diff.h"
 
 
 static const char * stringify_test_status(struct abstract_test_result * test_result, bool use_short_version);
@@ -40,8 +41,7 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
     }
 
     if (test_result->status == TEST_RESULT_STATUS_FAILURE) {
-        fprintf(output, "--- Expected\n%s$\n", test_result->expected == NULL ? "" : test_result->expected->value);
-        fprintf(output, "+++ Actual\n%s$\n", test_result->actual->value);
+        print_diff(output, test_result->expected, test_result->actual);
         return;
     }
 
@@ -146,6 +146,5 @@ void show_failure_test_result(FILE * output, struct abstract_test_result * test_
         test_result->test->test_suite->name,
         test_result->name->value
     );
-    fprintf(output, "--- Expected\n%s$\n", test_result->expected == NULL ? "" : test_result->expected->value);
-    fprintf(output, "+++ Actual\n%s$\n", test_result->actual->value);
+    print_diff(output, test_result->expected, test_result->actual);
 }

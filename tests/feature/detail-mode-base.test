@@ -38,11 +38,9 @@ Some output
 Test Suite: some-test.test
           FAIL A fail test
 --- Expected
-Some output
-$
 +++ Actual
-Expected a directive!
-$
+-Some output
++Expected a directive!
 
 Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 
