@@ -251,7 +251,7 @@ void run_suites_in_passthrough_mode(
             fprintf(output, " (%3u%%)\n", test_iterator->cursor * 100 / test_iterator->tests_count);
         }
     }
-    {
+    if (test_result_in_line > 0) {
         unsigned int i, len;
         for (i = 0, len = TEST_RESULT_PER_LINE - test_result_in_line; i < len; ++i) {
             fprintf(output, " ");
