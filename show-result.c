@@ -109,6 +109,9 @@ void print_program_runner_error(struct program_runner_test_result * test_result,
         case ERROR_CODE_READ_CHILD_DATA:
             fprintf(output, "Can't read the program data!\n");
             break;
+        case ERROR_CODE_OUTPUT_TOO_LONG:
+            fprintf(output, "The program output is too long!\n");
+            break;
     }
 }
 

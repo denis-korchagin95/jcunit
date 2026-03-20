@@ -58,20 +58,40 @@ int child_process_run(
     close(pipes[PIPE_STDERR][PIPE_OUTPUT_FD]);
 
     /* read both pipes before waitpid to avoid deadlock */
-    nbytes = read(pipes[PIPE_STDOUT][PIPE_INPUT_FD], stdout_output->buffer, stdout_output->size);
-    if (nbytes < 0) {
-        stdout_output->error_code = ERROR_CODE_READ_CHILD_DATA;
+    stdout_output->len = 0;
+    while (stdout_output->len < stdout_output->size) {
+        nbytes = read(pipes[PIPE_STDOUT][PIPE_INPUT_FD],
+                      stdout_output->buffer + stdout_output->len,
+                      stdout_output->size - stdout_output->len);
+        if (nbytes < 0) {
+            stdout_output->error_code = ERROR_CODE_READ_CHILD_DATA;
+            stdout_output->len = 0;
+            break;
+        }
+        if (nbytes == 0) break;
+        stdout_output->len += (unsigned int)nbytes;
+    }
+    if (stdout_output->len >= stdout_output->size) {
+        stdout_output->error_code = ERROR_CODE_OUTPUT_TOO_LONG;
         stdout_output->len = 0;
-    } else {
-        stdout_output->len = (unsigned int)nbytes;
     }
 
-    nbytes = read(pipes[PIPE_STDERR][PIPE_INPUT_FD], stderr_output->buffer, stderr_output->size);
-    if (nbytes < 0) {
-        stderr_output->error_code = ERROR_CODE_READ_CHILD_DATA;
+    stderr_output->len = 0;
+    while (stderr_output->len < stderr_output->size) {
+        nbytes = read(pipes[PIPE_STDERR][PIPE_INPUT_FD],
+                      stderr_output->buffer + stderr_output->len,
+                      stderr_output->size - stderr_output->len);
+        if (nbytes < 0) {
+            stderr_output->error_code = ERROR_CODE_READ_CHILD_DATA;
+            stderr_output->len = 0;
+            break;
+        }
+        if (nbytes == 0) break;
+        stderr_output->len += (unsigned int)nbytes;
+    }
+    if (stderr_output->len >= stderr_output->size) {
+        stderr_output->error_code = ERROR_CODE_OUTPUT_TOO_LONG;
         stderr_output->len = 0;
-    } else {
-        stderr_output->len = (unsigned int)nbytes;
     }
 
     close(pipes[PIPE_STDOUT][PIPE_INPUT_FD]);

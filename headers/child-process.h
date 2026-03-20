@@ -5,6 +5,7 @@
 #define ERROR_CODE_FILE_NOT_FOUND   (1)
 #define ERROR_CODE_NOT_EXECUTABLE   (2)
 #define ERROR_CODE_READ_CHILD_DATA  (3)
+#define ERROR_CODE_OUTPUT_TOO_LONG  (4)
 
 struct process_output
 {
