@@ -20,4 +20,4 @@ jobs:
         run: make build-testers
 
       - name: Run tests
-        run: ./bin/jcunit ./tests
+        run: ./bin/jcunit --no-cache ./tests
