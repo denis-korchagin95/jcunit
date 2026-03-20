@@ -1,1 +1,1 @@
-const char * JCUNIT_VERSION = "0.8.0";
+const char * JCUNIT_VERSION = "1.0.0";
