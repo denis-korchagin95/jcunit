@@ -1,0 +1,64 @@
+@test("It should pass when {{any}} placeholder matches dynamic content")
+@given("file", filename="any-placeholder-inner.test")
+
+@@test("A test with dynamic output")
+@@given("file")
+hello
+@@whenRun("./testers/echo-args")
+@@expectOutput("stdout")
+file: {{any}} done
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+.                                                  (100%)
+
+Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+
+@endtest
+
+@test("It should pass when {{any}} is used multiple times on one line")
+@given("file", filename="any-placeholder-multi.test")
+
+@@test("A test with multiple placeholders")
+@@given("file")
+hello
+@@whenRun("./testers/echo-args")
+@@expectOutput("stdout")
+{{any}}: {{any}} done
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+.                                                  (100%)
+
+Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+
+@endtest
+
+@test("It should still fail when non-placeholder parts do not match")
+@given("file", filename="any-placeholder-fail.test")
+
+@@test("A test with wrong literal")
+@@given("file")
+hello
+@@whenRun("./testers/echo-args")
+@@expectOutput("stdout")
+WRONG: {{any}} WRONG
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+F                                                  (100%)
+
+There are 1 failures:
+
+1) any-placeholder-fail.test : A test with wrong literal
+--- Expected
++++ Actual
+-WRONG: {{any}} WRONG
++file: {{any}} done
+
+Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
+
+@endtest

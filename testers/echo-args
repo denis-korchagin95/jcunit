@@ -1,0 +1,2 @@
+#!/bin/sh
+printf "file: %s done" "$1"

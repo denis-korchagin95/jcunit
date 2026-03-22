@@ -49,6 +49,7 @@ OBJECTS+=application.o
 OBJECTS+=errors.o
 OBJECTS+=allocator.o
 OBJECTS+=diff.o
+OBJECTS+=match.o
 OBJECTS+=cache.o
 
 ifeq ($(DEVELOPMENT), 1)
@@ -62,7 +63,7 @@ OBJECTS_PARSER_TESTER=$(TESTERS_PATH)parser-tester.o print.o tokenizer.o string.
 ast.o list.o errors.o allocator.o
 OBJECTS_COMPILER_TESTER=$(TESTERS_PATH)compiler-tester.o print.o tokenizer.o string.o util.o options.o \
 parse.o ast.o list.o compiler.o errors.o application.o fs.o source.o show-result.o test-iterator.o runner.o \
-child-process.o allocator.o diff.o cache.o
+child-process.o allocator.o diff.o match.o cache.o
 
 build: $(addprefix $(OBJ), $(OBJECTS)) | dependencies
 	$(CC) $(LFLAGS) $^ -o $(BIN)$(PROGRAM)
@@ -82,7 +83,7 @@ parser-tester: $(addprefix $(OBJ), $(OBJECTS_PARSER_TESTER))
 compiler-tester: $(addprefix $(OBJ), $(OBJECTS_COMPILER_TESTER))
 	$(CC) $(LFLAGS) $^ -o $(BIN_TESTERS)compiler-tester
 
-OBJECTS_DIFF_TESTER=$(TESTERS_PATH)diff-tester.o diff.o string.o allocator.o errors.o util.o
+OBJECTS_DIFF_TESTER=$(TESTERS_PATH)diff-tester.o diff.o match.o string.o allocator.o errors.o util.o
 
 diff-tester: $(addprefix $(OBJ), $(OBJECTS_DIFF_TESTER))
 	$(CC) $(LFLAGS) $^ -o $(BIN_TESTERS)diff-tester
@@ -90,6 +91,13 @@ diff-tester: $(addprefix $(OBJ), $(OBJECTS_DIFF_TESTER))
 dependencies:
 	@rm -rf $(DEPENDENCIES_FILE)
 	@$(foreach file, $(OBJECTS), $(CC) -MT $(OBJ)$(file) -MM $(patsubst %.o, %.c, $(file)) >> $(DEPENDENCIES_FILE);)
+
+test:
+	$(BIN)$(PROGRAM) --colors tests/
+
+rebuild: clean build build-testers
+
+test-clean: rebuild test
 
 build-testers: $(TESTERS)
 

@@ -13,6 +13,7 @@
 #include "headers/runner.h"
 #include "headers/child-process.h"
 #include "headers/fs.h"
+#include "headers/match.h"
 #include "headers/errors.h"
 #include "headers/allocator.h"
 
@@ -166,8 +167,8 @@ void try_to_run_program(
 bool is_test_passes(struct string * expected, struct process_output * output)
 {
     return expected != NULL
-        && expected->len == output->len
-        && strncmp((const char *)expected->value, (const char *)output->buffer, output->len) == 0;
+        && pattern_match(expected->value, expected->len,
+                         (const char *)output->buffer, output->len);
 }
 
 struct tests_results * make_tests_results(unsigned int total_tests_count)

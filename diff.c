@@ -4,6 +4,7 @@
 
 #include "headers/diff.h"
 #include "headers/allocator.h"
+#include "headers/match.h"
 
 
 #define ANSI_COLOR_RED     "\033[31m"
@@ -182,10 +183,7 @@ struct diff_lines split_lines(const char * str, unsigned int len)
 
 int lines_equal(struct diff_line * a, struct diff_line * b)
 {
-    if (a->len != b->len) {
-        return 0;
-    }
-    return memcmp(a->start, b->start, a->len) == 0;
+    return pattern_match(a->start, a->len, b->start, b->len);
 }
 
 
