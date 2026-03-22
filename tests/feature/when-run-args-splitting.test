@@ -1,0 +1,65 @@
+@test("It should split args by space into separate arguments")
+@given("file")
+some content
+
+@whenRun("./testers/echo-all-args", args="--flag1 --flag2")
+@expectOutput("stdout")
+--flag1
+--flag2
+
+@endtest
+
+@test("It should pass a single arg correctly")
+@given("file")
+some content
+
+@whenRun("./testers/echo-all-args", args="--only-flag")
+@expectOutput("stdout")
+--only-flag
+
+@endtest
+
+@test("It should split multiple args correctly")
+@given("file")
+some content
+
+@whenRun("./testers/echo-all-args", args="--flag1 --flag2 --flag3")
+@expectOutput("stdout")
+--flag1
+--flag2
+--flag3
+
+@endtest
+
+@test("It should handle multiple consecutive spaces between args")
+@given("file")
+some content
+
+@whenRun("./testers/echo-all-args", args="--flag1  --flag2")
+@expectOutput("stdout")
+--flag1
+--flag2
+
+@endtest
+
+@test("It should handle leading and trailing spaces in args")
+@given("file")
+some content
+
+@whenRun("./testers/echo-all-args", args=" --flag1 --flag2 ")
+@expectOutput("stdout")
+--flag1
+--flag2
+
+@endtest
+
+@test("It should handle tab as delimiter in args")
+@given("file")
+some content
+
+@whenRun("./testers/echo-all-args", args="--flag1	--flag2")
+@expectOutput("stdout")
+--flag1
+--flag2
+
+@endtest

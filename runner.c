@@ -121,7 +121,10 @@ void try_to_run_program(
     struct process_output * stderr_output,
     int * exit_code
 ) {
-    static char * args[4] = {0};
+    #define MAX_ARGS 32
+    static char * args[MAX_ARGS] = {0};
+    static char extra_args_buf[1024];
+    int argc = 0;
 
     stdout_output->buffer = stdout_output_buffer;
     stdout_output->size = MAX_PROCESS_OUTPUT_BUFFER_LEN;
@@ -135,15 +138,29 @@ void try_to_run_program(
 
     *exit_code = 0;
 
-    args[0] = (char *)program;
-    args[1] = (char *)filename;
+    args[argc++] = (char *)program;
+    args[argc++] = (char *)filename;
 
     if (extra_args != NULL) {
-        args[2] = (char *)extra_args;
-        args[3] = NULL;
-    } else {
-        args[2] = NULL;
+        size_t len = strlen(extra_args);
+        if (len >= sizeof(extra_args_buf)) {
+            jcunit_fatal_error("The args string is too long (max %d bytes)!", (int)(sizeof(extra_args_buf) - 1));
+        }
+        memcpy(extra_args_buf, extra_args, len);
+        extra_args_buf[len] = '\0';
+
+        {
+            char * token = strtok(extra_args_buf, " \t");
+            while (token != NULL) {
+                if (argc >= MAX_ARGS - 1) {
+                    jcunit_fatal_error("Too many args (max %d)!", MAX_ARGS - 3);
+                }
+                args[argc++] = token;
+                token = strtok(NULL, " \t");
+            }
+        }
     }
+    args[argc] = NULL;
 
     {
         bool try_to_run = true;
