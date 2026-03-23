@@ -36,6 +36,8 @@ There are 1 failures:
 [exit code] 1
 [stderr] Expected a directive!
 
+Time: {{any}}
+FAILED!
 Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 
 @endtest
@@ -59,6 +61,8 @@ There is no any requirement provided for test!
 @expectOutput("stdout")
 .                                                  (100%)
 
+Time: {{any}}
+OK!
 Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 
 @endtest
@@ -80,7 +84,7 @@ No sources found!
 @whenRun("./bin/jcunit", args="--run-mode=detail")
 @expectOutput("stdout")
 Test Suite: some-test.test
-          FAIL A test with unexpected stderr
+          FAIL A test with unexpected stderr ({{any}} ms)
 --- Expected
 +++ Actual
 -No sources found!

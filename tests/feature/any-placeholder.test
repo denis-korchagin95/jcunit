@@ -13,6 +13,8 @@ file: {{any}} done
 @expectOutput("stdout")
 .                                                  (100%)
 
+Time: {{any}}
+OK!
 Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 
 @endtest
@@ -32,6 +34,8 @@ hello
 @expectOutput("stdout")
 .                                                  (100%)
 
+Time: {{any}}
+OK!
 Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 
 @endtest
@@ -59,6 +63,8 @@ There are 1 failures:
 -WRONG: {{any}} WRONG
 +file: {{any}} done
 
+Time: {{any}}
+FAILED!
 Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 
 @endtest

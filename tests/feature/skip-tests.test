@@ -30,7 +30,7 @@
 @whenRun("./bin/jcunit", args="--run-mode=detail")
 @expectOutput("stdout")
 Test Suite: some-test.test
-       SKIPPED It should tokenize an 'EOF' token on empty file
+       SKIPPED It should tokenize an 'EOF' token on empty file ({{any}} ms)
 
 Passed: 0, Skipped: 1, Errors: 0, Failed: 0, Incomplete: 0
 
@@ -54,6 +54,8 @@ Passed: 0, Skipped: 1, Errors: 0, Failed: 0, Incomplete: 0
 @expectOutput("stdout")
 S                                                  (100%)
 
+Time: {{any}}
+OK, but some tests were skipped or incomplete!
 Passed: 0, Skipped: 1, Errors: 0, Failed: 0, Incomplete: 0
 
 @endtest

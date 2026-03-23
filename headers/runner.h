@@ -20,6 +20,7 @@ struct tests_results
     unsigned int failure_count;
     unsigned int incomplete_count;
     unsigned int error_count;
+    double total_elapsed_ms;
 };
 
 struct abstract_test_result {
@@ -29,6 +30,7 @@ struct abstract_test_result {
     struct string * actual;
     unsigned int status;
     unsigned int kind;
+    double elapsed_ms;
 };
 
 struct program_runner_test_result {

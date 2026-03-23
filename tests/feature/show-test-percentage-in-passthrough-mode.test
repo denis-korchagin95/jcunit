@@ -9,6 +9,8 @@
 @expectOutput("stdout")
 I                                                  (100%)
 
+Time: {{any}}
+OK, but some tests were skipped or incomplete!
 Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
 
 @endtest
@@ -32,6 +34,8 @@ Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
 @expectOutput("stdout")
 III                                                (100%)
 
+Time: {{any}}
+OK, but some tests were skipped or incomplete!
 Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 3
 
 @endtest
@@ -248,6 +252,8 @@ Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 3
 IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII ( 98%)
 I                                                  (100%)
 
+Time: {{any}}
+OK, but some tests were skipped or incomplete!
 Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 51
 
 @endtest

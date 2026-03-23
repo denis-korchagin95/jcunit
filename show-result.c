@@ -1,6 +1,11 @@
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
+#endif
+
 #include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <time.h>
 
 
 #include "headers/show-result.h"
@@ -27,7 +32,7 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
         jcunit_fatal_error("Can't resolve the status of test result!");
     }
 
-    fprintf(output, "    %10s %s\n", test_status, test_result->name->value);
+    fprintf(output, "    %10s %s (%.0f ms)\n", test_status, test_result->name->value, test_result->elapsed_ms);
 
     if (
         test_result->status == TEST_RESULT_STATUS_INCOMPLETE
@@ -120,7 +125,16 @@ struct abstract_test_result * test_runner(
     struct tests_results * tests_results,
     unsigned int current_index
 ) {
-    struct abstract_test_result * test_result = test_run(test);
+    struct timespec start, end;
+    struct abstract_test_result * test_result;
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    test_result = test_run(test);
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    test_result->elapsed_ms = (end.tv_sec - start.tv_sec) * 1000.0
+                            + (end.tv_nsec - start.tv_nsec) / 1000000.0;
+    tests_results->total_elapsed_ms += test_result->elapsed_ms;
 
     add_test_result_to_test_suite_result(tests_results, test_result, current_index);
 

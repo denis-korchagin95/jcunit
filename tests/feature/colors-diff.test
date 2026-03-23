@@ -20,6 +20,8 @@ There are 1 failures:
 [31m-Some output[0m
 [32m+No tests executed![0m
 
+Time: {{any}}
+[41;30m FAILED! [0m
 Passed: 0, Skipped: 0, Errors: 0, [31mFailed: 1[0m, Incomplete: 0
 
 @endtest
@@ -46,6 +48,8 @@ There are 1 failures:
 -Some output
 +No tests executed!
 
+Time: {{any}}
+FAILED!
 Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 
 @endtest
@@ -85,6 +89,8 @@ There are 1 failures:
 [31m-Some output[0m
 [32m+No tests executed![0m
 
+Time: {{any}}
+[41;30m FAILED! [0m
 Passed: 0, Skipped: 0, [31mErrors: 1[0m, [31mFailed: 1[0m, Incomplete: 0
 
 @endtest

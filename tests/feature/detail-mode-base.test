@@ -10,7 +10,7 @@
 @whenRun("./bin/jcunit", args="--run-mode=detail")
 @expectOutput("stdout")
 Test Suite: some-test.test
-         ERROR An error test
+         ERROR An error test ({{any}} ms)
 The file "./bin/some-program" was not found!
 
 Passed: 0, Skipped: 0, Errors: 1, Failed: 0, Incomplete: 0
@@ -36,7 +36,7 @@ Some output
 @whenRun("./bin/jcunit", args="--run-mode=detail")
 @expectOutput("stdout")
 Test Suite: some-test.test
-          FAIL A fail test
+          FAIL A fail test ({{any}} ms)
 --- Expected
 +++ Actual
 -Some output
@@ -69,7 +69,7 @@ There is no any requirement provided for test!
 @whenRun("./bin/jcunit", args="--run-mode=detail")
 @expectOutput("stdout")
 Test Suite: some-test.test
-          PASS A passed test
+          PASS A passed test ({{any}} ms)
 
 Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 
@@ -94,7 +94,7 @@ Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 @whenRun("./bin/jcunit", args="--run-mode=detail")
 @expectOutput("stdout")
 Test Suite: some-test.test
-    INCOMPLETE An incomplete test
+    INCOMPLETE An incomplete test ({{any}} ms)
 
 Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
 
@@ -130,8 +130,8 @@ There is no any requirement provided for test!
 @whenRun("./bin/jcunit", args="--run-mode=detail")
 @expectOutput("stdout")
 Test Suite: some-test.test
-    INCOMPLETE An incomplete test
-          PASS A passed test
+    INCOMPLETE An incomplete test ({{any}} ms)
+          PASS A passed test ({{any}} ms)
 
 Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
 

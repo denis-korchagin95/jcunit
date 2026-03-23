@@ -41,6 +41,7 @@ static void run_suites_in_passthrough_mode(
     FILE * output
 );
 static void print_summary_line(FILE * output, struct tests_results * results);
+static void print_final_summary(FILE * output, struct tests_results * results);
 
 void init_application_context(struct application_context * application_context)
 {
@@ -292,8 +293,7 @@ void run_suites_in_passthrough_mode(
         }
         fprintf(output, "\n");
     }
-    print_summary_line(output, *tests_results);
-    fprintf(output, "\n");
+    print_final_summary(output, *tests_results);
 }
 
 void print_summary_line(FILE * output, struct tests_results * results)
@@ -347,4 +347,37 @@ void print_summary_line(FILE * output, struct tests_results * results)
             results->incomplete_count
         );
     }
+}
+
+void print_final_summary(FILE * output, struct tests_results * results)
+{
+    unsigned int total_ms = (unsigned int)results->total_elapsed_ms;
+    unsigned int minutes = total_ms / 60000;
+    unsigned int seconds = (total_ms % 60000) / 1000;
+    unsigned int ms = total_ms % 1000;
+    bool has_failures = results->failure_count > 0 || results->error_count > 0;
+    bool has_warnings = results->skipped_count > 0 || results->incomplete_count > 0;
+
+    fprintf(output, "Time: %02u:%02u.%03u\n", minutes, seconds, ms);
+
+    if (diff_use_colors) {
+        if (has_failures) {
+            fprintf(output, "\033[41;30m FAILED! \033[0m\n");
+        } else if (has_warnings) {
+            fprintf(output, "\033[43;30m OK, but some tests were skipped or incomplete! \033[0m\n");
+        } else {
+            fprintf(output, "\033[42;30m OK! \033[0m\n");
+        }
+    } else {
+        if (has_failures) {
+            fprintf(output, "FAILED!\n");
+        } else if (has_warnings) {
+            fprintf(output, "OK, but some tests were skipped or incomplete!\n");
+        } else {
+            fprintf(output, "OK!\n");
+        }
+    }
+
+    print_summary_line(output, results);
+    fprintf(output, "\n");
 }

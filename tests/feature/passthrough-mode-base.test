@@ -16,6 +16,8 @@ There are 1 errors:
 1) some-test.test : An error test
 The file "./bin/some-program" was not found!
 
+Time: {{any}}
+FAILED!
 Passed: 0, Skipped: 0, Errors: 1, Failed: 0, Incomplete: 0
 
 @endtest
@@ -48,6 +50,8 @@ There are 1 failures:
 [exit code] 1
 [stderr] Expected a directive!
 
+Time: {{any}}
+FAILED!
 Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
 
 @endtest
@@ -72,6 +76,8 @@ There is no any requirement provided for test!
 @expectOutput("stdout")
 .                                                  (100%)
 
+Time: {{any}}
+OK!
 Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 
 @endtest
@@ -94,6 +100,8 @@ Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 @expectOutput("stdout")
 I                                                  (100%)
 
+Time: {{any}}
+OK, but some tests were skipped or incomplete!
 Passed: 0, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
 
 @endtest
