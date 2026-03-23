@@ -37,6 +37,9 @@ int main(int argc, char * argv[])
     if (application_context.options & OPTION_USE_COLORS) {
         diff_use_colors = 1;
     }
+    if (application_context.options & OPTION_NO_SUMMARY) {
+        no_summary = 1;
+    }
 
     if (application_context.options & OPTION_SHOW_HELP) {
         show_help(PROGRAM_NAME, stdout);
@@ -108,4 +111,5 @@ void show_help(const char * name, FILE * output)
     fprintf(output, "\t--version\n\t    Show version of this program.\n\n");
     fprintf(output, "\t--no-cache\n\t    Disable cache for parsing and assembling phases.\n\n");
     fprintf(output, "\t--clear-cache\n\t    Clear the cache file before running.\n\n");
+    fprintf(output, "\t--no-summary\n\t    Suppress the summary output after tests.\n\n");
 }

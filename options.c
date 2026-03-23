@@ -48,6 +48,10 @@ void parse_options(int argc, char * argv[], struct application_context * applica
             application_context->options |= OPTION_CLEAR_CACHE;
             continue;
         }
+        if (strncmp("--no-summary", arg, sizeof("--no-summary") - 1) == 0) {
+            application_context->options |= OPTION_NO_SUMMARY;
+            continue;
+        }
         if (strncmp("--", arg, 2) == 0) {
             jcunit_fatal_error("The unknown option: %s!", arg);
         }

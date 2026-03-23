@@ -21,6 +21,7 @@
 static const char * sources_cache[SOURCES_CACHE_POS];
 static unsigned int sources_cache_pos = 0;
 static const char * default_tests_path = "./tests";
+int no_summary = 0;
 
 typedef void test_mode_func(
     struct test_iterator * test_iterator,
@@ -358,23 +359,25 @@ void print_final_summary(FILE * output, struct tests_results * results)
     bool has_failures = results->failure_count > 0 || results->error_count > 0;
     bool has_warnings = results->skipped_count > 0 || results->incomplete_count > 0;
 
-    fprintf(output, "Time: %02u:%02u.%03u\n", minutes, seconds, ms);
+    if (!no_summary) {
+        fprintf(output, "Time: %02u:%02u.%03u\n", minutes, seconds, ms);
 
-    if (diff_use_colors) {
-        if (has_failures) {
-            fprintf(output, "\033[41;30m FAILED! \033[0m\n");
-        } else if (has_warnings) {
-            fprintf(output, "\033[43;30m OK, but some tests were skipped or incomplete! \033[0m\n");
+        if (diff_use_colors) {
+            if (has_failures) {
+                fprintf(output, "\033[41;30m FAILED! \033[0m\n");
+            } else if (has_warnings) {
+                fprintf(output, "\033[43;30m OK, but some tests were skipped or incomplete! \033[0m\n");
+            } else {
+                fprintf(output, "\033[42;30m OK! \033[0m\n");
+            }
         } else {
-            fprintf(output, "\033[42;30m OK! \033[0m\n");
-        }
-    } else {
-        if (has_failures) {
-            fprintf(output, "FAILED!\n");
-        } else if (has_warnings) {
-            fprintf(output, "OK, but some tests were skipped or incomplete!\n");
-        } else {
-            fprintf(output, "OK!\n");
+            if (has_failures) {
+                fprintf(output, "FAILED!\n");
+            } else if (has_warnings) {
+                fprintf(output, "OK, but some tests were skipped or incomplete!\n");
+            } else {
+                fprintf(output, "OK!\n");
+            }
         }
     }
 

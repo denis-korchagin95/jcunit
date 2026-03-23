@@ -13,6 +13,7 @@
 #define OPTION_USE_COLORS                       (4)
 #define OPTION_NO_CACHE                         (8)
 #define OPTION_CLEAR_CACHE                      (16)
+#define OPTION_NO_SUMMARY                       (32)
 
 struct tests_results;
 
@@ -27,6 +28,8 @@ struct test_suites
     struct test_suite ** suites;
     unsigned int suites_count;
 };
+
+extern int no_summary;
 
 void init_application_context(struct application_context * application_context);
 void fetch_sources(int argc, char * argv[], struct slist * sources);
