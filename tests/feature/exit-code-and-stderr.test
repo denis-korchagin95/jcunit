@@ -84,15 +84,15 @@ No sources found!
 @whenRun("./bin/jcunit", args="--run-mode=detail")
 @expectOutput("stdout")
 Test Suite: some-test.test
-          FAIL A test with unexpected stderr ({{any}} ms)
+          FAIL A test with unexpected stderr
 --- Expected
 +++ Actual
 -No sources found!
 [exit code] 1
 [stderr] Expected a directive!
 
+Time: {{any}}
+FAILED!
 Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
-
-
 
 @endtest

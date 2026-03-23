@@ -63,10 +63,7 @@ There is no any requirement provided for test!
 @whenRun("./bin/jcunit", args="--run-mode=detail --no-summary")
 @expectOutput("stdout")
 Test Suite: some-test.test
-          PASS A passed test ({{any}} ms)
-
-Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
-
+          PASS A passed test
 
 
 @endtest
@@ -100,11 +97,8 @@ There is no any requirement provided for test!
 @whenRun("./bin/jcunit", args="--run-mode=detail --no-summary")
 @expectOutput("stdout")
 Test Suite: some-test.test
-    INCOMPLETE An incomplete test ({{any}} ms)
-          PASS A passed test ({{any}} ms)
-
-Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 1
-
+    INCOMPLETE An incomplete test
+          PASS A passed test
 
 
 @endtest

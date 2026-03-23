@@ -32,7 +32,7 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
         jcunit_fatal_error("Can't resolve the status of test result!");
     }
 
-    fprintf(output, "    %10s %s (%.0f ms)\n", test_status, test_result->name->value, test_result->elapsed_ms);
+    fprintf(output, "    %10s %s\n", test_status, test_result->name->value);
 
     if (
         test_result->status == TEST_RESULT_STATUS_INCOMPLETE

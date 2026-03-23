@@ -221,9 +221,10 @@ void run_suites_in_detail_mode(
         next_test = test_iterator_current_safe(test_iterator);
         if (next_test == NULL || next_test->test_suite != current_test_suite) {
             fprintf(output, "\n");
-            print_summary_line(output, *tests_results);
-            fprintf(output, "\n\n\n");
         }
+    }
+    if (!no_summary) {
+        print_final_summary(output, *tests_results);
     }
 }
 
@@ -294,7 +295,12 @@ void run_suites_in_passthrough_mode(
         }
         fprintf(output, "\n");
     }
-    print_final_summary(output, *tests_results);
+    if (no_summary) {
+        print_summary_line(output, *tests_results);
+        fprintf(output, "\n");
+    } else {
+        print_final_summary(output, *tests_results);
+    }
 }
 
 void print_summary_line(FILE * output, struct tests_results * results)
@@ -359,25 +365,23 @@ void print_final_summary(FILE * output, struct tests_results * results)
     bool has_failures = results->failure_count > 0 || results->error_count > 0;
     bool has_warnings = results->skipped_count > 0 || results->incomplete_count > 0;
 
-    if (!no_summary) {
-        fprintf(output, "Time: %02u:%02u.%03u\n", minutes, seconds, ms);
+    fprintf(output, "Time: %02u:%02u.%03u\n", minutes, seconds, ms);
 
-        if (diff_use_colors) {
-            if (has_failures) {
-                fprintf(output, "\033[41;30m FAILED! \033[0m\n");
-            } else if (has_warnings) {
-                fprintf(output, "\033[43;30m OK, but some tests were skipped or incomplete! \033[0m\n");
-            } else {
-                fprintf(output, "\033[42;30m OK! \033[0m\n");
-            }
+    if (diff_use_colors) {
+        if (has_failures) {
+            fprintf(output, "\033[41;30m FAILED! \033[0m\n");
+        } else if (has_warnings) {
+            fprintf(output, "\033[43;30m OK, but some tests were skipped or incomplete! \033[0m\n");
         } else {
-            if (has_failures) {
-                fprintf(output, "FAILED!\n");
-            } else if (has_warnings) {
-                fprintf(output, "OK, but some tests were skipped or incomplete!\n");
-            } else {
-                fprintf(output, "OK!\n");
-            }
+            fprintf(output, "\033[42;30m OK! \033[0m\n");
+        }
+    } else {
+        if (has_failures) {
+            fprintf(output, "FAILED!\n");
+        } else if (has_warnings) {
+            fprintf(output, "OK, but some tests were skipped or incomplete!\n");
+        } else {
+            fprintf(output, "OK!\n");
         }
     }
 
