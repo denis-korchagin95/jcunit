@@ -150,8 +150,8 @@ static int serialize_test_suite(FILE * f, struct test_suite * suite)
             if (!write_string_field(f, prt->given_file_content)) return 0;
             if (!write_string_field(f, prt->program_path)) return 0;
             if (!write_string_field(f, prt->program_args)) return 0;
-            if (!write_string_field(f, prt->expected_output)) return 0;
-            if (!write_uint32(f, prt->stream_code)) return 0;
+            if (!write_string_field(f, prt->expected_stdout)) return 0;
+            if (!write_string_field(f, prt->expected_stderr)) return 0;
         }
     }
     return 1;
@@ -198,8 +198,6 @@ static struct test_suite * deserialize_test_suite(
             struct program_runner_test * prt = memory_blob_pool_alloc_zeroed(
                 &memory_pool, sizeof(struct program_runner_test)
             );
-            uint32_t stream_code;
-
             prt->base.kind = kind;
             prt->base.flags = flags;
             prt->base.test_suite = suite;
@@ -210,16 +208,15 @@ static struct test_suite * deserialize_test_suite(
             prt->given_file_content = buf_read_string_field(buf);
             prt->program_path = buf_read_string_field(buf);
             prt->program_args = buf_read_string_field(buf);
-            prt->expected_output = buf_read_string_field(buf);
-
-            if (!buf_read_uint32(buf, &stream_code)) return NULL;
-            prt->stream_code = stream_code;
+            prt->expected_stdout = buf_read_string_field(buf);
+            prt->expected_stderr = buf_read_string_field(buf);
 
             string_protect(prt->given_filename);
             string_protect(prt->given_file_content);
             string_protect(prt->program_path);
             string_protect(prt->program_args);
-            string_protect(prt->expected_output);
+            string_protect(prt->expected_stdout);
+            string_protect(prt->expected_stderr);
 
             suite->tests[i] = (struct abstract_test *)prt;
         } else {

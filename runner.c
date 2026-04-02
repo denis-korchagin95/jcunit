@@ -241,7 +241,6 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
     struct process_output stdout_output, stderr_output;
     struct string * executable = this_test->program_path;
     struct program_runner_test_result * test_result;
-    struct process_output * expected_stream_output;
     int child_exit_code;
     bool pass;
 
@@ -276,26 +275,33 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
         return (struct abstract_test_result *)test_result;
     }
 
-    /* pick the stream that was expected */
-    if (this_test->stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR) {
-        expected_stream_output = &stderr_output;
-    } else {
-        expected_stream_output = &stdout_output;
-    }
+    pass = true;
 
-    pass = is_test_passes(this_test->expected_output, expected_stream_output);
-
-    /* non-zero exit code with unexpected stderr is a failure */
-    if (pass && child_exit_code != 0 && stderr_output.len > 0) {
-        if (this_test->stream_code != TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR) {
+    /* check stdout if expected */
+    if (this_test->expected_stdout != NULL) {
+        if (!is_test_passes(this_test->expected_stdout, &stdout_output)) {
             pass = false;
+            test_result->expected_stdout = this_test->expected_stdout;
+            string_protect(this_test->expected_stdout);
+            test_result->actual_stdout = make_string(stdout_output.buffer, stdout_output.len);
         }
     }
 
-    if (!pass) {
-        test_result->base.expected = this_test->expected_output;
-        string_protect(this_test->expected_output);
-        test_result->base.actual = make_string(expected_stream_output->buffer, expected_stream_output->len);
+    /* check stderr if expected */
+    if (this_test->expected_stderr != NULL) {
+        if (!is_test_passes(this_test->expected_stderr, &stderr_output)) {
+            pass = false;
+            test_result->expected_stderr = this_test->expected_stderr;
+            string_protect(this_test->expected_stderr);
+            test_result->actual_stderr = make_string(stderr_output.buffer, stderr_output.len);
+        }
+    }
+
+    /* non-zero exit code with unexpected stderr is a failure */
+    if (pass && child_exit_code != 0 && stderr_output.len > 0) {
+        if (this_test->expected_stderr == NULL) {
+            pass = false;
+        }
     }
 
     test_result->base.status = pass ? TEST_RESULT_STATUS_PASS : TEST_RESULT_STATUS_FAILURE;

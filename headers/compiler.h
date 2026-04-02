@@ -36,8 +36,8 @@ struct program_runner_test {
     struct string * given_file_content;
     struct string * program_path;
     struct string * program_args;
-    struct string * expected_output;
-    unsigned int stream_code;
+    struct string * expected_stdout;
+    struct string * expected_stderr;
 };
 
 struct test_suite * compile_test_suite(struct source * source);

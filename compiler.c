@@ -315,8 +315,19 @@ void expect_output_requirement_compiler(struct test_requirement_compiler_context
             argument->value->value
         );
     }
-    context->test->stream_code = stream_code;
-    context->test->expected_output = context->requirement->content;
+    if (stream_code == TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT) {
+        if (context->test->expected_stdout != NULL) {
+            jcunit_warning("duplicate 'expectOutput' for stream 'stdout', ignoring");
+            return;
+        }
+        context->test->expected_stdout = context->requirement->content;
+    } else {
+        if (context->test->expected_stderr != NULL) {
+            jcunit_warning("duplicate 'expectOutput' for stream 'stderr', ignoring");
+            return;
+        }
+        context->test->expected_stderr = context->requirement->content;
+    }
     context->test->base.flags |= TEST_FLAG_HAS_THEN;
     string_protect(context->requirement->content);
 }

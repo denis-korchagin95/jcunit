@@ -7,7 +7,7 @@
 
 #define CACHE_MAGIC "JCUNIT\0"
 #define CACHE_MAGIC_SIZE 8
-#define CACHE_VERSION 1
+#define CACHE_VERSION 2
 #define CACHE_FILENAME ".jcunit_cache"
 #define CACHE_MAX_ENTRIES 1024
 

@@ -53,3 +53,37 @@ The unknown stream name "unknown_stream_name" for 'expectOutput' requirement!
 No arguments are given for 'expectOutput' directive!
 
 @endtest
+
+@test("It should show a warning on duplicate 'expectOutput' for stdout")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("./bin/some-tester")
+@@expectOutput("stdout")
+first
+@@expectOutput("stdout")
+second
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Warning: duplicate 'expectOutput' for stream 'stdout', ignoring
+
+@endtest
+
+@test("It should show a warning on duplicate 'expectOutput' for stderr")
+@given("file")
+
+@@test("Some Test Name")
+@@whenRun("./bin/some-tester")
+@@expectOutput("stderr")
+first
+@@expectOutput("stderr")
+second
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+Warning: duplicate 'expectOutput' for stream 'stderr', ignoring
+
+@endtest

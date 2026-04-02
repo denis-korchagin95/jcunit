@@ -22,3 +22,15 @@ void jcunit_fatal_error(const char * fmt, ...)
     fprintf(stderr, "%s\n", buffer);
     exit(1);
 }
+
+void jcunit_warning(const char * fmt, ...)
+{
+    va_list args;
+    static char buffer[ERROR_BUFFER_SIZE];
+
+    va_start(args, fmt);
+    vsnprintf(buffer, ERROR_BUFFER_SIZE, fmt, args);
+    va_end(args);
+
+    fprintf(stderr, "Warning: %s\n", buffer);
+}

@@ -48,7 +48,6 @@ There are 1 failures:
 -Some output
 +Expected a directive!
 [exit code] 1
-[stderr] Expected a directive!
 
 Time: {{any}}
 FAILED!

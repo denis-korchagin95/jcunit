@@ -38,6 +38,10 @@ struct program_runner_test_result {
     struct string * given_filename;
     struct string * executable;
     struct string * stderr_output;
+    struct string * expected_stdout;
+    struct string * actual_stdout;
+    struct string * expected_stderr;
+    struct string * actual_stderr;
     unsigned int error_code;
     int exit_code;
 };

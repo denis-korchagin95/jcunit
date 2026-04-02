@@ -21,6 +21,7 @@ static void print_error(struct abstract_test_result * test_result, FILE * output
 static void print_program_runner_error(struct program_runner_test_result * test_result, FILE * output);
 static void print_stderr_output(struct program_runner_test_result * test_result, FILE * output);
 static void print_exit_code(struct program_runner_test_result * test_result, FILE * output);
+static void print_stream_diffs(struct program_runner_test_result * test_result, FILE * output);
 
 void show_test_result_in_detail_mode(struct abstract_test_result * test_result, FILE * output)
 {
@@ -49,7 +50,7 @@ void show_test_result_in_detail_mode(struct abstract_test_result * test_result, 
 
     if (test_result->status == TEST_RESULT_STATUS_FAILURE) {
         struct program_runner_test_result * prt = (struct program_runner_test_result *)test_result;
-        print_diff(output, test_result->expected, test_result->actual);
+        print_stream_diffs(prt, output);
         print_exit_code(prt, output);
         print_stderr_output(prt, output);
         return;
@@ -173,7 +174,7 @@ void show_failure_test_result(FILE * output, struct abstract_test_result * test_
         test_result->test->test_suite->name,
         test_result->name->value
     );
-    print_diff(output, test_result->expected, test_result->actual);
+    print_stream_diffs(prt, output);
     print_exit_code(prt, output);
     print_stderr_output(prt, output);
 }
@@ -185,11 +186,37 @@ void print_exit_code(struct program_runner_test_result * test_result, FILE * out
     }
 }
 
+void print_stream_diffs(struct program_runner_test_result * test_result, FILE * output)
+{
+    bool has_both = (test_result->expected_stdout != NULL || test_result->actual_stdout != NULL)
+                 && (test_result->expected_stderr != NULL || test_result->actual_stderr != NULL);
+
+    if (test_result->expected_stdout != NULL || test_result->actual_stdout != NULL) {
+        if (has_both) {
+            fprintf(output, "[stdout]\n");
+        }
+        print_diff(output, test_result->expected_stdout, test_result->actual_stdout);
+    }
+
+    if (test_result->expected_stderr != NULL || test_result->actual_stderr != NULL) {
+        if (has_both) {
+            fprintf(output, "[stderr]\n");
+        }
+        print_diff(output, test_result->expected_stderr, test_result->actual_stderr);
+    }
+}
+
 void print_stderr_output(struct program_runner_test_result * test_result, FILE * output)
 {
     const char * start;
     const char * end;
     const char * p;
+    {
+        struct program_runner_test * prt = (struct program_runner_test *)test_result->base.test;
+        if (prt->expected_stderr != NULL) {
+            return;
+        }
+    }
     if (test_result->stderr_output == NULL || test_result->stderr_output->len == 0) {
         return;
     }

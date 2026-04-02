@@ -1,0 +1,104 @@
+@test("It should pass when both stdout and stderr match")
+@given("file")
+@whenRun("./testers/dual-output.sh")
+@expectOutput("stdout")
+stdout line
+@expectOutput("stderr")
+stderr line
+@endtest
+
+@test("It should fail when stdout does not match but stderr matches")
+@given("file")
+
+@@test("A dual output test")
+@@given("file")
+@@whenRun("./testers/dual-output.sh")
+@@expectOutput("stdout")
+wrong stdout
+@@expectOutput("stderr")
+stderr line
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+F                                                  (100%)
+
+There are 1 failures:
+
+1) {{any}} : A dual output test
+--- Expected
++++ Actual
+-wrong stdout
++stdout line
+
+Time: {{any}}
+FAILED!
+Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
+
+@endtest
+
+@test("It should fail when stderr does not match but stdout matches")
+@given("file")
+
+@@test("A dual output test")
+@@given("file")
+@@whenRun("./testers/dual-output.sh")
+@@expectOutput("stdout")
+stdout line
+@@expectOutput("stderr")
+wrong stderr
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+F                                                  (100%)
+
+There are 1 failures:
+
+1) {{any}} : A dual output test
+--- Expected
++++ Actual
+-wrong stderr
++stderr line
+
+Time: {{any}}
+FAILED!
+Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
+
+@endtest
+
+@test("It should fail when both stdout and stderr do not match")
+@given("file")
+
+@@test("A dual output test")
+@@given("file")
+@@whenRun("./testers/dual-output.sh")
+@@expectOutput("stdout")
+wrong stdout
+@@expectOutput("stderr")
+wrong stderr
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+F                                                  (100%)
+
+There are 1 failures:
+
+1) {{any}} : A dual output test
+[stdout]
+--- Expected
++++ Actual
+-wrong stdout
++stdout line
+[stderr]
+--- Expected
++++ Actual
+-wrong stderr
++stderr line
+
+Time: {{any}}
+FAILED!
+Passed: 0, Skipped: 0, Errors: 0, Failed: 1, Incomplete: 0
+
+@endtest
