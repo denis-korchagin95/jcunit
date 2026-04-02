@@ -15,6 +15,25 @@ static struct memory_blob_pool cache_pool;
 static pid_t cache_owner_pid;
 
 
+static uint32_t hash_file_content(const char * path)
+{
+    FILE * f;
+    uint32_t hash = 2166136261u; /* FNV-1a offset basis */
+    int ch;
+
+    f = fopen(path, "rb");
+    if (f == NULL) {
+        return 0;
+    }
+    while ((ch = fgetc(f)) != EOF) {
+        hash ^= (unsigned char)ch;
+        hash *= 16777619u; /* FNV-1a prime */
+    }
+    fclose(f);
+    return hash;
+}
+
+
 void cache_init(void)
 {
     memory_blob_pool_init(&cache_pool, DEFAULT_MEMORY_BLOB_SIZE, DEFAULT_MEMORY_BLOB_ALIGNMENT);
@@ -257,7 +276,7 @@ struct cache_store * cache_load(const char * path)
     for (i = 0; i < entry_count; ++i) {
         uint16_t path_len;
         int64_t mtime_val, size_val;
-        uint32_t data_len;
+        uint32_t content_hash, data_len;
         char * entry_path;
         struct cache_entry * entry;
 
@@ -270,12 +289,14 @@ struct cache_store * cache_load(const char * path)
 
         if (!read_int64(f, &mtime_val)) break;
         if (!read_int64(f, &size_val)) break;
+        if (!read_uint32(f, &content_hash)) break;
         if (!read_uint32(f, &data_len)) break;
 
         entry = &store->entries[store->entry_count];
         entry->path = entry_path;
         entry->mtime = (time_t)mtime_val;
         entry->file_size = (off_t)size_val;
+        entry->content_hash = content_hash;
         entry->suite = NULL;
 
         /* read raw serialized data */
@@ -304,7 +325,9 @@ struct test_suite * cache_lookup(struct cache_store * store, struct source * sou
     for (i = 0; i < store->entry_count; ++i) {
         struct cache_entry * entry = &store->entries[i];
         if (strcmp(entry->path, source->filename) == 0) {
-            if (entry->mtime == st.st_mtime && entry->file_size == st.st_size) {
+            if (entry->mtime == st.st_mtime
+                && entry->file_size == st.st_size
+                && entry->content_hash == hash_file_content(source->filename)) {
                 /* deserialize on first hit */
                 if (entry->suite == NULL && entry->data != NULL) {
                     struct read_buffer buf;
@@ -340,6 +363,7 @@ void cache_update(struct cache_store * store, const char * source_path, struct t
         if (strcmp(entry->path, source_path) == 0) {
             entry->mtime = st.st_mtime;
             entry->file_size = st.st_size;
+            entry->content_hash = hash_file_content(source_path);
             entry->suite = suite;
             entry->data = NULL;
             entry->data_len = 0;
@@ -357,6 +381,7 @@ void cache_update(struct cache_store * store, const char * source_path, struct t
     }
     entry->mtime = st.st_mtime;
     entry->file_size = st.st_size;
+    entry->content_hash = hash_file_content(source_path);
     entry->suite = suite;
     entry->data = NULL;
     entry->data_len = 0;
@@ -389,6 +414,7 @@ void cache_save(struct cache_store * store, const char * path)
         fwrite(entry->path, 1, path_len, f);
         write_int64(f, (int64_t)entry->mtime);
         write_int64(f, (int64_t)entry->file_size);
+        write_uint32(f, entry->content_hash);
 
         if (entry->suite != NULL) {
             /* serialize live suite */

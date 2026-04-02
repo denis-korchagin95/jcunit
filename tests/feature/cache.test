@@ -84,6 +84,52 @@ Passed: 1, Skipped: 0, Errors: 1, Failed: 0, Incomplete: 0
 
 @endtest
 
+@test("It should not serve stale cache when file content changes with the same name")
+@given("file", filename="cache-collision.test")
+
+@@test("First test")
+@@given("file")
+
+@@@@test()
+@@@@endtest()
+
+@@whenRun("./bin/jcunit")
+@@expectOutput("stderr")
+There is no any requirement provided for test!
+
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+.                                                  (100%)
+
+Time: {{any}}
+OK!
+Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+
+@endtest
+
+@test("It should use fresh content after the same filename was rewritten")
+@given("file", filename="cache-collision.test")
+
+@@test("Second test")
+@@given("file")
+@@whenRun("./bin/testers/tokenizer-tester")
+@@expectOutput("stdout")
+<TOKEN_EOF>
+
+@@endtest
+
+@whenRun("./bin/jcunit")
+@expectOutput("stdout")
+.                                                  (100%)
+
+Time: {{any}}
+OK!
+Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+
+@endtest
+
 @test("It should handle --no-cache with skipped tests")
 @given("file", filename="some-test.test")
 
