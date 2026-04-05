@@ -69,6 +69,28 @@ Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
 
 @endtest
 
+@test("It should pipe content to stdin with @given stdin")
+@given("stdin")
+hello from stdin
+@whenRun("./testers/cat-stdin")
+@expectOutput("stdout")
+hello from stdin
+@endtest
+
+@test("It should pipe stdin with args and no file argument")
+@given("stdin")
+input data
+@whenRun("./testers/cat-stdin", args="--ignored")
+@expectOutput("stdout")
+input data
+@endtest
+
+@test("It should pipe empty stdin")
+@given("stdin")
+@whenRun("./testers/cat-stdin")
+@expectOutput("stdout")
+@endtest
+
 @test("It should still work with @given file")
 @given("file")
 some content

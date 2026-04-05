@@ -7,6 +7,12 @@
 #define ERROR_CODE_READ_CHILD_DATA  (3)
 #define ERROR_CODE_OUTPUT_TOO_LONG  (4)
 
+struct process_input
+{
+    const char * data;
+    unsigned int len;
+};
+
 struct process_output
 {
     char * buffer;
@@ -18,6 +24,7 @@ struct process_output
 int child_process_run(
     const char * path,
     char * argv[],
+    struct process_input * stdin_input,
     struct process_output * stdout_output,
     struct process_output * stderr_output
 );

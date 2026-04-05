@@ -7,10 +7,11 @@
 #include "headers/child-process.h"
 #include "headers/errors.h"
 
-#define PIPE_COUNT (2)
+#define PIPE_COUNT (3)
 
-#define PIPE_STDOUT (0)
-#define PIPE_STDERR (1)
+#define PIPE_STDIN  (0)
+#define PIPE_STDOUT (1)
+#define PIPE_STDERR (2)
 
 #define PIPE_INPUT_FD   (0)
 #define PIPE_OUTPUT_FD  (1)
@@ -20,6 +21,7 @@ static int pipes[PIPE_COUNT][2] = {0};
 int child_process_run(
     const char * path,
     char * argv[],
+    struct process_input * stdin_input,
     struct process_output * stdout_output,
     struct process_output * stderr_output
 ) {
@@ -27,6 +29,11 @@ int child_process_run(
     int status;
     ssize_t nbytes;
 
+    if (stdin_input != NULL) {
+        if (pipe(pipes[PIPE_STDIN]) < 0) {
+            jcunit_fatal_error("Cannot create stdin pipe: \"%s\"!", strerror(errno));
+        }
+    }
     if (pipe(pipes[PIPE_STDOUT]) < 0) {
         jcunit_fatal_error("Cannot create stdout pipe: \"%s\"!", strerror(errno));
     }
@@ -41,6 +48,11 @@ int child_process_run(
     }
 
     if (pid == 0) {
+        if (stdin_input != NULL) {
+            dup2(pipes[PIPE_STDIN][PIPE_INPUT_FD], STDIN_FILENO);
+            close(pipes[PIPE_STDIN][PIPE_INPUT_FD]);
+            close(pipes[PIPE_STDIN][PIPE_OUTPUT_FD]);
+        }
         dup2(pipes[PIPE_STDOUT][PIPE_OUTPUT_FD], STDOUT_FILENO);
         dup2(pipes[PIPE_STDERR][PIPE_OUTPUT_FD], STDERR_FILENO);
 
@@ -52,6 +64,15 @@ int child_process_run(
         execv(path, argv);
 
         exit(127);
+    }
+
+    if (stdin_input != NULL) {
+        close(pipes[PIPE_STDIN][PIPE_INPUT_FD]);
+        if (stdin_input->data != NULL && stdin_input->len > 0) {
+            ssize_t wr = write(pipes[PIPE_STDIN][PIPE_OUTPUT_FD], stdin_input->data, stdin_input->len);
+            (void)wr;
+        }
+        close(pipes[PIPE_STDIN][PIPE_OUTPUT_FD]);
     }
 
     close(pipes[PIPE_STDOUT][PIPE_OUTPUT_FD]);

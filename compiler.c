@@ -265,6 +265,19 @@ void given_test_requirement_compiler(struct test_requirement_compiler_context * 
         string_protect(given_path);
         return;
     }
+    if (string_equals_with_cstring(given_type, "stdin")) {
+        if (given_filename != NULL) {
+            jcunit_fatal_error("The 'filename' argument is not allowed for 'stdin' given type!");
+        }
+        if (given_path != NULL) {
+            jcunit_fatal_error("The 'path' argument is not allowed for 'stdin' given type!");
+        }
+        context->test->given_type = TEST_PROGRAM_RUNNER_GIVEN_TYPE_STDIN;
+        context->test->given_file_content = context->requirement->content;
+        context->test->base.flags |= TEST_FLAG_HAS_GIVEN;
+        string_protect(context->requirement->content);
+        return;
+    }
     if (!string_equals_with_cstring(given_type, "file")) {
         jcunit_fatal_error("The unknown \"%s\" given type!", given_type->value);
     }

@@ -30,6 +30,7 @@ static void try_to_run_program(
     const char * program,
     const char * given_filename,
     const char * extra_args,
+    struct process_input * stdin_input,
     struct process_output * stdout_output,
     struct process_output * stderr_output,
     int * exit_code
@@ -117,6 +118,7 @@ void try_to_run_program(
     const char * program,
     const char * filename,
     const char * extra_args,
+    struct process_input * stdin_input,
     struct process_output * stdout_output,
     struct process_output * stderr_output,
     int * exit_code
@@ -178,7 +180,7 @@ void try_to_run_program(
         }
 
         if (try_to_run) {
-            *exit_code = child_process_run(args[0], args, stdout_output, stderr_output);
+            *exit_code = child_process_run(args[0], args, stdin_input, stdout_output, stderr_output);
         }
     }
 }
@@ -241,6 +243,8 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
 {
     struct program_runner_test * this_test = (struct program_runner_test *)test;
     struct process_output stdout_output, stderr_output;
+    struct process_input stdin_input_data;
+    struct process_input * stdin_input = NULL;
     struct string * executable = this_test->program_path;
     struct program_runner_test_result * test_result;
     int child_exit_code;
@@ -256,12 +260,22 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
     } else if (this_test->given_type == TEST_PROGRAM_RUNNER_GIVEN_TYPE_REFERENCE) {
         test_result->given_filename = this_test->given_path;
         string_protect(this_test->given_path);
+    } else if (this_test->given_type == TEST_PROGRAM_RUNNER_GIVEN_TYPE_STDIN) {
+        stdin_input = &stdin_input_data;
+        if (this_test->given_file_content != NULL) {
+            stdin_input_data.data = this_test->given_file_content->value;
+            stdin_input_data.len = this_test->given_file_content->len;
+        } else {
+            stdin_input_data.data = NULL;
+            stdin_input_data.len = 0;
+        }
     }
 
     try_to_run_program(
         executable->value,
         test_result->given_filename != NULL ? test_result->given_filename->value : NULL,
         this_test->program_args != NULL ? this_test->program_args->value : NULL,
+        stdin_input,
         &stdout_output,
         &stderr_output,
         &child_exit_code
