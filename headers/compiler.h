@@ -11,8 +11,9 @@
 
 #define TEST_COMPLETE_MASK (TEST_FLAG_HAS_GIVEN | TEST_FLAG_HAS_WHEN | TEST_FLAG_HAS_THEN)
 
-#define TEST_PROGRAM_RUNNER_GIVEN_TYPE_FILE    (0)
-#define TEST_PROGRAM_RUNNER_GIVEN_TYPE_NONE    (1)
+#define TEST_PROGRAM_RUNNER_GIVEN_TYPE_FILE       (0)
+#define TEST_PROGRAM_RUNNER_GIVEN_TYPE_NONE       (1)
+#define TEST_PROGRAM_RUNNER_GIVEN_TYPE_REFERENCE  (2)
 
 #define TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_UNKNOWN    (0)
 #define TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT     (1)
@@ -38,6 +39,7 @@ struct program_runner_test {
     unsigned int given_type;
     struct string * given_filename;
     struct string * given_file_content;
+    struct string * given_path;
     struct string * program_path;
     struct string * program_args;
     struct string * expected_stdout;

@@ -1,0 +1,7 @@
+@test("A simple passing test")
+@given("none")
+@whenRun("./testers/print-args", args="--hello")
+@expectOutput("stdout")
+--hello
+
+@endtest

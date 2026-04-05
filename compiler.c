@@ -195,7 +195,7 @@ test_requirement_compiler_func * resolve_test_requirement_compiler(struct ast_re
 
 void given_test_requirement_compiler(struct test_requirement_compiler_context * context)
 {
-    struct string * given_type = NULL, * given_filename = NULL;
+    struct string * given_type = NULL, * given_filename = NULL, * given_path = NULL;
     slist_foreach(iterator, &context->requirement->arguments, {
         struct ast_requirement_argument * argument = list_get_owner(
                 iterator,
@@ -220,6 +220,13 @@ void given_test_requirement_compiler(struct test_requirement_compiler_context * 
             given_filename = argument->value;
             continue;
         }
+        if (strcmp("path", argument->name->value) == 0) {
+            if (given_path != NULL) {
+                jcunit_fatal_error("Cannot be both redefinition of 'path' for the 'given' requirement!");
+            }
+            given_path = argument->value;
+            continue;
+        }
         jcunit_fatal_error("Unknown named argument '%s' for the 'given' requirement!", argument->name->value);
     });
     if (given_type == NULL) {
@@ -232,6 +239,9 @@ void given_test_requirement_compiler(struct test_requirement_compiler_context * 
         if (given_filename != NULL) {
             jcunit_fatal_error("The 'filename' argument is not allowed for 'none' given type!");
         }
+        if (given_path != NULL) {
+            jcunit_fatal_error("The 'path' argument is not allowed for 'none' given type!");
+        }
         if (context->requirement->content != NULL) {
             jcunit_fatal_error("The content is not allowed for 'none' given type!");
         }
@@ -239,8 +249,27 @@ void given_test_requirement_compiler(struct test_requirement_compiler_context * 
         context->test->base.flags |= TEST_FLAG_HAS_GIVEN;
         return;
     }
+    if (string_equals_with_cstring(given_type, "reference")) {
+        if (given_path == NULL || given_path->len == 0) {
+            jcunit_fatal_error("The 'path' argument is required for 'reference' given type!");
+        }
+        if (given_filename != NULL) {
+            jcunit_fatal_error("The 'filename' argument is not allowed for 'reference' given type!");
+        }
+        if (context->requirement->content != NULL) {
+            jcunit_fatal_error("The content is not allowed for 'reference' given type!");
+        }
+        context->test->given_type = TEST_PROGRAM_RUNNER_GIVEN_TYPE_REFERENCE;
+        context->test->given_path = given_path;
+        context->test->base.flags |= TEST_FLAG_HAS_GIVEN;
+        string_protect(given_path);
+        return;
+    }
     if (!string_equals_with_cstring(given_type, "file")) {
         jcunit_fatal_error("The unknown \"%s\" given type!", given_type->value);
+    }
+    if (given_path != NULL) {
+        jcunit_fatal_error("The 'path' argument is not allowed for 'file' given type!");
     }
     if (given_filename != NULL) {
         if (given_filename->len == 0) {

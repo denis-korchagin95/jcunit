@@ -78,11 +78,13 @@ A test file contains one or more tests. Each test has:
 - `@test("name")` — test declaration
 - `@given("file")` — input file content (follows on next lines)
 - `@given("none")` — no input file; the program is invoked without a file argument
-- `@whenRun("./program")` — program to execute (with the given file as first argument if `@given("file")`)
+- `@given("reference", path="path/to/file.txt")` — use an existing file; the path is passed as-is as the first argument
+- `@whenRun("./program")` — program to execute (with the given file as first argument if `@given("file")` or `@given("reference")`)
 - `@expectOutput("stdout")` or `@expectOutput("stderr")` — expected output (follows on next lines)
 - `@endtest` — end of test
 
 Use `@given("none")` for testing programs that don't need input files (e.g. `--help` output).
+Use `@given("reference", path="...")` to test with an existing file without inlining its content.
 
 A test with `@shouldBeSkipped` is **skipped**.
 

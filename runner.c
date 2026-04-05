@@ -253,6 +253,9 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
     if (this_test->given_type == TEST_PROGRAM_RUNNER_GIVEN_TYPE_FILE) {
         resolve_given_filename(this_test, test_result);
         make_given_file(test_result->given_filename, this_test->given_file_content);
+    } else if (this_test->given_type == TEST_PROGRAM_RUNNER_GIVEN_TYPE_REFERENCE) {
+        test_result->given_filename = this_test->given_path;
+        string_protect(this_test->given_path);
     }
 
     try_to_run_program(
@@ -264,7 +267,7 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
         &child_exit_code
     );
 
-    if (test_result->given_filename != NULL) {
+    if (this_test->given_type == TEST_PROGRAM_RUNNER_GIVEN_TYPE_FILE) {
         unlink(test_result->given_filename->value);
     }
 

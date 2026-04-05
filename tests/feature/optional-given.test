@@ -48,6 +48,27 @@ stderr line
 
 @endtest
 
+@test("It should pass referenced file path as first argument")
+@given("reference", path="tests/fixtures/sample-input.txt")
+@whenRun("./testers/print-args", args="--flag1")
+@expectOutput("stdout")
+tests/fixtures/sample-input.txt
+--flag1
+
+@endtest
+
+@test("It should run jcunit on a referenced test file")
+@given("reference", path="tests/fixtures/reference-inner.test")
+@whenRun("./bin/jcunit", args="--no-cache")
+@expectOutput("stdout")
+.                                                  (100%)
+
+Time: {{any}}
+OK!
+Passed: 1, Skipped: 0, Errors: 0, Failed: 0, Incomplete: 0
+
+@endtest
+
 @test("It should still work with @given file")
 @given("file")
 some content
