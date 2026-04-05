@@ -228,6 +228,17 @@ void given_test_requirement_compiler(struct test_requirement_compiler_context * 
     if (given_type->len == 0) {
         jcunit_fatal_error("The type cannot be empty for the 'given' requirement!");
     }
+    if (string_equals_with_cstring(given_type, "none")) {
+        if (given_filename != NULL) {
+            jcunit_fatal_error("The 'filename' argument is not allowed for 'none' given type!");
+        }
+        if (context->requirement->content != NULL) {
+            jcunit_fatal_error("The content is not allowed for 'none' given type!");
+        }
+        context->test->given_type = TEST_PROGRAM_RUNNER_GIVEN_TYPE_NONE;
+        context->test->base.flags |= TEST_FLAG_HAS_GIVEN;
+        return;
+    }
     if (!string_equals_with_cstring(given_type, "file")) {
         jcunit_fatal_error("The unknown \"%s\" given type!", given_type->value);
     }
@@ -239,6 +250,7 @@ void given_test_requirement_compiler(struct test_requirement_compiler_context * 
             jcunit_fatal_error("Cannot be any path separators in 'filename' argument of the 'given' requirement!");
         }
     }
+    context->test->given_type = TEST_PROGRAM_RUNNER_GIVEN_TYPE_FILE;
     context->test->given_file_content = context->requirement->content;
     context->test->given_filename = given_filename;
     context->test->base.flags |= TEST_FLAG_HAS_GIVEN;

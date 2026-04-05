@@ -77,11 +77,14 @@ A test file contains one or more tests. Each test has:
 
 - `@test("name")` — test declaration
 - `@given("file")` — input file content (follows on next lines)
-- `@whenRun("./program")` — program to execute with the given file as argument
+- `@given("none")` — no input file; the program is invoked without a file argument
+- `@whenRun("./program")` — program to execute (with the given file as first argument if `@given("file")`)
 - `@expectOutput("stdout")` or `@expectOutput("stderr")` — expected output (follows on next lines)
 - `@endtest` — end of test
 
-A test without `@expectOutput` is marked as **incomplete**. A test with `@shouldBeSkipped` is **skipped**.
+Use `@given("none")` for testing programs that don't need input files (e.g. `--help` output).
+
+A test with `@shouldBeSkipped` is **skipped**.
 
 See the full grammar in [test-grammar](./test-grammar) and examples in the [examples/](./examples/) directory.
 

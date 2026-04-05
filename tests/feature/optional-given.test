@@ -1,0 +1,59 @@
+@test("It should run a program with @given none")
+@given("none")
+@whenRun("./testers/print-args", args="--help")
+@expectOutput("stdout")
+--help
+
+@endtest
+
+@test("It should run a program with @given none and without args")
+@given("none")
+@whenRun("./testers/print-args")
+@expectOutput("stdout")
+@endtest
+
+@test("It should run a program with @given none with multiple args")
+@given("none")
+@whenRun("./testers/print-args", args="--flag1 --flag2 --flag3")
+@expectOutput("stdout")
+--flag1
+--flag2
+--flag3
+
+@endtest
+
+@test("It should check stderr with @given none")
+@given("none")
+@whenRun("./testers/print-to-stderr", args="--error")
+@expectOutput("stderr")
+--error
+
+@endtest
+
+@test("It should check both stdout and stderr with @given none")
+@given("none")
+@whenRun("./testers/dual-output.sh")
+@expectOutput("stdout")
+stdout line
+@expectOutput("stderr")
+stderr line
+@endtest
+
+@test("It should skip test with @given none")
+@given("none")
+@shouldBeSkipped
+@whenRun("./testers/print-args", args="--help")
+@expectOutput("stdout")
+--help
+
+@endtest
+
+@test("It should still work with @given file")
+@given("file")
+some content
+@whenRun("./testers/print-args", args="--flag1")
+@expectOutput("stdout")
+{{any}}
+--flag1
+
+@endtest

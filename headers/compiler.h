@@ -11,6 +11,9 @@
 
 #define TEST_COMPLETE_MASK (TEST_FLAG_HAS_GIVEN | TEST_FLAG_HAS_WHEN | TEST_FLAG_HAS_THEN)
 
+#define TEST_PROGRAM_RUNNER_GIVEN_TYPE_FILE    (0)
+#define TEST_PROGRAM_RUNNER_GIVEN_TYPE_NONE    (1)
+
 #define TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_UNKNOWN    (0)
 #define TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDOUT     (1)
 #define TEST_PROGRAM_RUNNER_EXPECT_OUTPUT_STREAM_STDERR     (2)
@@ -32,6 +35,7 @@ struct abstract_test {
 
 struct program_runner_test {
     struct abstract_test base;         /* this must be the first member */
+    unsigned int given_type;
     struct string * given_filename;
     struct string * given_file_content;
     struct string * program_path;

@@ -139,7 +139,9 @@ void try_to_run_program(
     *exit_code = 0;
 
     args[argc++] = (char *)program;
-    args[argc++] = (char *)filename;
+    if (filename != NULL) {
+        args[argc++] = (char *)filename;
+    }
 
     if (extra_args != NULL) {
         size_t len = strlen(extra_args);
@@ -248,19 +250,23 @@ struct abstract_test_result * program_runner_test_runner(struct abstract_test * 
     test_result->executable = executable;
     string_protect(executable);
 
-    resolve_given_filename(this_test, test_result);
-    make_given_file(test_result->given_filename, this_test->given_file_content);
+    if (this_test->given_type == TEST_PROGRAM_RUNNER_GIVEN_TYPE_FILE) {
+        resolve_given_filename(this_test, test_result);
+        make_given_file(test_result->given_filename, this_test->given_file_content);
+    }
 
     try_to_run_program(
         executable->value,
-        test_result->given_filename->value,
+        test_result->given_filename != NULL ? test_result->given_filename->value : NULL,
         this_test->program_args != NULL ? this_test->program_args->value : NULL,
         &stdout_output,
         &stderr_output,
         &child_exit_code
     );
 
-    unlink(test_result->given_filename->value);
+    if (test_result->given_filename != NULL) {
+        unlink(test_result->given_filename->value);
+    }
 
     test_result->exit_code = child_exit_code;
     test_result->error_code = stdout_output.error_code;

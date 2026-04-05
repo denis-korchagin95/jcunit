@@ -1,5 +1,4 @@
 #!/bin/sh
-shift
 for arg in "$@"; do
     echo "$arg"
 done
