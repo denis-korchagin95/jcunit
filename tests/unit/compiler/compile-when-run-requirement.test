@@ -76,3 +76,33 @@ The args cannot be empty for the 'whenRun' requirement!
 Missing the 'program' named argument (can be unnamed) for the 'whenRun' requirement!
 
 @endtest
+
+@test("It should show an error when file placeholder is used with given none")
+@given("file")
+
+@@test("Some Test Name")
+@@given("none")
+@@whenRun("./bin/some-tester", args="--input {{file}}")
+@@expectOutput("stdout")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The '{{file}}' placeholder in args requires a file-based given ("file" or "reference"), not "none" or "stdin"!
+
+@endtest
+
+@test("It should show an error when file placeholder is used with given stdin")
+@given("file")
+
+@@test("Some Test Name")
+@@given("stdin")
+@@whenRun("./bin/some-tester", args="{{file}} --flag")
+@@expectOutput("stdout")
+@@endtest
+
+@whenRun("./bin/testers/compiler-tester")
+@expectOutput("stderr")
+The '{{file}}' placeholder in args requires a file-based given ("file" or "reference"), not "none" or "stdin"!
+
+@endtest

@@ -1,0 +1,69 @@
+@test("It should place the file where {{file}} placeholder is in args")
+@given("file")
+hello
+@whenRun("./testers/print-args", args="--flag1 {{file}} --flag2")
+@expectOutput("stdout")
+--flag1
+{{any}}
+--flag2
+
+@endtest
+
+@test("It should support {{file}} as the last arg")
+@given("file")
+hello
+@whenRun("./testers/print-args", args="--flag {{file}}")
+@expectOutput("stdout")
+--flag
+{{any}}
+
+@endtest
+
+@test("It should support {{file}} as the only arg")
+@given("file")
+hello
+@whenRun("./testers/print-args", args="{{file}}")
+@expectOutput("stdout")
+{{any}}
+
+@endtest
+
+@test("It should support inline {{file}} substitution")
+@given("file")
+hello
+@whenRun("./testers/print-args", args="--input={{file}}")
+@expectOutput("stdout")
+--input={{any}}
+
+@endtest
+
+@test("It should support multiple {{file}} placeholders")
+@given("file")
+hello
+@whenRun("./testers/print-args", args="{{file}} --sep {{file}}")
+@expectOutput("stdout")
+{{any}}
+--sep
+{{any}}
+
+@endtest
+
+@test("It should not insert file as argv[1] when {{file}} is used")
+@given("file")
+hello
+@whenRun("./testers/print-args", args="--before {{file}} --after")
+@expectOutput("stdout")
+--before
+{{any}}
+--after
+
+@endtest
+
+@test("It should work with reference given and {{file}} placeholder")
+@given("reference", path="./testers/print-args")
+@whenRun("./testers/print-args", args="--input {{file}}")
+@expectOutput("stdout")
+--input
+./testers/print-args
+
+@endtest

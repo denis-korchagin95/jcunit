@@ -165,6 +165,16 @@ struct abstract_test * program_runner_test_compiler(struct ast_test * ast_test)
         context.requirement = requirement;
         test_requirement_compiler(&context);
     });
+    if (
+        test->program_args != NULL
+        && strstr(test->program_args->value, "{{file}}") != NULL
+        && (
+            test->given_type == TEST_PROGRAM_RUNNER_GIVEN_TYPE_NONE
+            || test->given_type == TEST_PROGRAM_RUNNER_GIVEN_TYPE_STDIN
+        )
+    ) {
+        jcunit_fatal_error("The '{{file}}' placeholder in args requires a file-based given (\"file\" or \"reference\"), not \"none\" or \"stdin\"!");
+    }
     return (struct abstract_test *) test;
 }
 
